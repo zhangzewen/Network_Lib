@@ -1,6 +1,7 @@
 #include "RBTree.h"
 #include <stdio.h>
 #include <stdlib.h>
+#if 0
 #include "event_base.h"
 
 static rbtree_node_t *rb_new_node(uintptr_t key, void* data)
@@ -18,6 +19,7 @@ static rbtree_node_t *rb_new_node(uintptr_t key, void* data)
 	node->name = ev->name;
 	return node;
 }
+#endif
 
 static rbtree_node_t *rb_insert_rebalance(rbtree_node_t *node, rbtree_node_t *root);
 static rbtree_node_t *rb_erase_rebalance(rbtree_node_t *node, rbtree_node_t *parent, rbtree_node_t *root);
@@ -99,23 +101,36 @@ static rbtree_node_t *rb_search_auxiliary(uintptr_t key, rbtree_node_t *root, rb
 	return NULL;
 }
 
-static rbtree_node_t *rb_search(uintptr_t key, rbtree_node_t *root)
+static rbtree_node_t *rb_search(uintptr_t key, struct rbtree_st *rbtree)
 {
+	struct rbtree_node_st *root = NULL;
+	if (NULL == rbtree || NULL == rbtree->root) {
+		return NULL;
+	}
+
+	root = rbtree->root;
 	return rb_search_auxiliary(key, root, NULL);
 }
 
-static rbtree_node_t *rb_insert(uintptr_t key, void* data, rbtree_node_t *root)
+static rbtree_node_t *rb_insert(uintptr_t key, void* data, struct rbtree_st *rbtree)
 {
 	rbtree_node_t *parent = NULL;
 	rbtree_node_t *node = NULL;
-
+	rbtree_node_t *root = NULL;
 	parent = NULL;
+	
+	if (NULL == rbtree || NULL == rbtree->root) {
+		return NULL;
+	}
+
+	root = rbtree->root;	
 
 	if ((node = rb_search_auxiliary(key, root, &parent))) {
 		return root;
 	}
 
-	node = rb_new_node(key, data);
+	//node = rb_new_node(key, data);
+	node = rbtree->new_node(key, data);
 	node->parent = parent;
 	node->left = node->right = NULL;
 	node->color = RED;
@@ -185,15 +200,21 @@ static rbtree_node_t *rb_insert_rebalance(rbtree_node_t *node, rbtree_node_t *ro
 	root->color = BLACK;
 	return root;
 }
-static rbtree_node_t *rb_erase(uintptr_t key, rbtree_node_t *root)
+static rbtree_node_t *rb_erase(uintptr_t key, struct rbtree_st *rbtree)
 {
-	rbtree_node_t *child;	
-	rbtree_node_t *parent;
-	rbtree_node_t *old; 
-	rbtree_node_t *left;
-	rbtree_node_t *node;
-
+	rbtree_node_t *child = NULL;	
+	rbtree_node_t *parent = NULL;
+	rbtree_node_t *old = NULL; 
+	rbtree_node_t *left = NULL;
+	rbtree_node_t *node = NULL;
+	rbtree_node_t *root = NULL;
 	color_t color;
+
+	if (NULL == rbtree) {
+		return NULL;
+	}
+
+	root = rbtree->root;
 
 	if (!(node = rb_search_auxiliary(key, root, NULL))) {
 		return root;
@@ -365,17 +386,21 @@ static rbtree_node_t *rb_erase_rebalance(rbtree_node_t *node, rbtree_node_t *par
 }
 
 
-static int rbtree_empty(rbtree_node_t *root)
-{
-	return root == NULL;
-}
-//找到最小节点，就在根节点最左边的左子树
-static rbtree_node_t *rb_min(struct rbtree_node_st *root)
+static int rbtree_empty(struct rbtree_st *rbtree)
 {
 
-	if (NULL == root) {
+	return (NULL == rbtree || NULL == rbtree->root);
+}
+//找到最小节点，就在根节点最左边的左子树
+static rbtree_node_t *rb_min(struct rbtree_st *rbtree)
+{
+	struct rbtree_node_st *root;
+
+	if (NULL == rbtree || NULL == rbtree->root) {
 		return NULL;
 	}
+
+	root = rbtree->root;	
 
 	rbtree_node_t *ptr = NULL;
 	rbtree_node_t *current = NULL;

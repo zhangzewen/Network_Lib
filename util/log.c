@@ -2,126 +2,126 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include "log.h"
 #include <errno.h>
-static void _warn_helper(int severity, int log_errno, const char *fmt, va_list ap);
-static void event_log(int severity, const char *msg);
+#include <pthread.h>
 
-void event_err(int eval, const char *fmt, ...)
+#include "log.h"
+
+static struct log_st LOG;
+static pthread_mutex_t log_lock;
+
+char* level_to_str(LogLevel level)
 {
-	va_list ap;
-	
-	va_start(ap, fmt);
-	_warn_helper(_EVENT_LOG_ERR, errno, fmt, ap);
-	va_end(ap);
-	exit(eval);
-}
-
-
-void event_warn(const char *fmt, ...)
-{
-	va_list ap;
-	
-	va_start(ap, fmt);
-	
-	_warn_helper(_EVENT_LOG_WARN, errno, fmt, ap);
-	
-	va_end(ap);
-}
-
-void event_errx(int eval, const char *fmt, ...)
-
-{
-	va_list ap;
-	
-	va_start(ap, fmt);
-	
-	_warn_helper(_EVENT_LOG_ERR, -1, fmt, ap);
-	va_end(ap);
-	exit(eval);
-}
-
-
-void event_warnx(const char *fmt, ...)
-{
-	va_list ap;
-	
-	va_start(ap, fmt);
-	
-	_warn_helper(_EVENT_LOG_WARN, -1, fmt, ap);
-	va_end(ap);
-}
-
-void event_msgx(const char *fmt, ...)
-{
-	va_list ap;
-	
-	va_start(ap, fmt);
-	
-	_warn_helper(_EVENT_LOG_MSG, -1, fmt, ap);
-	
-	va_end(ap);
-}
-
-
-void _event_debugx(const char *fmt, ...)
-{
-	va_list ap;
-	
-	va_start(ap, fmt);
-	
-	_warn_helper(_EVENT_LOG_DEBUG, -1, fmt, ap);
-	
-	va_end(ap);	
-}
-
-
-static void _warn_helper(int severity, int log_errno, const char *fmt, va_list ap)
-{
-	char buf[BUFSIZ] = {0};
-	size_t len;
-	
-	if (fmt != NULL) {
-		vsnprintf(buf, sizeof(buf), fmt, ap);
-	}else{
-		buf[0] = '\0';
-	}
-
-
-	if (log_errno >=0) {
-		len = strlen(buf);
-		
-		if (len < sizeof(buf) - 1) {
-			
-			snprintf(buf + len, sizeof(buf) - len, ":%s", strerror(log_errno));	
-			
-			buf[sizeof(buf) - len] = '\0';
-		}
-	}
-
-	event_log(severity, buf);
-}
-
-
-static void event_log(int severity, const char *msg)
-{
-	const char *severity_str;
-	switch (severity) {
-		case _EVENT_LOG_DEBUG:
-			severity_str = "debug";
-			break;
-		case _EVENT_LOG_MSG:
-			severity_str = "msg";
-			break;
-		case _EVENT_LOG_WARN:
-			severity_str = "err";
-			break;
-		case _EVENT_LOG_ERR:
-			break;
-			severity_str = "err";
+	switch(level) {
+		case DEBUG:
+			return "DEBUG";
+		case TRACE:
+			return "TRACE";
+		case NOTICE:
+			return "NOTICE";
+		case WARNING:
+			return "WARNING";
+		case ERROR:
+			return "ERROR";
 		default:
-			severity_str = "???";
-			break;
+			return "UNKNOWN";
 	}
-	fprintf(stderr, "[%s] %s\n", severity_str, msg);
 }
+
+
+
+int log_init(LogLevel level, char *path)
+{
+	if (strlen(path) >= 256 - 1) {
+		fprintf(stderr, "log file path too long!\n");
+	}
+	
+	memset(LOG.path, 0, BUFFSIZE);
+	strncpy(LOG.path, path, strlen(path));
+
+	if ('\0' == LOG.path[0]) {
+		LOG.fp = stdout;
+		return 0;
+	}
+	LOG.fp = fopen(LOG.path, "a");
+	if (NULL == LOG.fp) {
+		fprintf(stderr, "can not access log file\n");
+		return -1;
+	}
+	setvbuf(LOG.fp, (char *)NULL, _IOLBF, 0);
+	
+	pthread_mutex_init(&log_lock, NULL);
+	return 0;
+}
+
+
+int Log_lock()
+{
+	if (pthread_mutex_trylock(&log_lock) == 0) {
+		return 0;
+	}
+	return -1;
+}
+
+
+int Log_unlock()
+{
+	pthread_mutex_unlock(&log_lock);
+	return 0;
+}
+
+
+int timer_prefix(char *buffer, LogLevel level)
+{
+	time_t now;
+	now = time(&now);
+	struct tm v;
+	localtime_r(&now, &v);
+	return snprintf(buffer, BUFFSIZE, "%s: %02d-%02d %02d:%02d%02d", level_to_str(level), v.tm_mon + 1, v.tm_mday, v.tm_hour, v.tm_min, v.tm_sec);
+}
+
+
+int Log(LogLevel level, char *logformat, ...)
+{
+	int size = 0;
+	int len = 0;
+	
+	char *ptr = LOG.buffer;
+
+	len = timer_prefix(ptr, level);
+
+	ptr += len;
+	strncpy(ptr, logformat, BUFFSIZE - len);
+	
+	va_list args;
+	va_start(args, logformat);
+
+	
+	if (Log_lock() != 0) {
+		vfprintf(stderr, LOG.buffer, args);
+		fflush(stderr);
+		va_end(args);
+		return 0;
+	}
+	
+	size = vfprintf(LOG.fp, LOG.buffer, args);
+	fflush(LOG.fp);	
+	va_end(args);
+	Log_unlock();
+
+	return 0;
+}
+
+int logclose()
+{
+	if (LOG.fp == NULL) {
+		return 0;
+	}	
+
+	fflush(LOG.fp);
+	fclose(LOG.fp);
+	LOG.fp = NULL;
+	pthread_mutex_destroy(&log_lock);
+	return 0;
+}
+

@@ -27,8 +27,8 @@ vector* vector_create()
 
 void vector_free(vector *v)
 {
-	int i = 0;
-	for (i = 0; i < v->current; i++) {
+	unsigned int i = 0;
+	for (i = 0; i <  v->current; i++) {
 		free(v->data[i]);
 		v->data[i] = NULL;
 	}	
