@@ -291,4 +291,3 @@ int del_record_to_hash_table(struct HashTable *table, void *data)
 	return -1;
 }
 
-

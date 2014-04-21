@@ -1,5 +1,4 @@
 #include "io.h"
-#include "http_error.h"
 
 #include <sys/ipc.h>
 

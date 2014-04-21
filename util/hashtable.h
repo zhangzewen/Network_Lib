@@ -32,3 +32,4 @@ struct Node *find_data_from_hash_table(struct HashTable *table, void *data);
 int add_record_to_hash_table(struct HashTable *table_head, void *data);
 int del_record_to_hash_table(struct HashTable *table, void *data);
 #endif
+

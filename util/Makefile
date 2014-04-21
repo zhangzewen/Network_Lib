@@ -1,4 +1,4 @@
-OBJECTS= timer.o buf.o file.o hash.o log.o vector.o cJSON.o RBTree.o hashtable.o
+OBJECTS=$(patsubst %.c, %.o, $(wildcard *.c))
 CC=gcc
 CFLAGS+=-g3 -W -Werror
 LDFLAGS+= -pthread
