@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include <string.h>
+#if 0
 struct HashTable *hash_table_malloc(void *(*hash)(void *value),
                                   int (*data_compare)(void *dest_data, void *src_data),
                                   int (*key_compare)(void *dest_key, void *src_key))
@@ -21,8 +22,30 @@ struct HashTable *hash_table_malloc(void *(*hash)(void *value),
 	
 	return head;
 }
+#endif
 
-struct Node *node_malloc()
+struct HashTable* hashtable_new(long int (*hash)(void *key),
+																int (*key_compare)(void *dest_key, void *src_key),
+																void (*key_free)(void **key),
+																void (*value_free)(void **value))
+{
+	struct HashTable *new;
+	new	= (struct HashTable *)calloc(sizeof(struct HashTable));
+	if (NULL == new) {
+		perror("hashtable calloc error!\n");
+		return NULL;
+	}
+
+	new->mask = DEFAULTTABLESIZE - 1;
+	new->total = DEFAULTTABLESIZE;
+	new->hash = hash;
+	new->key_compare = key_compare;
+	new->key_free = key_free;
+	new->value_free = value_free;
+	return new;
+}
+
+struct Node *node_new(struct HashTable* hashtable)
 {
 	struct Node *node;
 	
@@ -32,17 +55,17 @@ struct Node *node_malloc()
 		return NULL;
 	}
 
-	INIT_LIST_HEAD(&node->node);
-	INIT_LIST_HEAD(&node->child);
+	INIT_LIST_HEAD(&node->list);
 	node->data = NULL;
 	node->key = NULL;
+	node->hashtable = hashtable;
 	
 	return node;
 }
 
-void hash_table_free(struct HashTable *hash_table)
+void hashtable_free(struct HashTable **hashtable)
 {
-	
+#if 0
 	if(list_empty(&hash_table->table_head)){
 		list_del(&hash_table->table_head);
 	}else{
@@ -59,49 +82,57 @@ void hash_table_free(struct HashTable *hash_table)
 	free(hash_table);
 	
 	hash_table = NULL;
+#endif
+	if (NULL == *hashtable) {
+		return ;
+	}
+	
+	if (NULL != (*hashtable)->table) {
+		int i = 0;
+		struct Node *node = NULL;
+		struct Node *tmp = NULL;
+		struct list_head *head = NULL;
+		for (i = 0; i < DEFAULTTABLESIZE; i++) {
+			if ((*hashtable)->table[i] == NULL) {
+				continue;
+			}
+
+			head = (*hashtable)->table[i];
+			list_for_each_entry_safe(node, tmp, head, list) {
+				list_del(&node->list);
+				node_free(&node);
+			}
+
+			free(head);
+			head = NULL;
+		}	
+	}	
+	
+	(*hashtable)->hash = NULL;
+	(*hashtable)->key_compare = NULL
+	(*hashtable)->key_free = NULL;
+	(*hashtable)->value_free = NULL;
+	
+	free(*hashtable);
+	*hashtable = NULL;
+		
 }
 
 
 
-void node_free(struct Node *node)
+void node_free(struct Node **node)
 {
-	if(!list_empty(&node->child)) {
-		struct Node *tmp, *ptr;
-		list_for_each_entry_safe(ptr, tmp, &node->child, child){
-			if(ptr->key){
-				free(ptr->key);
-				ptr->key = NULL;
-			}
-
-			if(ptr->data) {
-				free(ptr->data);
-				ptr->data = NULL;
-			}
-
-			list_del(&ptr->child);
-			list_del(&ptr->node);
-			
-			free(ptr);
-			ptr = NULL;
-		}	
+	list_del(&(*node)->list);	
+	
+	if((*node)->key && NULL != (*node)->hashtable->key_free){
+		(*node)->hashtable->key_free(&(*node)->key);
 	}
 	
-	list_del(&node->child);	
-	list_del(&node->node);
-	
-	if(node->key){
-		free(node->key);
-		node->key = NULL;
+	if((*node)->data && NULL != (*node)->hashtable->value_free) {
+		(*node)->hashtable->value_free(&(*node)->data);
 	}
-	
-	if(node->data) {
-		free(node->data);
-		node->data = NULL;
-	}
-
-	
-	free(node);
-	node = NULL;
+	free(*node);
+	*node = NULL;
 }
 
 

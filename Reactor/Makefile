@@ -19,13 +19,31 @@ CC=gcc
 CONFIGURE=
 CFLAGS=-Wall -W -g3 -Werror 
 
-.PHONY: all init clean
+.PHONY: all clean test
 
-all:$(OBJS)
+
+all: init $(OBJS)
 	ar rcs $(LIB) $(OBJS)
+
+init:
+	@if [ -d ${BIN_DIR} ];\
+	then rm -fr ${BIN_DIR}/*;\
+	else mkdir ${BIN_DIR};\
+	fi;\
+	if [ -d ${LIB_DIR} ];\
+	then rm -fr ${LIB_DIR}/*;\
+	else mkdir ${LIB_DIR};\
+	fi;\
+	if [ -d ${OBJ_DIR} ];\
+	then rm -fr ${OBJ_DIR}/*;\
+	else mkdir ${OBJ_DIR};\
+	fi;
 
 $(OBJ_DIR)/%.o:$(SRC_DIR)/%.$(EXTENSION) 
 	$(CC) $< -o $@ -c $(CFLAGS) $(CONFIGURE) $(INCLUDE) 
+
+
+test: http_echo timeout
 
 http_echo: $(TEST_DIR)/http_echo.c $(LIB)
 	$(CC) $< -o $(BIN_DIR)/$@ $(INCLUDE) $(LIB) $(CFLAGS) -lpthread
@@ -33,5 +51,5 @@ http_echo: $(TEST_DIR)/http_echo.c $(LIB)
 timeout: $(TEST_DIR)/timeout.c $(LIB)
 	$(CC) $< -o $(BIN_DIR)/$@ $(INCLUDE) $(LIB) $(CFLAGS) -lpthread
 clean:
-	rm -rf $(OBJ_DIR)/* $(LIB_DIR)/* $(BIN_DIR)/*
+	rm -rf $(OBJ_DIR) $(LIB_DIR) $(BIN_DIR)
 

@@ -3,33 +3,39 @@
 
 #include "list.h"
 
+#define DEFAULTTABLESIZE  1024
+
 struct HashTable{
-	struct list_head table_head;
-	void *(*hash)(void *data);
-	int (*value_compare)(void *dest_data, void *src_data);
+	struct Node **table;
+	int mask;
+	int total;
+	long int (*hash)(void *key);
 	int (*key_compare)(void *dest_key, void *src_data);
+	void  (*key_free)(void **key);
+	void (*value_free)(void **value);
 };
 
 struct Node{
-	struct list_head node;
-	struct list_head child;
+	struct list_head list;
 	void *data;
 	void *key;
+	struct HashTable *HashTable;
 	int hit;
 };
 
 
-struct HashTable *hash_table_malloc(void *(*first_hash)(void *value),
-																	int (*data_compare)(void *dest_data, void *src_data),
-																	int (*key_compare)(void *dest_key, void *src_key));
+struct HashTable *hashtable_new(long int (*hash)(void *key),
+																int (*key_compare)(void *dest_key, void *src_key),
+																void (*key_free)(void **key),	
+																void (*value_free)(void **value));
 
-struct Node *node_malloc();
+void hashtable_free(struct HashTable **hashtable);
+struct Node *node_new();
+void node_free(struct Node **node);
 
-void hash_table_free(struct HashTable *hash_table);
-
-void node_free(struct Node *node);
-struct Node *find_data_from_hash_table(struct HashTable *table, void *data);
-int add_record_to_hash_table(struct HashTable *table_head, void *data);
-int del_record_to_hash_table(struct HashTable *table, void *data);
+struct Node *find_data_from_hash_table(struct HashTable *table, void *key);
+int add_record_to_hash_table(struct HashTable *table_head, void *key, void *value);
+int del_record_to_hash_table(struct HashTable *table, void *key);
+int update_record_to_hash_table(struct HashTable *table, void *key, void *data)
 #endif
 
