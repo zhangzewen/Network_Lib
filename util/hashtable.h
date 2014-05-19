@@ -1,41 +1,48 @@
-#ifndef __HASHTABLE_H_INCLUDED
-#define __HASHTABLE_H_INCLUDED
+#ifndef __UTIL_HASHTABLE_H_INCLUDED__
+#define __UTIL_HASHTABLE_H_INCLUDED__
 
 #include "list.h"
 
-#define DEFAULTTABLESIZE  1024
+#define DEFAULTTABLESIZE 4096 
 
-struct HashTable{
-	struct Node **table;
-	int mask;
-	int total;
-	long int (*hash)(void *key);
-	int (*key_compare)(void *dest_key, void *src_data);
-	void  (*key_free)(void **key);
-	void (*value_free)(void **value);
+typedef struct HashTableOpt_st HashTableOpt;
+typedef struct HashTable_st HashTable;
+typedef struct Node_st Node;
+
+struct HashTableOpt_st{
+	unsigned int (*hash)(void *key);
+	int (*key_compare)(void *dest_key, void *src_key);
+	void (*key_free)(void **key);
+	void (*value_free)(void **value);	
 };
 
-struct Node{
+struct HashTable_st{
+	struct list_head *table;
+	HashTableOpt *opt;
+	int mask;
+	int total;
+	
+};
+
+struct Node_st{
 	struct list_head list;
 	void *data;
 	void *key;
-	struct HashTable *HashTable;
-	int hit;
+	HashTable *hashtable;
+	int hits;
 };
 
 
-struct HashTable *hashtable_new(long int (*hash)(void *key),
-																int (*key_compare)(void *dest_key, void *src_key),
-																void (*key_free)(void **key),	
-																void (*value_free)(void **value));
+HashTable *hashtable_create(HashTableOpt *opt, int initsize);
 
-void hashtable_free(struct HashTable **hashtable);
-struct Node *node_new();
-void node_free(struct Node **node);
+void hashtable_free(HashTable **hashtable);
+Node *node_new();
+void node_free(Node **node);
 
-struct Node *find_data_from_hash_table(struct HashTable *table, void *key);
-int add_record_to_hash_table(struct HashTable *table_head, void *key, void *value);
-int del_record_to_hash_table(struct HashTable *table, void *key);
-int update_record_to_hash_table(struct HashTable *table, void *key, void *data)
+Node *find_record(HashTable *table, void *key, int *index);
+int add_record(HashTable *table, void *key, void *value);
+int del_record(HashTable *table, void *key);
+int update_record(HashTable *table, void *key, void *data);
+void hashtable_dump(HashTable *table, void (*visit)(void *data));
 #endif
 
