@@ -6,6 +6,7 @@
 //eg. infomations
 #include <netinet/in.h>
 #include "event_base.h"
+#include "RBTree.h"
 
 #define DEFAULT_HOST_LENGTH 256
 #define MAX_DNS_SERVERS 10

@@ -29,7 +29,7 @@ void dns_question_free(dns_question * question) {
 
 char* escape_data(const uint8_t* packet, uint32_t start, uint32_t end)
 {
-	int i = 0;
+	uint32_t i = 0;
 	int o = 0;
 	uint8_t c = 0;
 	//uint8_t upper = 0;
