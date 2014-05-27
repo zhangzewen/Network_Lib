@@ -536,7 +536,7 @@ int event_add(struct event *ev, const struct timeval *tv)
 		event_queue_insert(base, ev, EVLIST_TIMEOUT);
 	}
 	
-	return (res);
+	return res;
 }
 
 
@@ -711,4 +711,51 @@ static void event_del_timer(struct event_base* base, struct event *ev)
 
 	base->timeout.root = base->timeout.erase(key, base->timeout.root);
 	return;
+}
+
+
+void event_free(struct event **ev, int flags)
+{
+	struct event *tmp;
+	tmp = *ev;
+	
+	if (NULL == tmp) {
+		return ;
+	}
+
+	tmp->name = NULL;
+	tmp->ev_pncalls = NULL;
+	tmp->ev_callback = NULL;
+	
+	if (flags) {
+		free(tmp->ev_arg);
+	}
+	tmp->ev_arg = NULL;
+	
+	free(tmp);
+	tmp = NULL;
+	*ev = tmp;
+}
+
+
+void event_base_free()
+{
+	if (NULL == current_base) {
+		return ;
+	}	
+
+	struct event_base *base = current_base;
+
+	base->evsel->dealloc(&base->evbase);
+	base->evbase = NULL;
+
+	base->evsel->name = NULL;
+	base->evsel->init = NULL;
+	base->evsel->add = NULL;
+	base->evsel->del = NULL;
+	base->evsel->dispatch = NULL;
+	base->evsel->dealloc = NULL;
+	rbtree_free(&base->timeout.root);
+	free(base);
+	current_base = NULL;
 }

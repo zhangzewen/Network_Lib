@@ -10,8 +10,10 @@ LIB=$(LIB_DIR)/lib$(LIBNAME).a
 TEST_DIR=$(DIR)/test
 UTIL_INCLUDE=../util
 UTIL_LIBPATH=../util
+UTIL_PATH=../util
 REACTOR_INCLUDE=../Reactor/include
 REACTOR_LIBPATH=../Reactor/lib
+REACTOR_PATH=../Reactor
 
 EXTERN_LIB=-lutil -lReactor
 EXTERN_LIBPATH=-L$(UTIL_LIBPATH) -L$(REACTOR_LIBPATH)
@@ -30,7 +32,7 @@ CFLAGS= -g3  -W -Werror
 
 
 all: init $(OBJS)
-	ar rcs $(LIB) $(OBJS) $(UTIL_LIBPATH)/libutil.a $(REACTOR_LIBPATH)/libReactor.a
+	ar rcs $(LIB) $(OBJS) 
 
 init:
 	@if [ -d ${BIN_DIR} ];\
@@ -44,6 +46,12 @@ init:
 	if [ -d ${OBJ_DIR} ];\
 	then rm -fr ${OBJ_DIR}/*;\
 	else mkdir ${OBJ_DIR};\
+	fi;\
+	if [ ! -f $(REACTOR_LIBPATH)/libReactor.a ];\
+	then make -C $(REACTOR_PATH)/;\
+	fi;\
+	if [ ! -f $(UTIL_LIBPATH)/libutil.a ];\
+	then make -C $(UTIL_PATH)/;\
 	fi;
 
 $(OBJ_DIR)/%.o:$(SRC_DIR)/%.$(EXTENSION) 
@@ -52,7 +60,7 @@ $(OBJ_DIR)/%.o:$(SRC_DIR)/%.$(EXTENSION)
 test: test_dns 
 
 test_dns: $(TEST_DIR)/test_dns.c $(LIB)
-	$(CC) $< -o $(BIN_DIR)/$@ $(INCLUDE) $(LIB) $(CFLAGS) -lpthread
+	$(CC) $< -o $(BIN_DIR)/$@ $(INCLUDE) $(LIB) $(CFLAGS) $(EXTERN_LIBPATH) $(EXTERN_LIB) -lpthread
   
 
 

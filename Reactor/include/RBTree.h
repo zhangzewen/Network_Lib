@@ -16,6 +16,8 @@ struct rbtree_node_st{
 	void *data;
 	char *name;
 	color_t color;
+	int lflag;
+	int rflag;
 	struct rbtree_node_st *left, *right, *parent;
 };
 
@@ -36,6 +38,9 @@ struct rbtree_node_st *rb_search(uintptr_t key, struct rbtree_node_st *root);
 struct rbtree_node_st *rb_erase(uintptr_t key, struct rbtree_node_st *root);
 struct rbtree_node_st *rb_min(struct rbtree_node_st *root);
 int rbtree_empty(rbtree_node_t *root);
+
+void rbtree_free(rbtree_node_t **root);
+
 
 
 #endif

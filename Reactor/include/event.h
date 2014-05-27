@@ -8,7 +8,6 @@ struct event_base *event_base_new();
 struct event_base *event_init();
 int event_dispatch();
 int event_base_dispatch(struct event_base *);
-void event_base_free(struct event_base *);
 int event_base_set(struct event_base *, struct event *);
 int event_loop(int);
 int event_base_loop(struct event_base *, int);
@@ -19,4 +18,7 @@ void event_active(struct event *, int, short);
 void timeout_process(struct event_base *base);
 const char *event_get_method(void);
 
+void event_free(struct event **ev, int flags);
+
+void event_base_free();
 #endif

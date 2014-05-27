@@ -287,22 +287,21 @@ int epoll_del(struct epoll_loop *loop, struct event *ev)
 }
 
 
-void epoll_dealloc(struct epoll_loop *loop)
+void epoll_dealloc(struct epoll_loop **loop)
 {
 
-	if (loop->fds) {
-		free(loop->fds);
+	if ((*loop)->fds) {
+		free((*loop)->fds);
 	}
 
-	if (loop->events) {
-		free(loop->events);
+	if ((*loop)->events) {
+		free((*loop)->events);
 	}
 
-	if (loop->epfd >= 0) {
-		close(loop->epfd);
+	if ((*loop)->epfd >= 0) {
+		close((*loop)->epfd);
 	}
 
-	memset(loop, 0, sizeof(struct epoll_loop));
-	
-	free(loop);
+	free(*loop);
+	loop = NULL;
 }

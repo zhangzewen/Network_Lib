@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "event_base.h"
+#include "stack.h"
 
 static rbtree_node_t *rb_new_node(uintptr_t key, void* data)
 {
@@ -399,4 +400,83 @@ rbtree_node_t *rb_min(struct rbtree_node_st *root)
 
 	return current;
 }
+
+void rb_node_free(rbtree_node_t **node)
+{
+  if ((*node)->parent != NULL) {
+    if ((*node)->parent->left == *node) {
+      (*node)->parent->left = NULL;
+    }else if ((*node)->parent->right == *node) {
+      (*node)->parent->right = NULL;
+    }   
+  }
+
+  free(*node);
+  *node = NULL;
+}
+
+//void PostOrderTravaerse()
+void rbtree_free(rbtree_node_t **root)
+{
+  stack S=NULL;
+	
+	if (NULL == *root) {
+		return;
+	}
+	
+  S=InitStack(S);
+  rbtree_node_t *p=NULL;
+  rbtree_node_t *tmp = NULL;
+  p = *root;
+  Push(S, p);
+  while(!StackEmpty(S))
+  {
+
+    while(p){
+      if(p->lflag != 1 )
+      {
+        if(GetTop(S) != p) {
+          Push(S, p);
+        }
+        p->lflag = 1;
+        if(p->left){
+                    Push(S, p->left);
+                    p = p->left;
+        }
+      }else if(p->rflag != 1 )
+      {
+        if(GetTop(S) != p) {
+          Push(S, p);
+        }
+        p->rflag = 1;
+                if(p->right){
+                    Push(S, p->right);
+                    p = p->right;
+                }
+
+      }
+      if(p->lflag == 1 && p->rflag == 1){
+                break;
+      }
+    }
+    p = Pop(S);
+		rb_node_free(&p);
+    if(StackEmpty(S)) {
+      return;
+    }
+    tmp = GetTop(S);
+    if(tmp->lflag == 1 && tmp->rflag == 1) {
+      p = tmp;
+    }else if(tmp->lflag != 1){
+      tmp->lflag = 1;
+      p = tmp->left;
+    }else if(tmp->rflag != 1){
+      tmp->rflag = 1;
+      p = tmp->right;
+    }
+  }
+
+	*root = NULL;
+}
+
 

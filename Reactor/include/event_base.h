@@ -70,7 +70,7 @@ struct eventop {
 	int (*add)(struct epoll_loop *loop, struct event *);
 	int (*del)(struct epoll_loop *loop, struct event *);
 	int (*dispatch)(struct epoll_loop *loop, struct timeval *tv);
-	void (*dealloc)(struct epoll_loop *loop);
+	void (*dealloc)(struct epoll_loop **loop);
 };
 
 struct event_base {

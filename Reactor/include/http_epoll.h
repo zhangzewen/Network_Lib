@@ -20,5 +20,5 @@ struct epoll_loop *epoll_init (void);
 int epoll_add (struct epoll_loop *loop, struct event *);
 int epoll_del (struct epoll_loop *loop, struct event *);
 int epoll_dispatch (struct epoll_loop *loop, struct timeval *tv);
-void epoll_dealloc (struct epoll_loop *loop);
+void epoll_dealloc (struct epoll_loop **loop);
 #endif
