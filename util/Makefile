@@ -16,13 +16,6 @@ all: $(OBJECTS)
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@ $(LDFLAGS) 
 
-test:	test_thread 
- 
-test_thread: $(TEST_DIR)/test_thread.c $(LIB_NAME)
-	$(CC) $< -o $@ $(INCLUDE) $(PWD)/$(LIB_NAME) $(CFLAGS) $(LDFLAGS) 
-   
-
 clean:
 	rm -fr *.o
 	rm -fr *.a
-	ls -I *.c $(TEST_DIR)

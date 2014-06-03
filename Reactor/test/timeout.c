@@ -13,61 +13,40 @@
 #include "event.h"
 #include "event_base.h"
 
-#define evtimer_set(ev, cb, arg, name)  event_set(ev, -1, 0, cb, arg, name)
+#define evtimer_set(base, ev, cb, arg, name)  event_set(base, ev, -1, 0, cb, arg, name)
 
-static void timeout_cb1(int fd, short event, void *arg)
+static void timeout_cb1(struct event *ev)
 {
-	assert(fd != 0);
-	assert(event != 0);
-	assert(arg != NULL);
 	printf("1 timeout now!\n");
 }
 
-static void timeout_cb2(int fd, short event, void *arg)
+static void timeout_cb2(struct event *ev)
 {
-	assert(fd != 0);
-	assert(event != 0);
-	assert(arg != NULL);
 	printf("2 timeout now!\n");
 }
 
-static void timeout_cb3(int fd, short event, void *arg)
+static void timeout_cb3(struct event *ev)
 {
-	assert(fd != 0);
-	assert(event != 0);
-	assert(arg != NULL);
 	printf("3 timeout now!\n");
 }
 
-static void timeout_cb4(int fd, short event, void *arg)
+static void timeout_cb4(struct event *ev)
 {
-	assert(fd != 0);
-	assert(event != 0);
-	assert(arg != NULL);
 	printf("4 timeout now!\n");
 } 
 
-static void timeout_cb5(int fd, short event, void *arg)
+static void timeout_cb5(struct event *ev)
 {
-	assert(fd != 0);
-	assert(event != 0);
-	assert(arg != NULL);
 	printf("5 timeout now!\n");
 }
 
-static void timeout_cb6(int fd, short event, void *arg)
+static void timeout_cb6(struct event *ev)
 {
-	assert(fd != 0);
-	assert(event != 0);
-	assert(arg != NULL);
 	printf("6 timeout now!\n");
 }
 
-static void timeout_cb7(int fd, short event, void *arg)
+static void timeout_cb7(struct event *ev)
 {
-	assert(fd != 0);
-	assert(event != 0);
-	assert(arg != NULL);
 	printf("7 timeout now!\n");
 }
 
@@ -79,6 +58,7 @@ int main(int argc, char *argv[])
 
 	assert(argc != 0);
 	assert(argv != NULL);
+	struct event_base *base;
 	fprintf(stderr, "=====================begin=================\n");
 	struct event timeout1;
 	struct event timeout2;
@@ -99,16 +79,16 @@ int main(int argc, char *argv[])
 	struct timeval tv6;
 	struct timeval tv7;
 #endif
-	event_init();
+	base = event_base_new();
 	
-	evtimer_set(&timeout1, timeout_cb1, &timeout1, "timeout_1");
-	evtimer_set(&timeout2, timeout_cb2, &timeout2, "timeout_2");
+	evtimer_set(base, &timeout1, timeout_cb1, &timeout1, "timeout_1");
+	evtimer_set(base, &timeout2, timeout_cb2, &timeout2, "timeout_2");
 #if 1
-	evtimer_set(&timeout3, timeout_cb3, &timeout3, "timeout_3");
-	evtimer_set(&timeout4, timeout_cb4, &timeout4, "timeout_4");
-	evtimer_set(&timeout5, timeout_cb5, &timeout5, "timeout_5");
-	evtimer_set(&timeout6, timeout_cb6, &timeout6, "timeout_6");
-	evtimer_set(&timeout7, timeout_cb7, &timeout7, "timeout_7");
+	evtimer_set(base, &timeout3, timeout_cb3, &timeout3, "timeout_3");
+	evtimer_set(base, &timeout4, timeout_cb4, &timeout4, "timeout_4");
+	evtimer_set(base, &timeout5, timeout_cb5, &timeout5, "timeout_5");
+	evtimer_set(base, &timeout6, timeout_cb6, &timeout6, "timeout_6");
+	evtimer_set(base, &timeout7, timeout_cb7, &timeout7, "timeout_7");
 #endif
 
 	tv1.tv_sec = 2;
@@ -143,7 +123,7 @@ int main(int argc, char *argv[])
 	event_add(&timeout6, &tv6);
 	event_add(&timeout7, &tv7);
 #endif
-	event_dispatch();
+	event_base_dispatch(base);
 
 	return 0;
 }

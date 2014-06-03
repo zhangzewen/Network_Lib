@@ -44,7 +44,7 @@ $(OBJ_DIR)/%.o:$(SRC_DIR)/%.$(EXTENSION)
 	$(CC) $< -o $@ -c $(CFLAGS) $(CONFIGURE) $(INCLUDE) 
 
 
-test: http_echo 
+test: http_echo timeout
 
 http_echo: $(TEST_DIR)/http_echo.c $(LIB)
 	$(CC) $< -o $(BIN_DIR)/$@ $(INCLUDE) $(LIB) $(CFLAGS) -lpthread

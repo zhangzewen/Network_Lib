@@ -158,7 +158,8 @@ void timeout_process(struct event_base *base)
 		if (!timer_cmp(now, ev->ev_timeout)) {
 			break;
 		}
-		event_del(ev);
+		//event_del(ev);
+		event_queue_remove(base, ev, EVLIST_TIMEOUT);
 		ev->timeout = 1;
 		event_active(ev, EV_TIMEOUT, 1);
 	}
@@ -276,6 +277,12 @@ void event_set(struct event_base *base, struct event *ev, int fd, short events,
 	ev->ev_ncalls = 0;
 	ev->ev_pncalls = NULL;
 	ev->name = name;
+	ev->timeout = 0;
+	ev->timeout_set = 0;
+	ev->ready = 0;
+	ev->active = 0;
+	INIT_LIST_HEAD(&ev->event_list);
+	INIT_LIST_HEAD(&ev->active_list);
 }
 
 
@@ -400,8 +407,12 @@ static void event_add_timer(struct event_base *base, struct event *ev)
 {
 	uintptr_t key = 0;
 	
-	if (!timer_isset(&ev->ev_timeout) || !ev->timeout_set) {
+	if (!timer_isset(&ev->ev_timeout)) {
 		return ;
+	}
+
+	if (ev->timeout_set) {
+		event_del_timer(base, ev);
 	}
 
 	key = ev->ev_timeout.tv_sec * 1000 + ev->ev_timeout.tv_usec / 1000;
@@ -412,10 +423,10 @@ static void event_del_timer(struct event_base* base, struct event *ev)
 {
 	uintptr_t key = 0;	
 
-	if (!timer_isset(&ev->ev_timeout) || !ev->timeout_set) {
+	if (!timer_isset(&ev->ev_timeout)) {
 		return ;
 	}
-
+	
 	key = ev->ev_timeout.tv_sec * 1000 + ev->ev_timeout.tv_usec / 1000;
 	base->timeout.root = base->timeout.erase(key, base->timeout.root);
 	return;
