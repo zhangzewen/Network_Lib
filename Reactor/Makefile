@@ -17,7 +17,8 @@ INCLUDE=-I$(INCLUDE_DIR)
 
 CC=gcc
 CONFIGURE=
-CFLAGS=-Wall -W -g3 -Werror 
+#CFLAGS=-Wall -W -g3 -Werror 
+CFLAGS=-g3
 
 .PHONY: all clean test
 
@@ -43,7 +44,7 @@ $(OBJ_DIR)/%.o:$(SRC_DIR)/%.$(EXTENSION)
 	$(CC) $< -o $@ -c $(CFLAGS) $(CONFIGURE) $(INCLUDE) 
 
 
-test: http_echo timeout
+test: http_echo 
 
 http_echo: $(TEST_DIR)/http_echo.c $(LIB)
 	$(CC) $< -o $(BIN_DIR)/$@ $(INCLUDE) $(LIB) $(CFLAGS) -lpthread
@@ -52,4 +53,5 @@ timeout: $(TEST_DIR)/timeout.c $(LIB)
 	$(CC) $< -o $(BIN_DIR)/$@ $(INCLUDE) $(LIB) $(CFLAGS) -lpthread
 clean:
 	rm -rf $(OBJ_DIR) $(LIB_DIR) $(BIN_DIR)
+	rm -fr core.*
 

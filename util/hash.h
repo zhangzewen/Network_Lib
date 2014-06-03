@@ -1,13 +1,9 @@
-#ifndef _HTTP_HASH_H_INCLUDED__
-#define _HTTP_HASH_H_INCLUDED__
+#ifndef _UTIL_HASH_H_INCLUDED__
+#define _UTIL_HASH_H_INCLUDED__
 
-//about these functions down there are just from
-//http://burtleburtle.net/bob/hash/
-//you can click the link to check more info
-// and here ,we just use the hashlittle() from file lookup3.c(http://burtleburtle.net/bob/c/lookup3.c)
-//and sorry for that I have no idea why the function run like this
-
+//copy from memcached 1.4.15
+#include <stdint.h>
+uint32_t hash(const void *key, size_t length, const uint32_t initval);
 
 #endif
-uint32_t hashlittle( const void *key, size_t length, uint32_t initval);
 

@@ -212,6 +212,8 @@ int epoll_add(struct epoll_loop *loop, struct event *ev)
 	if (epoll_ctl(loop->epfd, op, ev->ev_fd, &epoll_event) == -1) {
 		return (-1);
 	}
+	
+	ev->active = 1;
 
 	if (ev->ev_events & EV_READ) {
 		event_epoll->read = ev;
@@ -282,6 +284,8 @@ int epoll_del(struct epoll_loop *loop, struct event *ev)
 	if (epoll_ctl(loop->epfd, op, fd, &epoll_event) == -1) {
 		return (-1);
 	}
+	
+	ev->active = 0;
 	
 	return (0);
 }

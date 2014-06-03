@@ -13,6 +13,7 @@
 
 #include "event.h"
 #include "event_base.h"
+#include "Thread.h"
 
 static char return_ok[] = "HTTP/1.1 200 OK\r\nHost: 192.168.10.65\r\nConnection: close\r\n\r\nFinally, it works!";
 	
@@ -32,39 +33,45 @@ int SetNoblock(int fd)
 	return 0;
 }
 
-void ServerRead(int fd, short events, void *arg)
+void ServerRead(struct event *ev)
 {
-	struct event *ev = (struct event *)arg;
-	
-	
-	assert(events != 0);
-	assert(arg != NULL);
-			
 	int nread = 0;
 	char buff[1024] = {0};	
-	nread = read(fd, buff, sizeof(buff) - 1);
+	nread = read(ev->ev_fd, buff, sizeof(buff) - 1);
 
 	if (nread  == -1) {
 		event_del(ev);
 	}
-	
-	write(fd ,return_ok, sizeof(return_ok));
-	close(fd);
-
+	write(ev->ev_fd ,return_ok, sizeof(return_ok));
+	close(ev->ev_fd);
 	event_del(ev);
 }
 
-void ServerAccept(int fd, short events, void *arg)
+int ServerAccept(int fd, short events, struct event_base *base, void *arg)
+{
+	thread_task_t *task = (thread_task_t *)arg;
+	fprintf(stderr, "[thread:%d|task: %d]Hear!, \n", task->thread->thread_id, *((int *)task->arg));
+	#if 0
+
+	event_base_set(base, cli_ev, cfd, EV_READ | EV_PERSIST, , (void *)cli_ev, NULL);
+	event_add(cli_ev, NULL);
+#endif
+	struct event *ev = NULL;
+	ev = (struct event *)calloc(1, sizeof(struct event));
+	event_set(base, ev, fd, events, ServerRead, (void *)ev, NULL);
+	event_add(ev, NULL);
+}
+
+void ServerListening(struct event *ev)
 {
 	int cfd;
 	struct sockaddr_in addr;
 	struct event *cli_ev;
+	thread_pool_t *pool = (thread_pool_t *)ev->ev_arg;
 	socklen_t addrlen = sizeof(addr);
 	cli_ev = calloc(1, sizeof(struct event));
 
-	assert(events != 0);
-	assert(arg != NULL);
-	cfd = accept(fd ,(struct sockaddr *)&addr, &addrlen);
+	cfd = accept(ev->ev_fd ,(struct sockaddr *)&addr, &addrlen);
 	
 	if(cfd == -1) {
 		printf("accept(): can not accept client connection");
@@ -76,23 +83,36 @@ void ServerAccept(int fd, short events, void *arg)
 		return;
 	}
 
-	event_set(cli_ev, cfd, EV_READ | EV_PERSIST, ServerRead, (void *)cli_ev, NULL);
+#if 0
+	event_set(cli_ev, cfd, EV_READ | EV_PERSIST, , (void *)cli_ev, NULL);
 	event_add(cli_ev, NULL);
+#endif
+	dispatch_conn_new(cfd, EV_READ | EV_PERSIST, (void *)pool);
 }
 
 
 int main(int argc, char *argv[])
 {
 	int listen_fd;
+	int i = 0;
 	
-	event_init();
+	struct event_base *new = event_base_new();
 	struct event ev;
+	thread_pool_t *pool = NULL;
+	int num[3] = {0};
 	
 	struct sockaddr_in server_addr;
 	socklen_t len;
 	if(3 != argc) {
 		fprintf(stderr, "Usage: %s <server_ip> <server port>", argv[0]);
 		exit(1);
+	}
+
+	pool = thread_pool_create(3);
+
+	for(i = 0; i < 3; ++i) {
+		num[i] = i + 1;
+		thread_pool_add_task(pool, ServerAccept, (void *)(&num[i]));
 	}
 
 	listen_fd = socket(AF_INET, SOCK_STREAM, 0);	
@@ -122,11 +142,13 @@ int main(int argc, char *argv[])
 	flags |= O_NONBLOCK;
 	fcntl(listen_fd, F_SETFL, flags);
 
-	event_set(&ev, listen_fd ,EV_READ | EV_PERSIST, ServerAccept, (void *)&ev, NULL);
+	event_set(new, &ev, listen_fd ,EV_READ | EV_PERSIST, ServerListening, (void *)pool, NULL);
 
 	event_add(&ev, NULL);
+	
+	event_base_dispatch(new);
+	event_base_free(&new);
 
-	event_dispatch();
 	
 	return 0;
 	

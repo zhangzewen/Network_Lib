@@ -30,7 +30,7 @@ HashTable* hashtable_create(HashTableOpt *opt, int initsize)
 	}	
 
 	new->mask = tablesize - 1;
-	new->total = tablesize;
+	new->table_size = tablesize;
 	new->opt = opt;
 	return new;
 }
@@ -62,7 +62,7 @@ void hashtable_free(HashTable **table)
 		int i = 0;
 		Node *node = NULL;
 		Node *tmp = NULL;
-		for (i = 0; i < (*table)->total; i++) {
+		for (i = 0; i < (*table)->table_size; i++) {
 			if (list_empty(&(*table)->table[i])) {
 				continue;
 			}
@@ -184,7 +184,7 @@ void hashtable_dump(HashTable *table, void (*visit)(void *data))
 		return ;
 	}
 
-	for (i = 0; i < table->total; i++) {
+	for (i = 0; i < table->table_size; i++) {
 		if (list_empty(&(table->table[i]))) {
 			continue;
 		}
@@ -218,4 +218,41 @@ int update_record(HashTable *table, void *key, void *data)
 		return 0;
 	}
 	return -1;
+}
+
+int hashtable_resize(HashTable *table)
+{
+	struct list_head *tmp = NULL;
+	int tablesize = table->table_size * 2;
+	int mask = tablesize - 1;
+	int i = 0;
+
+	tmp = (struct list_head *)calloc(tablesize, sizeof(struct list_head));
+
+	if (NULL == tmp) {
+		return -1; 
+	}
+
+	for (i = 0; i < table->table_size; i++) {
+		Node *node = NULL;
+		Node *ptr = NULL;
+		if (list_empty(&(table->table[i]))) {
+			continue;
+		}   
+		list_for_each_entry_safe(node, ptr, &(table->table[i]), list) {
+			unsigned int hash_val = 0;
+			int index = 0;
+
+			hash_val = table->opt->hash(node->key); 
+			index = hash_val & mask;
+			list_del(&node->list);
+			list_add_tail(&node->list, &tmp[index]);
+		}   
+	}   
+
+	free(table->table);
+	table->table = tmp;
+	table->table_size = tablesize;
+	table->mask = mask;
+	return 0;
 }

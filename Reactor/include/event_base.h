@@ -53,11 +53,13 @@ struct event{
   short *ev_pncalls;
 
 	struct rbtree_node_st timer; //红黑树节点
-	unsigned int istimeout; //是否timeout了，是：1，否：0
+	unsigned int timeout:1; //是否timeout了，是：1，否：0
+	unsigned int timeout_set:1; 
+	unsigned int active:1;
+	unsigned int ready:1;
 
-  void (*ev_callback)(int, short, void *arg);
+  void (*callback)(struct event *ev);
   void *ev_arg;
-
   int ev_res;
   int ev_flags;
   struct list_head event_list;

@@ -11,6 +11,10 @@ static void* vector_get(vector *v, int index);
 static void* vector_pop(vector *v);
 static int vector_update(vector *v, void *data, int index);
 
+static int vector_len(vector *v);
+static int vector_index(vector *, void *data, size_t n);
+static int vector_remove(vector *v, int index);
+
 vector* vector_create()
 {
 	vector *new = NULL;
@@ -35,6 +39,9 @@ vector* vector_create()
 	new->update = vector_update;
 	new->Isempty = vector_empty;
 	new->free = vector_free;
+	new->remove = vector_remove;
+	new->len = vector_len;
+	new->index = vector_index;
 
 	return new;
 }
@@ -64,48 +71,55 @@ static int vector_push(vector *v, void *data)
 
 	v->data[v->current] = data;
 	v->current++;
-	return -1;
+	return 0;
 }
 
 static int vector_empty(vector *v)
 {
+	return v->current == 0;
+}
+
+static int vector_len(vector *v)
+{
 	return v->current;
+}
+
+
+static int vector_index(vector *v, void *data, size_t n)
+{
+	int index = 0;
+	if (NULL == v || v->current == 0) {
+		return -1;
+	}	
+
+	for (index = 0; index < v->current; index++) {
+		if (v->data[index] == data || memcmp(v->data[index], data, n) == 0) {
+			return index;
+		}
+	}
+	return -1;
+}
+
+static int vector_remove(vector *v, int index)
+{
+	if ( NULL == v || v->current == 0 || index > v->current) {
+		return -1;
+	}
+
+	v->data[index] = NULL;
+	return 0;
 }
 
 
 static void *vector_get(vector *v, int index)
 {
 	if (v == NULL || index > v->current) {
+		fprintf(stderr, "index is out of range!\n");
 		return NULL;
 	}	
 	
 	return v->data[index];
 }
-
-#if 0
-int insert(vector *v, void *data, int index)
-{
-	if (NULL == v || NULL == v->data) {
-		return -1;
-	}
-
-	if (v->current + 1 > v->total) {
-		void **tmp = NULL;
-		tmp = (void **)(v->data, VECTOR_INCREASE_SIZE + v->total);
-		if (NULL == tmp) {
-			return -1;
-		} 
-
-		v->data = tmp;
-		v->total += VECTOR_INCREASE_SIZE;
-	}
-
-	if ( index > v->current) {
-		
-	}	
-}
-#endif
-
 
 static void* vector_pop(vector *v)
 {

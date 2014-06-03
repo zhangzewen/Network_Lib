@@ -20,7 +20,7 @@ struct HashTable_st{
 	struct list_head *table;
 	HashTableOpt *opt;
 	int mask;
-	int total;
+	int table_size;
 	
 };
 
@@ -44,5 +44,7 @@ int add_record(HashTable *table, void *key, void *value);
 int del_record(HashTable *table, void *key);
 int update_record(HashTable *table, void *key, void *data);
 void hashtable_dump(HashTable *table, void (*visit)(void *data));
+int hashtable_resize(HashTable *table);
+
 #endif
 
