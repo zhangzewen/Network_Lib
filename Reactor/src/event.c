@@ -155,7 +155,7 @@ void timeout_process(struct event_base *base)
 
 	while ((tmp = base->timeout.min(base->timeout.root))) {
 		ev = (struct event *)tmp->data;
-		if (!timer_cmp(now, ev->ev_timeout)) {
+		if (timer_cmp(now, ev->ev_timeout) != 1) {
 			break;
 		}
 		//event_del(ev);

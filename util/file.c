@@ -116,3 +116,17 @@ ssize_t readn(int fd, void *vptr, size_t n)
   return(n - nleft);
 }
 
+int SetNoblock(int fd)
+{
+	int flags;
+
+	if((flags = fcntl(fd, F_GETFL)) == -1) {
+		return -1;
+	}
+
+	if((fcntl(fd, F_SETFL, flags | O_NONBLOCK)) == -1) {
+		return -1;
+	}
+
+	return 0;
+}

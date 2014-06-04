@@ -29,12 +29,12 @@ int timer_cmp(struct timeval time_a, struct timeval time_b)
 	if (time_a.tv_sec > time_b.tv_sec)
 		return 1;
 	if (time_a.tv_sec < time_b.tv_sec)
-		return 0;
+		return -1;
 	if (time_a.tv_usec > time_b.tv_usec)
 		return 1;
 	if (time_a.tv_usec < time_b.tv_usec)
-		return 0;
-	return 1;
+		return -1;
+	return 0;
 }
 
 
