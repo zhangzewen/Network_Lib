@@ -37,6 +37,7 @@ struct epoll_loop  *epoll_init(void)
 
 	loop->events = malloc(INITIAL_NEVENTS * sizeof(struct epoll_event));
 	if (loop->events == NULL) {
+		close(loop->epfd);
 		free(loop);
 		return (NULL);
 	}
@@ -47,6 +48,7 @@ struct epoll_loop  *epoll_init(void)
 
 	if(loop->fds == NULL) {
 		free(loop->events);
+		close(loop->epfd);
 		free(loop);
 		return (NULL);
 	}
