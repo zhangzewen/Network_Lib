@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
-#include <sys/epoll.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <string.h>
@@ -9,6 +8,7 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <assert.h>
+#include <signal.h>
 
 
 #include "event.h"
@@ -18,7 +18,7 @@
 static char return_ok[] = "HTTP/1.1 200 OK\r\nHost: 192.168.10.65\r\nConnection: close\r\n\r\nFinally, it works!";
 	
 
-int SetNoblock(int fd)
+static int SetNoblock(int fd)
 {
 	int flags;
 	
@@ -50,18 +50,12 @@ void ServerRead(struct event *ev)
 int ServerAccept(int fd, short events, struct event_base *base, void *arg)
 {
 	thread_task_t *task = (thread_task_t *)arg;
-	fprintf(stderr, "[thread:%d|task: %d]Hear!, \n", task->thread->thread_id, *((int *)task->arg));
-	#if 0
-
-	event_base_set(base, cli_ev, cfd, EV_READ | EV_PERSIST, , (void *)cli_ev, NULL);
-	event_add(cli_ev, NULL);
-#endif
+	fprintf(stderr, "[thread:%d|task: %d][event_base: %p]Hear!, \n", task->thread->thread_id, *((int *)task->arg), base);
 	struct event *ev = NULL;
 	ev = (struct event *)calloc(1, sizeof(struct event));
 	event_set(base, ev, fd, events, ServerRead, (void *)ev, NULL);
 	event_add(ev, NULL);
 }
-
 void ServerListening(struct event *ev)
 {
 	int cfd;
@@ -69,12 +63,13 @@ void ServerListening(struct event *ev)
 	struct event *cli_ev;
 	thread_pool_t *pool = (thread_pool_t *)ev->ev_arg;
 	socklen_t addrlen = sizeof(addr);
+	
 	cli_ev = calloc(1, sizeof(struct event));
 
 	cfd = accept(ev->ev_fd ,(struct sockaddr *)&addr, &addrlen);
 	
 	if(cfd == -1) {
-		printf("accept(): can not accept client connection");
+		fprintf(stderr, "accept(): can not accept client connection");
 		return;
 	}
 
@@ -83,13 +78,8 @@ void ServerListening(struct event *ev)
 		return;
 	}
 
-#if 0
-	event_set(cli_ev, cfd, EV_READ | EV_PERSIST, , (void *)cli_ev, NULL);
-	event_add(cli_ev, NULL);
-#endif
 	dispatch_conn_new(cfd, EV_READ | EV_PERSIST, (void *)pool);
 }
-
 
 int main(int argc, char *argv[])
 {
