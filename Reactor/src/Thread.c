@@ -313,7 +313,7 @@ static void *thread_routine(void *arg) {
 	pthread_mutex_unlock(&pool->queue_mutex);
 
 	event_base_loop(thread->base, 0);
-#if 0
+#if 1
 	event_base_free(&thread->base);
 	free(thread->current_task);
 #endif
