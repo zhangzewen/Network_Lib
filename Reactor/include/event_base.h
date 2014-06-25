@@ -27,6 +27,7 @@
 #define INITIAL_NEVENTS 32
 #define MAX_NEVENTS 4096
 
+extern int terminate;
 struct event_base;
 
 struct event_epoll{

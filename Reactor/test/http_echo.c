@@ -16,9 +16,40 @@
 #include "Thread.h"
 
 static char return_ok[] = "HTTP/1.1 200 OK\r\nHost: 192.168.10.65\r\nConnection: close\r\n\r\nFinally, it works!";
+
+//int terminate;
+
+sigset_t mask;
+
+void *thr_fn(void *arg)
+{
+
+	int err;
+	int signo;
+	while(1) {
+		err = sigwait(&mask, &signo);
+		if (err != 0) {
+			fprintf(stderr, "sigwait error!\n");
+			return NULL;
+		}
+
+		fprintf(stderr, "signal %d\n", signo);
+		switch(signo) {
+			case SIGINT:
+			case SIGQUIT:
+				fprintf(stderr, "here!");
+				terminate = 1;
+				break;
+			default:
+				fprintf(stderr, "unexcepted signal %d\n", signo);
+				break;
+		}
+	}
+	return NULL;
+}
 	
 
-static int SetNoblock(int fd)
+int SetNoblock(int fd)
 {
 	int flags;
 	
@@ -85,6 +116,12 @@ int main(int argc, char *argv[])
 {
 	int listen_fd;
 	int i = 0;
+	int err = 0;
+	pthread_t tid;
+	sigset_t oldmask;
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGINT);
+	sigaddset(&mask, SIGQUIT);
 	
 	struct event_base *new = event_base_new();
 	struct event ev;
@@ -98,12 +135,20 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	if ((err = pthread_sigmask(SIG_BLOCK, &mask, &oldmask)) != 0) {
+		fprintf(stderr, "SIG_BLOCK ERROR!\n");
+		exit(1);
+	}
+
+	tid = pthread_create(&tid, NULL, thr_fn, 0);	
 	pool = thread_pool_create(3);
 
 	for(i = 0; i < 3; ++i) {
 		num[i] = i + 1;
 		thread_pool_add_task(pool, ServerAccept, (void *)(&num[i]));
 	}
+
+
 
 	listen_fd = socket(AF_INET, SOCK_STREAM, 0);	
 	if(listen_fd < 0) {
@@ -138,8 +183,6 @@ int main(int argc, char *argv[])
 	
 	event_base_dispatch(new);
 	event_base_free(&new);
-
 	
 	return 0;
-	
 }

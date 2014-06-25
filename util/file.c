@@ -116,7 +116,7 @@ ssize_t readn(int fd, void *vptr, size_t n)
   return(n - nleft);
 }
 
-int SetNoblock(int fd)
+int SetNonblocking(int fd)
 {
 	int flags;
 

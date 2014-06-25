@@ -10,7 +10,9 @@
 #include "list.h"
 #include "RBTree.h"
 #include "timer.h"
+#include "event_base.h"
 
+int terminate = 0;
 struct eventop epollops = {
     .name = "epoll",
     .init = epoll_init,
@@ -188,6 +190,11 @@ int event_base_loop(struct event_base *base, int flags)
 	base->tv_cache.tv_sec = 0;
 	
 	while(1) {
+		if (terminate == 1) {
+			fprintf(stderr, "event_base_loop terminate!\n");
+			terminate = 0;
+			break;
+		}
 		timeout_correct(base, &tv);
 		tv_p = &tv;
 
