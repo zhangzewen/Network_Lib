@@ -1,6 +1,10 @@
 #ifndef __LOGGER_H__
 #define __LOGGER_H__
 
+#ifdef __cplusplus
+extern "c" {
+#endif
+
 struct logger {
     struct logger_impl* handler;
 };
@@ -44,5 +48,9 @@ void __logger_error(struct logger*, const char* filename, int line,
                     const char* fmt, ...);
 void __logger_fatal(struct logger*, const char* filename, int line,
                     const char* fmt, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

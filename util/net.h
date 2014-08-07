@@ -1,6 +1,10 @@
 #ifndef _UTIL_NET_H_INCLUDED__
 #define _UTIL_NET_H_INCLUDED__
 
+#ifdef __cplusplus
+extern "c" {
+#endif
+
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -24,5 +28,8 @@ int start_listen(listen_t *ls);
 int close_listen(listen_t *ls);
 void free_listen(listen_t **ls);
 
-	
+#ifdef __cplusplus
+}
+#endif
+
 #endif

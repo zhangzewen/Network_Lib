@@ -1,6 +1,8 @@
 #ifndef __HTTP_REACTOR_TIMEOUT_TIMER_H_INCLUDED_
 #define __HTTP_REACTOR_TIMEOUT_TIMER_H_INCLUDED_
-
+#ifdef __cplusplus
+extern "c" {
+#endif
 #include <sys/time.h>
 
 
@@ -17,5 +19,9 @@ struct timeval timer_now();
 int timer_isset(const struct timeval *tv);
 
 void timer_reset(struct timeval *tv);
+#ifdef __cplusplus
+}
+#endif
+
 #endif
 

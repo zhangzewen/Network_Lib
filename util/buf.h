@@ -1,6 +1,8 @@
 #ifndef _HTTPBUFFER_H_INCLUDED__
 #define _HTTPBUFFER_H_INCLUDED__
-
+#ifdef __cplusplus
+extern "c" {
+#endif
 
 #include <stdlib.h>
 typedef struct http_buffer_st http_buf_t;
@@ -28,5 +30,8 @@ void buffer_drain(http_buf_t *, size_t);
 int buffer_write(http_buf_t *, int);
 
 int buffer_read(http_buf_t *, int, int);
+#ifdef __cplusplus
+}
+#endif
 
 #endif

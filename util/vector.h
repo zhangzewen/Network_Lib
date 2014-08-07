@@ -1,6 +1,8 @@
 #ifndef _HTTP_VECTOR_H_INCLUDED__
 #define _HTTP_VECTOR_H_INCLUDED__
-
+#ifdef __cplusplus
+extern "c" {
+#endif
 
 #define VECTOR_DEFAULT_TOTAL 6
 #define VECTOR_INCREASE_SIZE 4
@@ -27,5 +29,8 @@ vector* vector_create();
 int make_heap(vector *v, int (*compare)(void *, void *));
 int heap_sort(vector *v, int (*compare)(void *, void *));
 void print(vector *v);
+#ifdef __cplusplus
+}
+#endif
 
 #endif

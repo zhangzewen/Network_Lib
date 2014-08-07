@@ -1,6 +1,9 @@
 #ifndef __GLOBAL_LOGGER_H__
 #define __GLOBAL_LOGGER_H__
 
+#ifdef __cpluscplus
+extern "c" {
+#endif
 /* global singleton logger implementation */
 
 #include "logger.h"
@@ -17,5 +20,9 @@ extern struct logger o_o;
 #define log_warning(fmt, ...)   logger_warning(&o_o, fmt, ##__VA_ARGS__)
 #define log_error(fmt, ...)     logger_error(&o_o, fmt, ##__VA_ARGS__)
 #define log_fatal(fmt, ...)     logger_fatal(&o_o, fmt, ##__VA_ARGS__)
+
+#ifdef __cpluscplus
+}
+#endif
 
 #endif

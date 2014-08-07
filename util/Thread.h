@@ -1,6 +1,10 @@
 #ifndef _REACTOR_THREAD_H_INCLUDED__
 #define _REACTOR_THREAD_H_INCLUDED__
 
+#ifdef __cplusplus
+extern "c" {
+#endif
+
 #include <pthread.h>
 #include "list.h"
 
@@ -26,5 +30,9 @@ thread_pool_t *thread_pool_create(int thread_num);
 void thread_pool_add_task(thread_pool_t *pool, void (*task_func)(void *), void *arg);
 void thread_pool_wait_for_done(thread_pool_t *pool);
 void thread_pool_destroy(thread_pool_t *pool);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

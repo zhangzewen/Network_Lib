@@ -1,6 +1,10 @@
 #ifndef _UTIL_STR_H_INCLUDED__
 #define _UTIL_STR_H_INCLUDED__
 
+#ifdef __cplusplus
+extern "c" {
+#endif
+
 #include <stdarg.h>
 #include <stdlib.h>
 
@@ -19,5 +23,9 @@ str_t *str_dup(const char *ptr, size_t len);
 #define str_compare(str1, str2) strcasecmp(str1->data, str2->data) 
 #define tolower(c)	(char) ((c >= 'A' && c <= 'Z') ? (c | 0x20) : c)
 #define toupper(c)	(char) ((c >= 'a' && c <= 'z') ? (c & ~0x20) : c)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

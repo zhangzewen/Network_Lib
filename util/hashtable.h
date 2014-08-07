@@ -1,6 +1,10 @@
 #ifndef __UTIL_HASHTABLE_H_INCLUDED__
 #define __UTIL_HASHTABLE_H_INCLUDED__
 
+#ifdef __cplusplus
+extern "c" {
+#endif
+
 #include "list.h"
 
 #define DEFAULTTABLESIZE 4096 
@@ -45,6 +49,10 @@ int del_record(HashTable *table, void *key);
 int update_record(HashTable *table, void *key, void *data);
 void hashtable_dump(HashTable *table, void (*visit)(void *data));
 int hashtable_resize(HashTable *table);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

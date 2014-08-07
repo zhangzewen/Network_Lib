@@ -1,6 +1,10 @@
 #ifndef _LINUX_LIST_H
 #define _LINUX_LIST_H
 
+#if __cplusplus
+extern "c" {
+#endif
+
 #include <stddef.h>
 
 struct list_head {
@@ -576,5 +580,9 @@ static inline void list_splice_tail_init(struct list_head *list,
  */
 #define list_safe_reset_next(pos, n, member)				\
 	n = list_entry(pos->member.next, typeof(*pos), member)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
