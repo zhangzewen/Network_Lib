@@ -14,7 +14,9 @@ static int vector_update(vector *v, void *data, int index);
 static int vector_len(vector *v);
 static int vector_index(vector *, void *data, size_t n);
 static int vector_remove(vector *v, int index);
-
+/**
+ * create a vector 
+ */
 vector* vector_create()
 {
 	vector *new = NULL;
@@ -181,10 +183,6 @@ static void max_heapify(vector *v, int i, int heap_size, int (*compare)(void *, 
 	}
 } 
 
-
-
-
-
 int make_heap(vector *v, int (*compare)(void *, void *))
 {
 	int heap_size = v->current - 1;	
@@ -195,7 +193,6 @@ int make_heap(vector *v, int (*compare)(void *, void *))
 	}
 	return 0;
 }
-
 
 int heap_sort(vector *v, int (*compare)(void *, void *))
 {
