@@ -17,7 +17,7 @@ all:
 clean:
 	@for dir in `ls`;\
 	do if [ -d $${dir} ];\
-	then make clean -C $${dir};\
+	then make clean -C $${dir} --no-print-directory;\
 	fi;\
 	done;
 	

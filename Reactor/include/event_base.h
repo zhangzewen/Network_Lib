@@ -27,7 +27,6 @@
 #define INITIAL_NEVENTS 32
 #define MAX_NEVENTS 4096
 
-extern int terminate;
 struct event_base;
 
 struct event_epoll{
@@ -55,7 +54,7 @@ struct event{
 
 	struct rbtree_node_st timer; //红黑树节点
 	unsigned int timeout:1; //是否timeout了，是：1，否：0
-	unsigned int timeout_set:1; 
+	unsigned int timeout_set:1;
 	unsigned int active:1;
 	unsigned int ready:1;
 
@@ -81,13 +80,13 @@ struct event_base {
 	struct epoll_loop *evbase;
 	int event_count;
 	int event_count_active;
-	
+
 	struct rbtree_st timeout; //维护一个红黑树来管理时间
 	struct timeval tv_cache;
 	struct timeval event_tv;
 
 	int nactivequeues;
-	
+
 	struct list_head activequeue;
 	struct list_head eventqueue;
 };

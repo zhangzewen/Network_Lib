@@ -16,6 +16,7 @@ static int vector_index(vector *, void *data, size_t n);
 static int vector_remove(vector *v, int index);
 /**
  * create a vector 
+ * @return : return a pointer point to a vector struct
  */
 vector* vector_create()
 {
@@ -48,6 +49,10 @@ vector* vector_create()
 	return new;
 }
 
+/**
+ *@p
+ *
+ */
 static void vector_free(vector *v)
 {
 	int i = 0;

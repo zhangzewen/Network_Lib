@@ -21,6 +21,7 @@ static char return_ok[] = "HTTP/1.1 200 OK\r\nHost: 192.168.10.65\r\nConnection:
 
 sigset_t mask;
 
+#if 0
 void *thr_fn(void *arg)
 {
 
@@ -47,12 +48,12 @@ void *thr_fn(void *arg)
 	}
 	return NULL;
 }
-	
+#endif
 
 int SetNoblock(int fd)
 {
 	int flags;
-	
+
 	if((flags = fcntl(fd, F_GETFL)) == -1) {
 		return -1;
 	}
@@ -140,7 +141,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	tid = pthread_create(&tid, NULL, thr_fn, 0);	
+	//pthread_create(&tid, NULL, thr_fn, 0);	
 	pool = thread_pool_create(3);
 
 	for(i = 0; i < 3; ++i) {

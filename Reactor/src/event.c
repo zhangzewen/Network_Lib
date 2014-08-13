@@ -186,15 +186,10 @@ int event_base_loop(struct event_base *base, int flags)
 	int res;
 	struct timeval tv;
 	struct timeval *tv_p;
-	assert(flags == 0);	
+	assert(flags == 0);
 	base->tv_cache.tv_sec = 0;
-	
+
 	while(1) {
-		if (terminate == 1) {
-			fprintf(stderr, "event_base_loop terminate!\n");
-			terminate = 0;
-			break;
-		}
 		timeout_correct(base, &tv);
 		tv_p = &tv;
 
@@ -203,7 +198,7 @@ int event_base_loop(struct event_base *base, int flags)
 		} else {
 			timer_reset(&tv);
 		}
-				
+
 		if (!event_haveevents(base)) {
 			fprintf(stderr, "%s: no events registered.\n", __func__);
 			return 1;
@@ -236,7 +231,7 @@ int event_add(struct event *ev, const struct timeval *tv)
 	struct eventop *evsel = base->evsel;
 	struct epoll_loop *evbase =  base->evbase;
 	int res = 0;
-	
+
 	if ((ev->ev_events & (EV_READ | EV_WRITE)) &&
 		!(ev->ev_flags & (EVLIST_INSERTED | EVLIST_ACTIVE))) {
 		res = evsel->add(evbase, ev);
@@ -274,7 +269,7 @@ int event_add(struct event *ev, const struct timeval *tv)
 void event_set(struct event_base *base, struct event *ev, int fd, short events,
 	void (*callback)(struct event *ev), void *arg, char *name)
 {
-	ev->ev_base =base; 
+	ev->ev_base =base;
 	ev->callback = callback;
 	ev->ev_arg = arg;
 	ev->ev_fd = fd;
@@ -306,7 +301,7 @@ int event_del(struct event *ev)
 	base = ev->ev_base;
 	evsel = base->evsel;
 	evbase = base->evbase;
-	
+
 	if (ev->ev_ncalls && ev->ev_pncalls) {
 		*ev->ev_pncalls = 0;
 	}
@@ -325,7 +320,7 @@ int event_del(struct event *ev)
 		event_queue_remove(base, ev, EVLIST_TIMEOUT);
 	}
 
-	return 0;	
+	return 0;
 }
 
 void event_active(struct event *ev, int res, short ncalls)
@@ -353,7 +348,7 @@ void event_queue_insert(struct event_base *base, struct event *ev, int queue)
 	if (~ev->ev_flags & EVLIST_INTERNAL) {
 		base->event_count++;
 	}
-	
+
 	ev->ev_flags |= queue;
 
 	switch(queue) {
@@ -413,7 +408,7 @@ int event_haveevents(struct event_base *base)
 static void event_add_timer(struct event_base *base, struct event *ev)
 {
 	uintptr_t key = 0;
-	
+
 	if (!timer_isset(&ev->ev_timeout)) {
 		return ;
 	}
@@ -428,12 +423,12 @@ static void event_add_timer(struct event_base *base, struct event *ev)
 
 static void event_del_timer(struct event_base* base, struct event *ev)
 {
-	uintptr_t key = 0;	
+	uintptr_t key = 0;
 
 	if (!timer_isset(&ev->ev_timeout)) {
 		return ;
 	}
-	
+
 	key = ev->ev_timeout.tv_sec * 1000 + ev->ev_timeout.tv_usec / 1000;
 	base->timeout.root = base->timeout.erase(key, base->timeout.root);
 	return;
@@ -444,7 +439,7 @@ void event_free(struct event **ev, int flags)
 {
 	struct event *tmp;
 	tmp = *ev;
-	
+
 	if (NULL == tmp) {
 		return ;
 	}
@@ -452,7 +447,7 @@ void event_free(struct event **ev, int flags)
 	tmp->name = NULL;
 	tmp->ev_pncalls = NULL;
 	tmp->callback = NULL;
-	
+
 	if (flags) {
 		free(tmp->ev_arg);
 	}
