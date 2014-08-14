@@ -20,11 +20,11 @@ thread_pool_t *thread_pool_create(int thread_num) {
     pool->waiting_and_running_task_count = 0;
     pool->shutdown = 0;
     pool->thread_count = thread_num;
-    pool->threads = (thread_t*) malloc(thread_num * sizeof(thread_t));
+    pool->thread_id = (pthread_t *) malloc(thread_num * sizeof(pthread_t));
 		INIT_LIST_HEAD(&pool->thread_task);
 
     for(i = 0; i < thread_num; ++i)
-        pthread_create(&pool->threads[i].pid, NULL, thread_routine, pool);
+        pthread_create(&pool->thread_id[i], NULL, thread_routine, pool);
 
     return pool;
 }
@@ -62,13 +62,6 @@ void thread_pool_wait_for_done(thread_pool_t *pool)
         usleep(100000);
 }
 
-static void thread_free(thread_t *thread_id)
-{
-	free(thread_id->current_task);
-	close(thread_id->notify_send_fd);
-	close(thread_id->notify_receive_fd);
-}
-
 void thread_pool_destroy(thread_pool_t *pool) {
     thread_task_t *task;
 		thread_task_t *tmp;
@@ -81,7 +74,7 @@ void thread_pool_destroy(thread_pool_t *pool) {
 
     pthread_cond_broadcast(&pool->queue_cond_ready);
     for(i = 0; i < pool->thread_count; ++i)
-        pthread_join(pool->threads[i].pid, NULL);
+        pthread_join(pool->thread_id[i], NULL);
 
     free(pool->thread_id);
 		list_for_each_entry_safe(task, tmp, &pool->thread_task, list) {
