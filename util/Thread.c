@@ -8,29 +8,37 @@
 
 static void *thread_routine(void *arg);
 
-thread_pool_t *thread_pool_create(int thread_num) {
+thread_pool_t *thread_pool_init(int thread_num) {
     int i;
     thread_pool_t *pool;
     pool = (thread_pool_t *)malloc(sizeof(thread_pool_t));
 
+		if (NULL == pool) {
+			return NULL;
+		}
+
     pthread_mutex_init(&pool->queue_mutex, NULL);
     pthread_cond_init(&pool->queue_cond_ready, NULL);
-
     pool->queued_task_count = 0;
     pool->waiting_and_running_task_count = 0;
     pool->shutdown = 0;
     pool->thread_count = thread_num;
     pool->threads = (thread_t*) malloc(thread_num * sizeof(thread_t));
+
+		if (NULL == pool->threads) {
+			free(pool);
+			return NULL;
+		}
 		INIT_LIST_HEAD(&pool->thread_task);
-
-    for(i = 0; i < thread_num; ++i)
-        pthread_create(&pool->threads[i].pid, NULL, thread_routine, pool);
-
     return pool;
 }
 
-void thread_pool_add_task(thread_pool_t *pool, void (*task_func)(void *), void *arg) {
-    thread_task_t *task = (thread_task_t *)malloc(sizeof(thread_task_t));
+int thread_pool_add_task(thread_pool_t *pool, void (*task_func)(void *), void *arg) {
+    task_t *task = (task_t *)malloc(sizeof(task_t));
+		if (NULL == task) {
+			fprintf(stderr, "add task error!\n");
+			return -1;
+		}
     task->task_func = task_func;
     task->arg = arg;
 		INIT_LIST_HEAD(&task->list);
@@ -45,6 +53,7 @@ void thread_pool_add_task(thread_pool_t *pool, void (*task_func)(void *), void *
     pthread_mutex_unlock(&pool->count_mutex);
 
     pthread_cond_signal(&pool->queue_cond_ready);
+		return 0;
 }
 
 int thread_pool_get_task_count(thread_pool_t *pool)
@@ -62,16 +71,9 @@ void thread_pool_wait_for_done(thread_pool_t *pool)
         usleep(100000);
 }
 
-static void thread_free(thread_t *thread_id)
-{
-	free(thread_id->current_task);
-	close(thread_id->notify_send_fd);
-	close(thread_id->notify_receive_fd);
-}
-
 void thread_pool_destroy(thread_pool_t *pool) {
-    thread_task_t *task;
-		thread_task_t *tmp;
+    task_t *task;
+		task_t *tmp;
     int i;
     if(pool->shutdown)
         return;
@@ -83,12 +85,12 @@ void thread_pool_destroy(thread_pool_t *pool) {
     for(i = 0; i < pool->thread_count; ++i)
         pthread_join(pool->threads[i].pid, NULL);
 
-    free(pool->thread_id);
+    free(pool->threads);
 		list_for_each_entry_safe(task, tmp, &pool->thread_task, list) {
 			list_del(&task->list);
 			free(task);
 		}
-		
+
     pthread_mutex_destroy(&pool->queue_mutex);
     pthread_cond_destroy(&pool->queue_cond_ready);
     free(pool);
@@ -96,27 +98,26 @@ void thread_pool_destroy(thread_pool_t *pool) {
 
 static void *thread_routine(void *arg) {
     thread_pool_t *pool;
-    thread_task_t *task;
+    task_t *task;
     pool = (thread_pool_t *)arg;
     while(1) {
         pthread_mutex_lock(&pool->queue_mutex);
-        while(pool->queued_task_count == 0 && !pool->shutdown)
-            pthread_cond_wait(&pool->queue_cond_ready, &pool->queue_mutex);
 
         if(pool->shutdown){
             pthread_mutex_unlock(&pool->queue_mutex);
             pthread_exit(NULL);
         }
 
+        while(pool->queued_task_count == 0)
+            pthread_cond_wait(&pool->queue_cond_ready, &pool->queue_mutex);
+
         pool->queued_task_count--;
-				task = list_first_entry(&pool->thread_task, struct task, list);
+				task = list_first_entry(&pool->thread_task, struct task_st, list);
 				list_del(&task->list);
         pthread_mutex_unlock(&pool->queue_mutex);
-
         (*task->task_func)(task->arg);
         free(task);
         task = NULL;
-
         pthread_mutex_lock(&pool->count_mutex);
         pool->waiting_and_running_task_count--;
         pthread_mutex_unlock(&pool->count_mutex);

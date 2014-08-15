@@ -171,11 +171,11 @@ static void timeout_correct(struct event_base *base, struct timeval *tv)
 {
 	gettime(base, tv);
 	//根据前面的分析可以知道event_ev应该小于tv_cache
-	//如果tv < event_tv表明用户向前调整时间了，需要校正时间	
-	                                                       	
-	if (timer_cmp(*tv, base->event_tv)) {                  	
-		base->event_tv = *tv;                                	
-		return ;                                             	
+	//如果tv < event_tv表明用户向前调整时间了，需要校正时间
+
+	if (timer_cmp(*tv, base->event_tv)) {
+		base->event_tv = *tv;
+		return;
 	}
 }
 

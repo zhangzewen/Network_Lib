@@ -27,7 +27,7 @@ HashTable* hashtable_create(HashTableOpt *opt, int initsize)
 
 	for (i = 0; i < tablesize; i++) {
 		INIT_LIST_HEAD(&new->table[i]);
-	}	
+	}
 
 	new->mask = tablesize - 1;
 	new->table_size = tablesize;
@@ -39,7 +39,7 @@ Node *node_new(HashTable *hashtable, void *key, void *data)
 {
 	Node *node;
 	node = (Node *)calloc(1, sizeof(Node));
-	
+
 	if(NULL == node) {
 		return NULL;
 	}
@@ -48,7 +48,7 @@ Node *node_new(HashTable *hashtable, void *key, void *data)
 	node->data = data;
 	node->key = key;
 	node->hashtable = hashtable;
-	
+
 	return node;
 }
 
@@ -57,7 +57,7 @@ void hashtable_free(HashTable **table)
 	if (NULL == *table) {
 		return ;
 	}
-	
+
 	if (NULL != (*table)->table) {
 		int i = 0;
 		Node *node = NULL;
@@ -70,9 +70,9 @@ void hashtable_free(HashTable **table)
 				//list_del(&node->list);
 				node_free(&node);
 			}
-		}	
-	}	
-	free((*table)->table);	
+		}
+	}
+	free((*table)->table);
 	free(*table);
 	*table = NULL;
 }
@@ -81,12 +81,12 @@ void hashtable_free(HashTable **table)
 
 void node_free(Node **node)
 {
-	list_del(&(*node)->list);	
-	
+	list_del(&(*node)->list);
+
 	if((*node)->key && NULL != (*node)->hashtable->opt->key_free){
 		(*node)->hashtable->opt->key_free(&(*node)->key);
 	}
-	
+
 	if((*node)->data && NULL != (*node)->hashtable->opt->value_free) {
 		(*node)->hashtable->opt->value_free(&(*node)->data);
 	}
@@ -100,12 +100,12 @@ Node *find_record(HashTable *table, void *key, int *index)
 {
 	Node *ptr = NULL;
 	unsigned int hash_val = 0;
-	
+
 	if (NULL == table) {
 		return NULL;
 	}
 
-	hash_val = table->opt->hash(key);	
+	hash_val = table->opt->hash(key);
 	*index = hash_val & table->mask;
 
 	if (list_empty(&(table->table[*index]))) {
@@ -127,7 +127,7 @@ int add_record(HashTable *table, void *key, void *data)
 
 	if(NULL == table || NULL == key || NULL == data)	{
 		return -1;
-	}	
+	}
 
 	node = find_record(table, key, &index);
 
@@ -164,7 +164,7 @@ int del_record(HashTable *table, void *key)
 
 	if(NULL == node) {
 		fprintf(stderr, "record not found!\n");
-		return -1;	
+		return -1;
 	}
 
 	if(NULL != node) {
@@ -192,7 +192,7 @@ void hashtable_dump(HashTable *table, void (*visit)(void *data))
 		list_for_each_entry(node, &(table->table[i]), list) {
 			visit(node->data);
 		}
-	}	
+	}
 
 	return ;
 }
@@ -210,7 +210,7 @@ int update_record(HashTable *table, void *key, void *data)
 
 	if(NULL == node) {
 		fprintf(stderr, "record not found!\n");
-		return -1;	
+		return -1;
 	}
 
 	if(NULL != node) {
@@ -230,7 +230,7 @@ int hashtable_resize(HashTable *table)
 	tmp = (struct list_head *)calloc(tablesize, sizeof(struct list_head));
 
 	if (NULL == tmp) {
-		return -1; 
+		return -1;
 	}
 
 	for (i = 0; i < table->table_size; i++) {
@@ -238,17 +238,17 @@ int hashtable_resize(HashTable *table)
 		Node *ptr = NULL;
 		if (list_empty(&(table->table[i]))) {
 			continue;
-		}   
+		}
 		list_for_each_entry_safe(node, ptr, &(table->table[i]), list) {
 			unsigned int hash_val = 0;
 			int index = 0;
 
-			hash_val = table->opt->hash(node->key); 
+			hash_val = table->opt->hash(node->key);
 			index = hash_val & mask;
 			list_del(&node->list);
 			list_add_tail(&node->list, &tmp[index]);
-		}   
-	}   
+		}
+	}
 
 	free(table->table);
 	table->table = tmp;

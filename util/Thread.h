@@ -8,22 +8,45 @@ extern "c" {
 #include <pthread.h>
 #include "list.h"
 
+/**
+ * the state of thread in the threadpool
+ */
+typedef enum{
+	UNINIT,
+	STARTING,
+	STARTED,
+	JOINING,
+	STOPPING,
+	STOPPED
+}STATE;
+
+/*
+ * this is for the method of create a thread pool
+ * CREATE_ALL, init the threads and create threads right now
+ * CREATE_BY, init the threads and create thread whenever needed
+ */
+typedef enum{
+	CREATE_ALL,
+	CREATE_BY
+}POOL_CREATE;
+
 typedef struct thread_pool_st thread_pool_t;
+typedef struct task_st task_t;
+typedef struct thread_st thread_t;
 
-
-typedef struct task {
+struct task_st {
     void (*task_func)(void *arg);
     void *arg;
 		struct list_head list;
-}thread_task_t;
+};
 
-typedef struct thread_st {
+struct thread_st {
 	int thread_id;
 	pthread_t pid;
 	thread_pool_t *pool;
-	thread_task_t *current_task;
-	void *ev_dis;
-}thread_t;
+	task_t *current_task;
+	STATE thread_state;
+};
 
 struct thread_pool_st{
     pthread_mutex_t queue_mutex;
@@ -37,10 +60,14 @@ struct thread_pool_st{
     int waiting_and_running_task_count;
 };
 
-thread_pool_t *thread_pool_create(int thread_num);
-void thread_pool_add_task(thread_pool_t *pool, void (*task_func)(void *), void *arg);
+thread_pool_t *thread_pool_init(int thread_num);
+int thread_pool_add_task(thread_pool_t *pool, void (*task_func)(void *), void *arg);
 void thread_pool_wait_for_done(thread_pool_t *pool);
 void thread_pool_destroy(thread_pool_t *pool);
+void get_worker();
+void free_worker();
+void get_connection();
+void free_connection();
 
 #ifdef __cplusplus
 }
