@@ -13,7 +13,6 @@ public:
 	virtual bool isOpen();
 	virtual bool open();
 	virtual int peek();
-
 };
 }
 }

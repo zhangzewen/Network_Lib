@@ -9,15 +9,19 @@ class Buffer
 public:
 	Buffer(): start_(NULL), end_(NULL), pos_(NULL), last_(NULL) {}
 	~Buffer();
-	int read(uint8_t*, uint32_t);
-	int write(uint8_t*, uint32_t);
+	int read(int, uint8_t*, uint32_t);
+	int write(int, uint8_t*, uint32_t);
 private:
-	bool expend(uint32_t);
+	bool expend(size_t);
 	void align();
+	void drain(size_t);
 	uint8_t* start_;
 	uint8_t* end_;
 	uint8_t* pos_;
 	uint8_t* last_;
+	size_t off_;
+	size_t totallen_;
+	size_t missalign_;
 };
 }
 }
