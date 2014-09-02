@@ -1,0 +1,6 @@
+#ifndef __YISIS_CONFIGFETCH_HPP_INCLUDED_
+#define __YISIS_CONFIGFETCH_HPP_INCLUDED_
+
+
+
+#endif
