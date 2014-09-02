@@ -34,6 +34,12 @@ typedef struct thread_pool_st thread_pool_t;
 typedef struct task_st task_t;
 typedef struct thread_st thread_t;
 
+/*
+ *wrapper of task
+ * task_func: 
+ * arg: which will be  as a param of task_func
+ * list: linked other tasks
+ */
 struct task_st {
     void (*task_func)(void *arg);
     void *arg;
