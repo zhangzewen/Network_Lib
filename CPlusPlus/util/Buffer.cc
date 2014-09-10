@@ -1,5 +1,5 @@
-#include "Buffer.hpp"
-#include "../config.h"
+#include "Buffer.h"
+#include "Config.h"
 
 ssize_t Buffer::read(int fd, uint8_t* buf, uint32_t howmuch)
 {
