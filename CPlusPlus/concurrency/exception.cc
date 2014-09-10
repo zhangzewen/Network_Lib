@@ -21,6 +21,7 @@ Exception::Exception(const char* file, int line, const char* what)
 	message_ += lines;
 	message_.push_back(' ');
 	message_ += what;
+	message_ += "\n";
 	fillStackTrace();
 }
 
@@ -31,6 +32,7 @@ Exception::Exception(const char* file, int line, const string& what)
 	message_ += lines;
 	message_.push_back(' ');
 	message_ += what;
+	message_ += "\n";
 	fillStackTrace();
 }
 
