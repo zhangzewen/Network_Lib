@@ -1,6 +1,13 @@
 
-#include "Socket.hpp"
-#include "Config.hpp"
+#include "Socket.h"
+#include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include "Config.h"
 
 
 Socket::Socket(std::string host, int port)
@@ -8,27 +15,26 @@ Socket::Socket(std::string host, int port)
 	host_ = host;
 	port_ = port;
 	fd_ = socket(AF_INET, SOCK_STREAM, 0);
-	return fd_;
 }
 
-int Socket::bind()
+int Socket::Bind()
 {
 	struct sockaddr_in sockaddr;
 	socklen_t len = sizeof(sockaddr);
-	inet_aton(host_.c_str()), &sockaddr);
-	return bind(fd, &sockaddr, len);
+	inet_aton(host_.c_str(), &sockaddr.sin_addr);
+	return bind(fd_, (struct sockaddr*)&sockaddr, len);
 }
 
-int Socket::listen(int backlog)
+int Socket::Listen(int backlog)
 {
 	return listen(fd_, backlog);
 }
 
-int Socket::accept()
+int Socket::Accept()
 {
 	struct sockaddr sockaddr;
 	socklen_t len;
-	int sfd = accept(fd, &sockaddr, &len);
+	int sfd = accept(fd_, (struct sockaddr*)&sockaddr, &len);
 	if (sfd == -1) {
 		if (errno == EAGAIN) {
 			return NL_AGAIN;
@@ -90,12 +96,12 @@ std::string Socket::getPeerPort() const
 }
 #endif
 
-void Socket::close()
+int Socket::Close()
 {
-	fd_.close();
+	close(fd_);
 }
 
-int setNonBlocking()
+int Socket::setNonBlocking()
 {
 	int flag = 0;
 	if ((flag = fcntl(fd_, F_GETFD)) == -1) {
@@ -107,4 +113,3 @@ int setNonBlocking()
 	}
 	return 0;
 }
-#endif

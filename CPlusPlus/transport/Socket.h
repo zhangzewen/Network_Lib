@@ -1,17 +1,20 @@
 #ifndef _NETWORKLIB_TRANSPORT_SOCKET_HPP_INCLUDED_
 #define _NETWORKLIB_TRANSPORT_SOCKET_HPP_INCLUDED_
+#include <string.h>
+#include <iostream>
+
 
 class Socket
 {
 public:
 	Socket(){}
 	Socket(std::string host, int port);
-	int listen(int backlog);
-	int accept();
-	int bind();
+	int Listen(int backlog);
+	int Accept();
+	int Bind();
 	~Socket();
 	Socket(int fd);
-	close();
+	int Close();
 	std::string getHost() const;
 	void setHost(std::string host);
 #if 0
@@ -28,6 +31,7 @@ public:
 private:
 	std::string host_;
 	int port_;
+	int fd_;
 #if 0
 	std::peerHost_;
 	int peerProt_;
