@@ -1,5 +1,6 @@
 #ifndef _NETWORKLIB_UTIL_BUFFER_HPP_INCLUDED_
 #define _NETWORKLIB_UTIL_BUFFER_HPP_INCLUDED_
+#include <stdint.h>
 
 namespace NetworkLib{
 namespace Util{

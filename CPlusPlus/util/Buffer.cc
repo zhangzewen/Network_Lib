@@ -1,5 +1,8 @@
 #include "Buffer.h"
 #include "Config.h"
+#include <string.h>
+
+using namespace NetworkLib::Util;
 
 ssize_t Buffer::read(int fd, uint8_t* buf, uint32_t howmuch)
 {
@@ -51,7 +54,7 @@ int Buffer::align()
 	last_ = pos_ + off_;
 }
 
-int expend(size_t datalen)
+int Buffer::expend(size_t datalen)
 {
 	size_t need = missalign_ + off_ + datalen;
 

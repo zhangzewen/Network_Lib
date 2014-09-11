@@ -2,7 +2,8 @@
 #define _NETWORKLIB_TRANSPORT_SOCKET_HPP_INCLUDED_
 #include <string.h>
 #include <iostream>
-
+namespace NetworkLib{
+namespace transport{
 
 class Socket
 {
@@ -38,4 +39,6 @@ private:
 	std::peerAddress_;
 #endif
 };
+}
+}
 #endif

@@ -2,6 +2,8 @@
 #define _NETWORKLIB_TRANSPORT_TCPTRANSPORT_HPP_INCLUDED_
 
 #include "ITransport.hpp"
+namespace NetworkLib{
+namespace transport{
 
 class TcpTransport : public ITranport
 {
@@ -12,5 +14,7 @@ private:
 	int port_;
 
 };
+}
+}
 
 #endif

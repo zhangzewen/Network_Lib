@@ -9,6 +9,8 @@
 #include <arpa/inet.h>
 #include "Config.h"
 
+using namespace NetworkLib::transport;
+
 
 Socket::Socket(std::string host, int port)
 {
