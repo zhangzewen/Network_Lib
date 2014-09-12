@@ -1,14 +1,19 @@
 #include "Buffer.h"
 #include "Config.h"
 #include <string.h>
+#include <error.h>
+#include <errno.h>
+#include <stdlib.h>
 
+using namespace std;
 using namespace NetworkLib::Util;
 
 ssize_t Buffer::read(int fd, uint8_t* buf, uint32_t howmuch)
 {
-	char *p = NULL;
+	unsigned char *p = NULL;
+	ssize_t n;
 
-	if (howmuch < 0 || howmuch > 4096) {
+	if (howmuch > 4096) {
 		howmuch = 4096;
 	}
 
@@ -16,7 +21,7 @@ ssize_t Buffer::read(int fd, uint8_t* buf, uint32_t howmuch)
 		return -1;
 	}
 
-	char *p = last_;
+	p = last_;
 	n =read(fd, p, howmuch);
 	if (n >= 0) {
 		off_ += n;
@@ -33,7 +38,7 @@ ssize_t Buffer::read(int fd, uint8_t* buf, uint32_t howmuch)
 ssize_t Buffer::write(int fd, uint8_t*, uint32_t len)
 {
 	int n;
-	n = write(fd, pos_, off);
+	n = write(fd, pos_, off_);
 	if (n >= 0) {
 		drain(n);
 		return n;
@@ -66,17 +71,17 @@ int Buffer::expend(size_t datalen)
 		if (length < 256) {
 			length = 256;
 		}
-		while(length < need && length <= BUFFER_MAX_LEN) {
+		while(length < need && length <= MAX_BUFFER_LEN) {
 			length = length << 1;
 		}
 		if (pos_ != start_ && missalign_ != 0) {
 			align();
 		}
-		if ((newbuf = (uint8_t*)calloc(start_, length)) == NULL){
+		if ((newbuf = (uint8_t*)realloc(start_, length)) == NULL){
 			return -1;
 		}
-		start_ = pos_ = newbuf;
-		totallen_ = lenght;
+		start_ = pos_ = (uint8_t*)newbuf;
+		totallen_ = length;
 		last_ = pos_ + off_;
 		end_ = start_ + length;
 		return 0;
@@ -84,7 +89,7 @@ int Buffer::expend(size_t datalen)
 	return -1;
 }
 
-void Buffer:drain(size_t len)
+void Buffer::drain(size_t len)
 {
 	if (len > off_) {
 		pos_ = last_ = start_;

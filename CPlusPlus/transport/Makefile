@@ -16,5 +16,5 @@ all: $(OBJECTS)
 	$(CC) -c $(CFLAGS) $(INCLUDE) $< -o $@ $(LDFLAGS) 
 
 clean:
-	rm -fr *.o
-	rm -fr *.a
+	@-rm -fr *.o
+	@-rm -fr *.a
