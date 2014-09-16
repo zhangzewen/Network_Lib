@@ -1,8 +1,8 @@
 #include <boost/bind.hpp>
 #include <assert.h>
 #include <stdio.h>
-#include "ThreadPool.hpp"
-#include "exception.hpp"
+#include "ThreadPool.h"
+#include "exception.h"
 
 using namespace std;
 

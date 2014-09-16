@@ -7,9 +7,9 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <deque>
 
-#include "Thread.hpp"
-#include "condition.hpp"
-#include "mutex.hpp"
+#include "Thread.h"
+#include "condition.h"
+#include "mutex.h"
 
 
 class ThreadPool : boost::noncopyable

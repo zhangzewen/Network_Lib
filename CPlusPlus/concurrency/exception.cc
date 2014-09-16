@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "exception.hpp"
+#include "exception.h"
 
 Exception::Exception(const char* msg) : message_(msg)
 {

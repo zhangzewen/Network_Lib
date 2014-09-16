@@ -1,4 +1,4 @@
-#include "Thread.hpp"
+#include "Thread.h"
 #include <boost/weak_ptr.hpp>
 #include <unistd.h>
 #include <sys/syscall.h>
