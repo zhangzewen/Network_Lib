@@ -17,8 +17,8 @@ INCLUDE=-I$(INCLUDE_DIR)
 
 CC=gcc
 CONFIGURE=
-#CFLAGS=-Wall -W -g3 -Werror 
-CFLAGS=-g3
+CFLAGS=-Wall -W -g3 -Werror 
+#CFLAGS=-g3
 
 .PHONY: all clean test
 
