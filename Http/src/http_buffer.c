@@ -139,7 +139,7 @@ int buffer_read(struct http_buffer *buf, int fd, int howmuch)
 int buffer_write(struct http_buffer *buffer, int fd)
 {
 	int n;
-	
+
 	n = write(fd, buffer->pos, buffer->off);
 
 	if (n == -1) {

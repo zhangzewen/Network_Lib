@@ -86,7 +86,7 @@ void connection_free(http_connection_t *c)
 }
 http_connection_t *get_connection(void *data)
 {
-	
+
 }
 
 
@@ -97,7 +97,7 @@ void accept_connection(struct event *rev)
 	struct sockaddr_in sockaddr;
 	socklen_t len;
 	int cfd = -1;
-	
+
 	cfd = accept(ls->fd, (struct sockaddr *)&sockaddr, &len);	
 	if (cfd < 0) {
 		if (errno =EAGAIN) {
@@ -143,7 +143,7 @@ int connection_init(http_connection_t *c)
 {
 	struct event *rev;
 	struct event *snd;
-	
+
 	struct timeval tv;
 	tv.tv_sec = 60;
 	tv.tv_usec = 0;

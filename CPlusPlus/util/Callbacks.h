@@ -4,10 +4,12 @@
 #include <boost/function.hpp>
 
 namespace NetworkLib{
+namespace Util{
 	typedef boost::function<void()> ReadEventCallback;
 	typedef boost::function<void()> WriteEventCallback;
 	typedef boost::function<void()> ErrorEventCallback;
 	typedef boost::function<void()> TimeoutEventCallback;
+}
 }
 
 #endif

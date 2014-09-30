@@ -2,31 +2,33 @@
 #define _NETWORKLIB_UTIL_FILE_HPP_INCLUDED_
 #include <string>
 #include <cstdio>
+#include <string>
+#include <stdint.h>
+#include "Path.h"
 
-namespace NetworkLib {
-namespace Util {
+using namespace std;
+namespace NetworkLib{
+namespace Util{
 
 class File
 {
 public:
-	File(std::string pathname) : path_(pathname){}
-	File(std::string parent, std::string child)
-	{
-		path_ = parent + child;
-	}
+	File(const std::string& pathname);
+	//File(const Path& pathname);
+	File(std::string parent, std::string child);
 	bool canRead();
 	bool canWrite();
 	int compareTo();
 	bool createNewFile();
 	File& createTempFile(std::string prefix, std::string suffix);
 	File& createTempFile(std::string prefix, std::string suffix, const File& directory);
-	boold delete();
+	bool Delete();
 	void deleteOnExit();
 	bool exists();
 	File& getAbsoluteFile();
-	std::string getAbsoluteFile();
+	//std::string getAbsoluteFile();
 	File& getCanonicalFile();
-	std::string getCanonicalFile();
+	//std::string getCanonicalFile();
 	std::string getName();
 	std::string getParent();
 	File& getParentFile();
@@ -43,24 +45,27 @@ public:
 	File& listFiles();
 	//File& listFiles(FileFilter filter);
 	//File& listFiles(FilenameFilter filter);
-	File& lsitRoots();
+	File& LsItRoots();
 	bool mkdir();
 	bool mkdirs();
 	bool renameTo();
 	bool setLastModified(long time);
 	bool setReadOnly();
+	void Update();
 	std::string toString();
-	URI toURI();
-	URL toURL();
 private:
-	std::string pathSeparator;
-	uint8_t pathSparatorChar;
-	std::string separator;
+	std::string pathSeparator_;
+	uint8_t pathSparatorChar_;
+	std::string separator_;
 	uint8_t separatorChar();
 	std::string path_;
+	int fd_;
+	struct stat stat_;
 };
+
 }
 }
+
 
 #endif
 
