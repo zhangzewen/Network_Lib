@@ -11,6 +11,10 @@
 #include "condition.h"
 #include "mutex.h"
 
+using namespace NetworkLib::concurrency;
+
+namespace NetworkLib{
+namespace concurrency{
 
 class ThreadPool : boost::noncopyable
 {
@@ -38,3 +42,5 @@ class ThreadPool : boost::noncopyable
 };
 
 #endif
+}
+}

@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include "exception.h"
 
+namespace NetworkLib{
+namespace concurrency{
+
 Exception::Exception(const char* msg) : message_(msg)
 {
 	fillStackTrace();
@@ -71,3 +74,5 @@ std::string& Exception::get_Message()
 	return message_;
 }
 
+}
+}

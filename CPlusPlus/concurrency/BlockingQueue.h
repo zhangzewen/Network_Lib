@@ -14,6 +14,8 @@
 #include <boost/noncopyable.hpp>
 #include <deque>
 #include <assert.h>
+namespace NetworkLib{
+namespace concurrency{
 
 template<typename T>
 class BlockingQueue : boost::noncopyable
@@ -57,5 +59,8 @@ class BlockingQueue : boost::noncopyable
   Condition notEmpty_;
   std::deque<T> queue_;
 };
+
+}
+}
 
 #endif

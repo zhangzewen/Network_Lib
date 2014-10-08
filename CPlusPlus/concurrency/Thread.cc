@@ -8,6 +8,9 @@
 
 int terminate = 0;
 
+namespace NetworkLib{
+namespace concurrency{
+
 static void* startThread(void* obj)
 {
   Thread* thread = static_cast<Thread*>(obj);
@@ -56,4 +59,7 @@ void Thread::join()
   assert(!joined_);
   joined_ = true;
   pthread_join(pthreadId_, NULL);
+}
+
+}
 }

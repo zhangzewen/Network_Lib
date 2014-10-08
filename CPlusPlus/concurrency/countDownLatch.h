@@ -7,6 +7,9 @@
 
 #include <boost/noncopyable.hpp>
 
+namespace NetworkLib{
+namespace concurrency{
+
 class CountDownLatch : boost::noncopyable
 {
  public:
@@ -49,3 +52,6 @@ class CountDownLatch : boost::noncopyable
   int count_;
 };
 #endif  // MUDUO_BASE_COUNTDOWNLATCH_H
+
+}
+}

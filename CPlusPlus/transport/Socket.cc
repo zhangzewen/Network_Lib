@@ -11,7 +11,8 @@
 
 using namespace NetworkLib::transport;
 
-
+namespace NetworkLib{
+namespace transport{
 Socket::Socket(std::string host, int port)
 {
 	host_ = host;
@@ -114,4 +115,6 @@ int Socket::setNonBlocking()
 		return -1;
 	}
 	return 0;
+}
+}
 }

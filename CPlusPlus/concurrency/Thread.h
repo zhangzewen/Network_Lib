@@ -10,6 +10,9 @@
 
 extern int terminate;
 
+namespace NetworkLib{
+namespace concurrency{
+
 class Thread : boost::noncopyable
 {
  public:
@@ -30,3 +33,5 @@ class Thread : boost::noncopyable
 };
 
 #endif
+}
+}

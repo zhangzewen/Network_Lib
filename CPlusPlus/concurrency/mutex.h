@@ -4,6 +4,9 @@
 #include <boost/noncopyable.hpp>
 #include <assert.h>
 #include <pthread.h>
+
+namespace NetworkLib{
+namespace concurrency{
 class MutexLock : boost::noncopyable
 {
 public:
@@ -40,6 +43,10 @@ private:
 	pthread_mutexattr_t mutexattr_;
 #endif
 };
+}
+}
+
+using namespace NetworkLib::concurrency;
 
 class MutexLockGuard : public boost::noncopyable
 {
@@ -55,7 +62,4 @@ private:
 	MutexLock& mutex_;
 
 };
-
-
 #endif
-

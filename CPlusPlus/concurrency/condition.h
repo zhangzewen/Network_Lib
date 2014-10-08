@@ -6,6 +6,9 @@
 #include <pthread.h>
 #include "mutex.h"
 
+namespace NetworkLib{
+namespace concurrency{
+
 class Condition : public boost::noncopyable
 {
 public:
@@ -35,3 +38,5 @@ private:
 };
 
 #endif
+}
+}

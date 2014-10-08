@@ -5,6 +5,8 @@
 #include "exception.h"
 
 using namespace std;
+namespace NetworkLib{
+namespace concurrency{
 
 ThreadPool::ThreadPool(const std::string& name)
   : mutex_(),
@@ -109,3 +111,5 @@ void ThreadPool::runInThread()
   }
 }
 
+}
+}

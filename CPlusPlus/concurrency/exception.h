@@ -5,6 +5,8 @@
 #include <exception>
 using namespace std;
 
+namespace NetworkLib{
+namespace concurrency{
 class Exception : public std::exception
 {
 public:
@@ -23,3 +25,5 @@ private:
 	std::string stack_;
 };
 #endif
+}
+}

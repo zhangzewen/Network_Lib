@@ -4,9 +4,14 @@
 class IChannel
 {
 public:
+	// when Readable
 	virtual ReadEventCallBack();
+	// when Writeable
 	virtual WriteEventCallBack();
+	// when error
 	virtual ErrorEventCallBack();
+	// when timeout
+	virtual TimeoutEventCallBack();
 };
 
 #endif
