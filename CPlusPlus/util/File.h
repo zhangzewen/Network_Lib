@@ -4,6 +4,9 @@
 #include <cstdio>
 #include <string>
 #include <stdint.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/stat.h>
 #include "Path.h"
 
 using namespace std;

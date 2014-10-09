@@ -1,6 +1,8 @@
 #ifndef __NETWORKLIB_TRANSPORT_ICHANNEL_H_INCLUDED_
 #define __NETWORKLIB_TRANSPORT_ICHANNEL_H_INCLUDED_
 
+namespace NetworLib{
+namespace transport{
 class IChannel
 {
 public:
@@ -13,5 +15,7 @@ public:
 	// when timeout
 	virtual TimeoutEventCallBack();
 };
+}
+}
 
 #endif

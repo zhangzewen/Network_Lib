@@ -66,38 +66,6 @@ void Socket::setPort(int port)
 	port_ = port;
 }
 
-#if 0
-void Socket::setPeerAddress(std::string peerAddress)
-{
-	peerAddress_ = peerAddress;
-}
-
-std::string Socket::getPeerAddress() const
-{
-	return peerAddress_;
-}
-
-void Socket::setPeerHost(std::string peerHost)
-{
-	peerHost_ = peerHost;
-}
-
-int Socket::getPeerHost() const
-{
-	return peerHost_;
-
-}
-
-void Socket::setPeerPort()
-{
-	peerPort_ = peerPort;
-}
-
-std::string Socket::getPeerPort() const
-{
-	return peerProt_;
-}
-#endif
 
 int Socket::Close()
 {

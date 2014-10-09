@@ -10,7 +10,7 @@ using namespace std;
 
 File::File(const std::string& pathname) : path_(pathname)
 {
-	stat(path_, &stat_);
+	stat(path_.c_str(), &stat_);
 }
 //File::File(const Path& pathname);
 File::File(std::string parent, std::string child)
