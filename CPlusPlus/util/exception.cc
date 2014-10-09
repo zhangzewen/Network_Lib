@@ -5,7 +5,7 @@
 #include "exception.h"
 
 namespace NetworkLib{
-namespace concurrency{
+namespace Util{
 
 Exception::Exception(const char* msg) : message_(msg)
 {

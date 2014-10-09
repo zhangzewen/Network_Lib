@@ -5,6 +5,7 @@
 #include "exception.h"
 
 using namespace std;
+using namespace NetworkLib::Util;
 namespace NetworkLib{
 namespace concurrency{
 

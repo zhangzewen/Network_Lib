@@ -6,7 +6,7 @@
 using namespace std;
 
 namespace NetworkLib{
-namespace concurrency{
+namespace Util{
 class Exception : public std::exception
 {
 public:
