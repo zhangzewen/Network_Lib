@@ -6,7 +6,7 @@ LIBNAME=util
 LIB_NAME=lib$(LIBNAME).a
 PWD=$(shell pwd)
 TEST_DIR=$(PWD)/test
-INCLUDE=-I. -I../util/
+INCLUDE=-I. -I../thirdParty/http-parse/
 
 
 
