@@ -21,6 +21,7 @@ public:
 	File(std::string parent, std::string child);
 	bool canRead();
 	bool canWrite();
+	bool canExec();
 	int compareTo();
 	bool createNewFile();
 	File& createTempFile(std::string prefix, std::string suffix);
@@ -38,8 +39,8 @@ public:
 	std::string getPath();
 	int hashCode();
 	bool isAbsolute();
-	bool isDirectory();
-	bool isFile();
+	bool IsRegularFile();
+	bool IsSymbolicFile();
 	bool isHidden();
 	long lastModified();
 	long length();
@@ -56,6 +57,9 @@ public:
 	bool setReadOnly();
 	void Update();
 	std::string toString();
+	bool IsDirectory() const {
+		return IsDirectory_;
+	}
 private:
 	std::string pathSeparator_;
 	uint8_t pathSparatorChar_;
@@ -64,6 +68,13 @@ private:
 	std::string path_;
 	int fd_;
 	struct stat stat_;
+	//proto
+	bool IsDirectory_;
+	bool IsWriteAble_;
+	bool IsReadAble_;
+	bool IsExeAble_;
+	bool IsRegularFile_;
+	bool IsSymbolicFile_;
 };
 
 }

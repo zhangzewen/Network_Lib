@@ -1,5 +1,6 @@
 #include <string>
 #include <cstdio>
+#include <errno.h>
 #include "File.h"
 #include <iostream>
 
@@ -10,20 +11,56 @@ using namespace std;
 
 File::File(const std::string& pathname) : path_(pathname)
 {
-	stat(path_.c_str(), &stat_);
+	int ret = 0;
+	ret = stat(path_.c_str(), &stat_);
+	if (ret < 0) {
+		if (errno == EACCES) {
+			fprintf(stderr, "Can't access!\n");
+		} else if (errno == ENAMETOOLONG) {
+			fprintf(stderr, "pathname too long!\n");
+		}
+	}
+
+	if (S_ISDIR(stat_.st_mode)) {
+		IsDirectory_ = true;
+	}
+
+	if (S_ISLNK(stat_.st_mode)) {
+		IsSymbolicFile_ = true;
+	}
+
+	if (S_ISREG(stat_.st_mode)) {
+		IsRegularFile_ = true;
+	}
+
+	if ((stat_.st_mode & S_IFMT) == S_IRUSR) {
+		IsReadAble_ = true;
+	}
+
+	if ((stat_.st_mode & S_IFMT) == S_IWUSR) {
+		IsWriteAble_ = true;
+	}
+
+	if ((stat_.st_mode & S_IFMT) == S_IXUSR) {
+		IsExeAble_ = true;
+	}
 }
 //File::File(const Path& pathname);
 File::File(std::string parent, std::string child)
 {
 }
-bool File::canRead()
-{
-	return true;
+bool File::canRead() {
+	return IsReadAble_;
 }
-bool File::canWrite()
-{
-	return true;
+
+bool File::canWrite() {
+	return IsWriteAble_;
 }
+
+bool File::canExec() {
+	return IsExeAble_;
+}
+
 int File::compareTo()
 {
 	return 0;
@@ -94,18 +131,23 @@ int File::hashCode()
 {
 	return 0;
 }
+
 bool File::isAbsolute()
 {
 	return true;
 }
-bool File::isDirectory()
+
+bool File::IsRegularFile()
 {
-	return true;
+	return IsRegularFile_;
 }
-bool File::isFile()
+
+bool File::IsSymbolicFile()
 {
-	return true;
+	return IsSymbolicFile_;
 }
+
+
 bool File::isHidden()
 {
 	return true;

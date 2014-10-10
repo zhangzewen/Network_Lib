@@ -1,4 +1,3 @@
-
 #include "Socket.h"
 #include <unistd.h>
 #include <errno.h>
@@ -9,10 +8,9 @@
 #include <arpa/inet.h>
 #include "Config.h"
 
-using namespace NetworkLib::transport;
-
 namespace NetworkLib{
 namespace transport{
+
 Socket::Socket(std::string host, int port)
 {
 	host_ = host;
