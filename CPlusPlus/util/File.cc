@@ -152,14 +152,17 @@ bool File::isHidden()
 {
 	return true;
 }
+
 long File::lastModified()
 {
 	return 0L;
 }
+
 long File::length()
 {
 	return 0L;
 }
+
 std::string File::list()
 {
 	return "";

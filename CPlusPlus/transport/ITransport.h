@@ -7,7 +7,7 @@ class ITransport
 {
 public:
 	virtual uint32_t write(uint8_t* buf, uint32_t len) = 0;
-	virtual uint32_t read(uin8_t* buf, uint32_t len) = 0;
+	virtual uint32_t read(uint8_t* buf, uint32_t len) = 0;
 	virtual std::string getPeer();
 	virtual std::string getHost();
 	virtual bool isOpen();
