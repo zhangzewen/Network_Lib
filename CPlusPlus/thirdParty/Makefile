@@ -10,9 +10,6 @@ all:
 	then make -C $${dir};\
 	fi;\
 	done;
-#	@make -C $(UTIL_DIR)
-#	@make -C $(REACTOR_DIR)
-#	@make -C ./Dns/
 
 clean:
 	@for dir in `ls`;\

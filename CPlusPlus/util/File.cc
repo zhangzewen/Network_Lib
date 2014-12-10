@@ -14,7 +14,9 @@ namespace Util{
 
 using namespace std;
 
-File::File(const std::string& pathname) : path_(pathname)
+File::File(const std::string& pathname) : path_(pathname), isDirectory_(false),
+	writeAble_(false), readAble_(false), exeAble_(false), isRegularFile_(false),
+	isSymbolicFile_(false)
 {
 	int ret = 0;
 	ret = stat(path_.c_str(), &stat_);
@@ -27,95 +29,94 @@ File::File(const std::string& pathname) : path_(pathname)
 	}
 
 	if (S_ISDIR(stat_.st_mode)) {
-		IsDirectory_ = true;
+		isDirectory_ = true;
 	}
 
 	if (S_ISLNK(stat_.st_mode)) {
-		IsSymbolicFile_ = true;
+		isSymbolicFile_ = true;
 	}
 
 	if (S_ISREG(stat_.st_mode)) {
-		IsRegularFile_ = true;
+		isRegularFile_ = true;
 	}
 
 	if ((stat_.st_mode & S_IFMT) == S_IRUSR) {
-		IsReadAble_ = true;
+		readAble_ = true;
 	}
 
 	if ((stat_.st_mode & S_IFMT) == S_IWUSR) {
-		IsWriteAble_ = true;
+		writeAble_ = true;
 	}
 
 	if ((stat_.st_mode & S_IFMT) == S_IXUSR) {
-		IsExeAble_ = true;
+		exeAble_ = true;
 	}
 }
 //File::File(const Path& pathname);
-File::File(std::string parent, std::string child)
-{
-}
+//File::File(std::string parent, std::string child)
+//{
+//}
 bool File::canRead() {
-	return IsReadAble_;
+	return readAble_;
 }
 
 bool File::canWrite() {
-	return IsWriteAble_;
+	return writeAble_;
 }
 
 bool File::canExec() {
-	return IsExeAble_;
+	return exeAble_;
 }
 
-int File::compareTo()
-{
-	return 0;
-}
-bool File::createNewFile()
-{
-	return true;
-}
+//int File::compareTo()
+//{
+	//return 0;
+//}
+//bool File::createNewFile()
+//{
+	//return true;
+//}
 
-void File::Update()
-{
-}
-File& File::createTempFile(std::string prefix, std::string suffix)
-{
-	return *this;
-}
-File& File::createTempFile(std::string prefix, std::string suffix, const File& directory)
-{
-	return *this;
-}
-bool File::Delete()
-{
-	return true;
-}
-void File::deleteOnExit()
-{
+//void File::Update()
+//{
+//}
+//File& File::createTempFile(std::string prefix, std::string suffix)
+//{
+	//return *this;
+//}
+//File& File::createTempFile(std::string prefix, std::string suffix, const File& directory)
+//{
+	//return *this;
+//}
+//bool File::Delete()
+//{
+	//return true;
+//}
+//void File::deleteOnExit()
+//{
 
-}
-bool File::exists()
-{
-	return true;
-}
-/*
- *File& File::getAbsoluteFile()
- *{
- *  return *this;
- *}
- *std::string File::getAbsoluteFile()
- *{
- *  return "";
- *}
- *File& File::getCanonicalFile()
- *{
- *  return *this;
- *}
- *std::string File::getCanonicalFile()
- *{
- *  return "";
- *}
- */
+//}
+//bool File::exists()
+//{
+	//return true;
+//}
+
+//File& File::getAbsoluteFile()
+//{
+  //return *this;
+//}
+//std::string File::getAbsoluteFile()
+//{
+  //return "";
+//}
+//File& File::getCanonicalFile()
+//{
+  //return *this;
+//}
+//std::string File::getCanonicalFile()
+//{
+  //return "";
+//}
 std::string File::getName()
 {
 	return "";
@@ -144,69 +145,69 @@ bool File::isAbsolute()
 
 bool File::IsRegularFile()
 {
-	return IsRegularFile_;
+	return isRegularFile_;
 }
 
 bool File::IsSymbolicFile()
 {
-	return IsSymbolicFile_;
+	return isSymbolicFile_;
 }
 
 
-bool File::isHidden()
-{
-	return true;
-}
+//bool File::isHidden()
+//{
+	//return true;
+//}
 
-long File::lastModified()
-{
-	return 0L;
-}
+//long File::lastModified()
+//{
+	//return 0L;
+//}
 
 long File::length()
 {
 	return 0L;
 }
 
-std::string File::list()
-{
-	return "";
-}
+//std::string File::list()
+//{
+//	return "";
+//}
 //std::string list(FilenameFilter filter);
-File& File::listFiles()
-{
-	return *this;
-}
+//File& File::listFiles()
+//{
+//	return *this;
+//}
 //File& listFiles(FileFilter filter);
 //File& listFiles(FilenameFilter filter);
-File& File::LsItRoots()
-{
-	return *this;
-}
-bool File::mkdir()
-{
-	return true;
-}
-bool File::mkdirs()
-{
-	return true;
-}
+//File& File::LsItRoots()
+//{
+	//return *this;
+//}
+//bool File::mkdir()
+//{
+	//return true;
+//}
+//bool File::mkdirs()
+//{
+	//return true;
+//}
 bool File::renameTo()
 {
 	return true;
 }
-bool File::setLastModified(long time)
-{
-	return true;
-}
-bool File::setReadOnly()
-{
-	return true;
-}
-std::string File::toString()
-{
-	return "";
-}
+//bool File::setLastModified(long time)
+//{
+	////return true;
+//}
+//bool File::setReadOnly()
+//{
+	//return true;
+//}
+////std::string File::toString()
+//{
+	//return "";
+//}
 
 }
 }
