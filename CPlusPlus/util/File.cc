@@ -1,8 +1,13 @@
 #include <string>
 #include <cstdio>
 #include <errno.h>
+#include <cstdio>
+#include <string>
+#include <stdint.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/stat.h>
 #include "File.h"
-#include <iostream>
 
 namespace NetworkLib{
 namespace Util{
