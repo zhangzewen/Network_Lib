@@ -17,6 +17,7 @@ class File
 {
 public:
 	File(const std::string& pathname);
+	bool init();
 	//File(const Path& pathname);
 	//File(std::string parent, std::string child);
 	bool canRead();
@@ -57,9 +58,9 @@ public:
 	//bool setReadOnly();
 	//void Update();
 	//std::string toString();
-	//bool IsDirectory() const {
-		//return IsDirectory_;
-	//}
+	bool IsDirectory() const {
+		return isDirectory_;
+	}
 private:
 	//std::string pathSeparator_;
 	//uint8_t pathSparatorChar_;

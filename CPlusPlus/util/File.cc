@@ -18,6 +18,10 @@ File::File(const std::string& pathname) : path_(pathname), isDirectory_(false),
 	writeAble_(false), readAble_(false), exeAble_(false), isRegularFile_(false),
 	isSymbolicFile_(false)
 {
+
+}
+
+bool File::init() {
 	int ret = 0;
 	ret = stat(path_.c_str(), &stat_);
 	if (ret < 0) {
@@ -28,6 +32,7 @@ File::File(const std::string& pathname) : path_(pathname), isDirectory_(false),
 		}
 	}
 
+#if 0
 	if (S_ISDIR(stat_.st_mode)) {
 		isDirectory_ = true;
 	}
@@ -39,6 +44,7 @@ File::File(const std::string& pathname) : path_(pathname), isDirectory_(false),
 	if (S_ISREG(stat_.st_mode)) {
 		isRegularFile_ = true;
 	}
+#endif
 
 	if ((stat_.st_mode & S_IFMT) == S_IRUSR) {
 		readAble_ = true;

@@ -9,6 +9,7 @@ int main(int argc, char** argv)
 	}
 
 	File file(argv[1]);
+	file.init();
 	if (file.canRead()) {
 		std::cout << "ReadAble" << std::endl;
 	}
