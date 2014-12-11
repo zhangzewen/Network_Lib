@@ -1,7 +1,7 @@
 OBJECTS=$(patsubst %.cc, %.o, $(wildcard *.cc))
 CC=g++
 CFLAGS+=-g3 -W -Werror
-LDFLAGS+= -pthread
+LDFLAGS+=
 LIBNAME=util
 LIB_NAME=lib$(LIBNAME).a
 PWD=$(shell pwd)

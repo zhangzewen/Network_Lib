@@ -11,7 +11,6 @@ public:
 	Socket(){}
 	Socket(std::string host, int port);
 	int Listen(int backlog);
-	int Accept();
 	int Bind();
 	~Socket();
 	Socket(int fd);
@@ -20,7 +19,7 @@ public:
 	void setHost(std::string host);
 	int getPort() const;
 	void setPort(int port);
-	int setNonBlocking();
+	bool setNonBlocking();
 private:
 	std::string host_;
 	int port_;

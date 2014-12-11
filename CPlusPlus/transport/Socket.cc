@@ -18,6 +18,7 @@ Socket::Socket(std::string host, int port)
 	fd_ = socket(AF_INET, SOCK_STREAM, 0);
 }
 
+#if 0
 int Socket::Bind()
 {
 	struct sockaddr_in sockaddr;
@@ -44,6 +45,7 @@ int Socket::Accept()
 	}
 	return sfd;
 }
+#endif
 
 std::string Socket::getHost() const
 {
@@ -70,17 +72,18 @@ int Socket::Close()
 	close(fd_);
 }
 
-int Socket::setNonBlocking()
+bool Socket::setNonBlocking()
 {
-	int flag = 0;
+	int32_t flag = 0;
 	if ((flag = fcntl(fd_, F_GETFD)) == -1) {
-		return -1;
+		return false;
 	}
 
 	if ((fcntl(fd_, F_SETFD, flag | O_NONBLOCK)) == -1) {
-		return -1;
+		return false;
 	}
-	return 0;
+	return true;
 }
+
 }
 }
