@@ -6,8 +6,10 @@ namespace Transport{
 class ITransport
 {
 public:
-	virtual uint32_t write(uint8_t* buf, uint32_t len) = 0;
-	virtual uint32_t read(uint8_t* buf, uint32_t len) = 0;
+	virtual uint32_t write(int fd, int8_t* buf, uint32_t len) = 0;
+	virtual uint32_t read(int fd, int8_t* buf, uint32_t len) = 0;
+	virtual uint32_t isConnect();
+	virtual uint32_t isOpen();
 };
 }
 }
