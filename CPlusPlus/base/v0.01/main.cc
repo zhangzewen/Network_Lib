@@ -6,7 +6,7 @@
 #include <netinet/in.h>
 #include <string.h>
 
-int createSocketAndListen(bool nonBlocking)
+int createSocketAndListen()
 {
 	struct sockaddr_in srvaddr;
 	int listenfd;
@@ -28,9 +28,6 @@ int createSocketAndListen(bool nonBlocking)
 	if (listenfd < 0) {
 		fprintf(stderr, "listen error\n");
 		exit(-1);
-	}
-	if (nonBlocking) {
-		fcntl(listenfd, F_SETFL, NONBLOCK);
 	}
 	return listenfd;
 }
