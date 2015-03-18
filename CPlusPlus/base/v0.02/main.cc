@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <sys/epoll.h>
+#include <sys/fcntl.h>
 
 int createSocketAndListen(bool nonBlocking)
 {
@@ -31,7 +32,7 @@ int createSocketAndListen(bool nonBlocking)
 		exit(-1);
 	}
 	if (nonBlocking) {
-		fcntl(listenfd, F_SETFL, NONBLOCK);
+		fcntl(listenfd, F_SETFL, O_NONBLOCK);
 	}
 	return listenfd;
 }
@@ -46,7 +47,7 @@ int main(int argc, char** argv)
 	struct epoll_event events[1024];
 	struct sockaddr_in cliaddr; // cli addr
 	socklen_t len = sizeof(cliaddr);
-	listenfd = createSocketAndListen();
+	listenfd = createSocketAndListen(true);
 	epollfd = epoll_create(10);
 	if (epollfd < 0) {
 		fprintf(stderr, "Create epollfd Error!\n");
@@ -67,22 +68,27 @@ int main(int argc, char** argv)
 			exit(-1);
 		}
 		for (int i = 0; i < nfds; ++i) {
-			if (event[i].data.fd == listenfd) {
+			if (events[i].data.fd == listenfd) {
 				connfd = accept(listenfd, (struct sockaddr*)&cliaddr, &len);
 				if (connfd < 0) {
 					continue;
 				}
-				fcntl(connfd, F_SETFL, NONBLOCK);
+				fcntl(connfd, F_SETFL, O_NONBLOCK);
 				ev.events = EPOLLIN;
 				ev.data.fd = connfd;
 				if (epoll_ctl(epollfd, EPOLL_CTL_ADD, connfd, &ev) == -1) {
 					fprintf(stderr, "epoll_ctl add connfd error!");
 				}
-				char buf[1024] = {0};
-				int ret = read(connfd, buf, 1024);
-				fprintf(stderr, "read: %s\n", buf);
-				ret = write(connfd, buf, strlen(buf));
-				close(connfd);
+			} else {
+				if (events[i].events & EPOLLIN) {
+					char buf[1024] = {0};
+					int ret = read(events[i].data.fd, buf, 1024);
+					fprintf(stderr, "read: %s\n", buf);
+					ret = write(events[i].data.fd, buf, strlen(buf));
+					if (strncasecmp(buf, "Done", strlen(buf)) == 0) {
+						close(connfd);
+					}
+				}
 			}
 		}
 	}
