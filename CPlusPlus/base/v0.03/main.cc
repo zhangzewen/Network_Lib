@@ -12,7 +12,6 @@ class TcpServer
 {
 public:
 	TcpServer() : listenfd_(-1), epollfd_(-1) {
-		event_poll_.clear();
 	}
 	~TcpServer() {
 		close(listenfd_);
@@ -118,7 +117,6 @@ private:
 	}
 	int listenfd_;
 	int epollfd_;
-	std::map<int fd, struct epoll_event> event_poll_;
 };
 
 int main(int argc, char** argv)
