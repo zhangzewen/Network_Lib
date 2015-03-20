@@ -1,17 +1,22 @@
 #ifndef _SERVER_H_INCLUDED_
 #define _SERVER_H_INCLUDED_
-class TcpServer
+#include <sys/epoll.h>
+
+class TcpServer : public ChannelCallBack
 {
 public:
 	TcpServer() : listenfd_(-1), epollfd_(-1) {
 	}
 	~TcpServer();
 	void Run();
+	void CallBack(int fd);
 private:
 	int createSocketAndListen(bool nonblocking);
 	int setNonblock(int fd);
 	int listenfd_;
 	int epollfd_;
+	struct epoll_event events_[1024];
+	std::map<int fd, Channel*> channelPool_;
 };
 
 #endif

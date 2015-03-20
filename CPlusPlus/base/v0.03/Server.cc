@@ -5,7 +5,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
-#include <sys/epoll.h>
 #include <sys/fcntl.h>
 #include "Server.h"
 
@@ -18,7 +17,6 @@ void TcpServer::Run()
 {
 	int connfd = 0;
 	struct epoll_event ev;
-	struct epoll_event events[1024];
 	struct sockaddr_in cliaddr; // cli addr
 	socklen_t len = sizeof(cliaddr);
 	listenfd_ = createSocketAndListen(true);
@@ -36,36 +34,12 @@ void TcpServer::Run()
 	}
 
 	while(1) {
-		int nfds = epoll_wait(epollfd_, events, 1024, -1);
+		int nfds = epoll_wait(epollfd_, events_, 1024, -1);
 		if (nfds == -1) {
 			fprintf(stderr, "epoll_wait error!");
 			exit(-1);
 		}
 		for (int i = 0; i < nfds; ++i) {
-			if (events[i].data.fd == listenfd_) {
-				connfd = accept(listenfd_, (struct sockaddr*)&cliaddr, &len);
-				if (connfd < 0) {
-					continue;
-				}
-				int ret = fcntl(connfd, F_GETFL);
-				ret |= O_NONBLOCK;
-				fcntl(connfd, F_SETFL, ret);
-				ev.events = EPOLLIN;
-				ev.data.fd = connfd;
-				if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, connfd, &ev) == -1) {
-					fprintf(stderr, "epoll_ctl add connfd error!");
-				}
-			} else {
-				if (events[i].events & EPOLLIN) {
-					char buf[1024] = {0};
-					int ret = read(events[i].data.fd, buf, 1024);
-					fprintf(stderr, "read: %s\n", buf);
-					ret = write(events[i].data.fd, buf, strlen(buf));
-					if (strncasecmp(buf, "Done", strlen(buf)) == 0) {
-						close(connfd);
-					}
-				}
-			}
 		}
 	}
 }
@@ -115,5 +89,32 @@ int TcpServer::setNonblock(int fd)
 		return -1;
 	}
 	return 0;
+}
+
+void TcpServer::CallBack(int fd) {
+	if (events_[i].data.fd == listenfd_) {
+		connfd = accept(listenfd_, (struct sockaddr*)&cliaddr, &len);
+		if (connfd < 0) {
+			continue;
+		}
+		int ret = fcntl(connfd, F_GETFL);
+		ret |= O_NONBLOCK;
+		fcntl(connfd, F_SETFL, ret);
+		ev.events = EPOLLIN;
+		ev.data.fd = connfd;
+		if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, connfd, &ev) == -1) {
+			fprintf(stderr, "epoll_ctl add connfd error!");
+		}
+	} else {
+		if (events_[i].events & EPOLLIN) {
+			char buf[1024] = {0};
+			int ret = read(events_[i].data.fd, buf, 1024);
+			fprintf(stderr, "read: %s\n", buf);
+			ret = write(events_[i].data.fd, buf, strlen(buf));
+			if (strncasecmp(buf, "Done", strlen(buf)) == 0) {
+				close(connfd);
+			}
+		}
+	}
 }
 
