@@ -4,7 +4,7 @@
 class ChannelCallBack
 {
 public:
-	virtual void CallBack(int fd) = 0;
+	virtual void callBack(int fd) = 0;
 };
 
 #endif

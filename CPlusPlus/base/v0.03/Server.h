@@ -1,6 +1,8 @@
 #ifndef _SERVER_H_INCLUDED_
 #define _SERVER_H_INCLUDED_
+
 #include <sys/epoll.h>
+#include "ChannelCallBack.h"
 
 class TcpServer : public ChannelCallBack
 {
@@ -9,14 +11,13 @@ public:
 	}
 	~TcpServer();
 	void Run();
-	void CallBack(int fd);
+	void callBack(int fd);
 private:
 	int createSocketAndListen(bool nonblocking);
 	int setNonblock(int fd);
 	int listenfd_;
 	int epollfd_;
 	struct epoll_event events_[1024];
-	std::map<int fd, Channel*> channelPool_;
 };
 
 #endif

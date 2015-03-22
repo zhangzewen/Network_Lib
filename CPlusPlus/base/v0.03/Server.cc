@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/fcntl.h>
 #include "Server.h"
+#include "Channel.h"
 
 TcpServer::~TcpServer()
 {
@@ -17,8 +18,6 @@ void TcpServer::Run()
 {
 	int connfd = 0;
 	struct epoll_event ev;
-	struct sockaddr_in cliaddr; // cli addr
-	socklen_t len = sizeof(cliaddr);
 	listenfd_ = createSocketAndListen(true);
 	epollfd_ = epoll_create(10);
 	if (epollfd_ < 0) {
@@ -28,6 +27,9 @@ void TcpServer::Run()
 
 	ev.events = EPOLLIN;
 	ev.data.fd = listenfd_;
+	Channel* channel = new Channel(epollfd_, listenfd_);
+	channel->setCallBack(this);
+	ev.data.ptr = static_cast<void*>(channel);
 	if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, listenfd_, &ev) < 0) {
 		fprintf(stderr, "epoll_ctl add listenfd Error!\n");
 		exit(-1);
@@ -91,28 +93,41 @@ int TcpServer::setNonblock(int fd)
 	return 0;
 }
 
-void TcpServer::CallBack(int fd) {
-	if (events_[i].data.fd == listenfd_) {
+void TcpServer::callBack(int sockfd) {
+	int connfd = -1;
+	struct sockaddr_in cliaddr; // cli addr
+	struct epoll_event ev;
+	socklen_t len = sizeof(cliaddr);
+	if (sockfd == listenfd_) {
 		connfd = accept(listenfd_, (struct sockaddr*)&cliaddr, &len);
 		if (connfd < 0) {
-			continue;
+			return;
 		}
-		int ret = fcntl(connfd, F_GETFL);
-		ret |= O_NONBLOCK;
-		fcntl(connfd, F_SETFL, ret);
+		if (setNonblock(connfd) < 0) {
+			fprintf(stderr, "connection set nonblocking error!");
+			return;
+		}
+		
+		Channel* channel = new Channel(epollfd_, connfd);
+		channel->setCallBack(this);
+		if (NULL == channel) {
+			fprintf(stderr, "Create Channel error!\n");
+			return ;
+		}
 		ev.events = EPOLLIN;
 		ev.data.fd = connfd;
+		ev.data.ptr = static_cast<void*>(channel);
 		if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, connfd, &ev) == -1) {
 			fprintf(stderr, "epoll_ctl add connfd error!");
 		}
 	} else {
-		if (events_[i].events & EPOLLIN) {
+		if (sockfd & EPOLLIN) {
 			char buf[1024] = {0};
-			int ret = read(events_[i].data.fd, buf, 1024);
+			int ret = read(sockfd, buf, 1024);
 			fprintf(stderr, "read: %s\n", buf);
-			ret = write(events_[i].data.fd, buf, strlen(buf));
+			ret = write(sockfd, buf, strlen(buf));
 			if (strncasecmp(buf, "Done", strlen(buf)) == 0) {
-				close(connfd);
+				close(sockfd);
 			}
 		}
 	}
