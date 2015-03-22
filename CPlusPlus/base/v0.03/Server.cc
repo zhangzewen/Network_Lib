@@ -42,6 +42,8 @@ void TcpServer::Run()
 			exit(-1);
 		}
 		for (int i = 0; i < nfds; ++i) {
+			Channel* channel = static_cast<Channel*>(events_[i].data.ptr);
+			channel->handleEvent();
 		}
 	}
 }

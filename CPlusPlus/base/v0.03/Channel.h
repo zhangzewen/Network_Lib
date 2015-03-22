@@ -9,9 +9,12 @@ public:
 	~Channel();
 	void setCallBack(ChannelCallBack* callback);
 	void handleEvent();
+	int getSockfd()const;
+	int setEvents(int event);
 private:
 	int epollfd_;
 	int fd_;
+	int events_;
 	ChannelCallBack* callBack_;
 };
 
