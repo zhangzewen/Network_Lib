@@ -1,5 +1,4 @@
 #include <unistd.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -8,6 +7,7 @@
 #include <sys/fcntl.h>
 #include "Server.h"
 #include "Channel.h"
+#include <iostream>
 
 TcpServer::~TcpServer()
 {
@@ -21,7 +21,7 @@ void TcpServer::Run()
 	listenfd_ = createSocketAndListen(true);
 	epollfd_ = epoll_create(10);
 	if (epollfd_ < 0) {
-		fprintf(stderr, "Create epollfd Error!\n");
+		std::cerr << "Create epollfd Error!" << std::endl;
 		exit (-1);
 	}
 
@@ -31,14 +31,14 @@ void TcpServer::Run()
 	channel->setCallBack(this);
 	ev.data.ptr = static_cast<void*>(channel);
 	if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, listenfd_, &ev) < 0) {
-		fprintf(stderr, "epoll_ctl add listenfd Error!\n");
+		std::cerr << "epoll_ctl add listenfd Error!" << std::endl;
 		exit(-1);
 	}
 
 	while(1) {
 		int nfds = epoll_wait(epollfd_, events_, 1024, -1);
 		if (nfds == -1) {
-			fprintf(stderr, "epoll_wait error!");
+			std::cerr << "epoll_wait error!" << std::endl;
 			exit(-1);
 		}
 		for (int i = 0; i < nfds; ++i) {
@@ -55,7 +55,7 @@ int TcpServer::createSocketAndListen(bool nonblocking)
 	struct sockaddr_in srvaddr;
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (listenfd < 0) {
-		fprintf(stderr, "socket error!\n");
+		std::cerr << "socket error!" << std::endl;
 		return -1;
 	}
 	srvaddr.sin_family = AF_INET;
@@ -63,17 +63,17 @@ int TcpServer::createSocketAndListen(bool nonblocking)
 	srvaddr.sin_port = htons(8080);
 	len = sizeof(srvaddr);
 	if (bind(listenfd, (struct sockaddr*)&srvaddr, len) < 0) {
-		fprintf(stderr, "socket bind error!\n");
+		std::cerr << "socket bind error!" << std::endl;
 		return -1;
 	}
 	int ret = listen(listenfd, 100);
 	if (listenfd < 0) {
-		fprintf(stderr, "listen error\n");
+		std::cerr << "listen error" << std::cout;
 		return -1;
 	}
 	if (nonblocking) {
 		if (setNonblock(listenfd) < 0) {
-			fprintf(stderr, "listenfd set nonblocking error!");
+			std::cerr << "listenfd set nonblocking error!" << std::endl;
 			return -1;
 		}
 	}
@@ -84,12 +84,12 @@ int TcpServer::setNonblock(int fd)
 {
 	int ret;
 	if ((ret = fcntl(fd, F_GETFL)) < 0) {
-		fprintf(stderr, "fnctl F_GETFL error!");
+		std::cerr << "fnctl F_GETFL error!" << std::endl;
 		return -1;
 	}
 	ret |= O_NONBLOCK;
 	if (fcntl(fd, F_SETFL, ret) < 0) {
-		fprintf(stderr, "fcntl F_SETFL NONBLOCK errot!");
+		std::cerr << "fcntl F_SETFL NONBLOCK errot!" << std::endl;
 		return -1;
 	}
 	return 0;
@@ -106,27 +106,26 @@ void TcpServer::callBack(int sockfd) {
 			return;
 		}
 		if (setNonblock(connfd) < 0) {
-			fprintf(stderr, "connection set nonblocking error!");
+			std::cerr << "connection set nonblocking error!" << std::endl;
 			return;
 		}
-		
+
 		Channel* channel = new Channel(epollfd_, connfd);
+		channel->setEvents(EPOLLIN);
 		channel->setCallBack(this);
 		if (NULL == channel) {
-			fprintf(stderr, "Create Channel error!\n");
+			std::cerr << "Create Channel error!" << std::endl;
 			return ;
 		}
-		ev.events = EPOLLIN;
-		ev.data.fd = connfd;
-		ev.data.ptr = static_cast<void*>(channel);
-		if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, connfd, &ev) == -1) {
-			fprintf(stderr, "epoll_ctl add connfd error!");
+		if (channel->registerEvent() != 0) {
+			std::cerr << "RegisterEvent error!" << std::endl;
+			return ;
 		}
 	} else {
 		if (sockfd & EPOLLIN) {
 			char buf[1024] = {0};
 			int ret = read(sockfd, buf, 1024);
-			fprintf(stderr, "read: %s\n", buf);
+			std::cerr << "read: " << buf << std::endl;
 			ret = write(sockfd, buf, strlen(buf));
 			if (strncasecmp(buf, "Done", strlen(buf)) == 0) {
 				close(sockfd);

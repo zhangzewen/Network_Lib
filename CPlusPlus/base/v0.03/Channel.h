@@ -11,6 +11,7 @@ public:
 	void handleEvent();
 	int getSockfd()const;
 	int setEvents(int event);
+	int registerEvent();
 private:
 	int epollfd_;
 	int fd_;
