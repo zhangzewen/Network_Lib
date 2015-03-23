@@ -25,14 +25,12 @@ void TcpServer::Run()
 		exit (-1);
 	}
 
-	ev.events = EPOLLIN;
-	ev.data.fd = listenfd_;
 	Channel* channel = new Channel(epollfd_, listenfd_);
 	channel->setCallBack(this);
-	ev.data.ptr = static_cast<void*>(channel);
-	if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, listenfd_, &ev) < 0) {
-		std::cerr << "epoll_ctl add listenfd Error!" << std::endl;
-		exit(-1);
+	channel->setEvents(EPOLLIN);
+	if (channel->registerEvent() != 0) {
+		std::cerr << "listen Event register Error!" << std::endl;
+		return;
 	}
 
 	while(1) {
