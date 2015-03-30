@@ -12,15 +12,18 @@
 
 TcpServer::~TcpServer()
 {
-	close(listenfd_);
 	close(epollfd_);
 }
 void TcpServer::Run()
 {
 	int connfd = 0;
 	struct epoll_event ev;
+	acceptor_ = new Acceptor();
 
-	listenfd_ = createSocketAndListen(true);
+	if (acceptor_->createSocketAndListen(true) < 0) {
+		std::cout << "CreateSocketAndListen Error!" << std::endl;
+		return ;
+	}
 	epollfd_ = epoll_create(10);
 	if (epollfd_ < 0) {
 		std::cerr << "Create epollfd Error!" << std::endl;

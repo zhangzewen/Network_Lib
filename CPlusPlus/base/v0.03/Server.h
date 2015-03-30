@@ -4,11 +4,12 @@
 #include <sys/epoll.h>
 #include "ChannelCallBack.h"
 #include "AcceptorCallBack.h"
+#include "Acceptor.h"
 
 class TcpServer : public AcceptorCallBack
 {
 public:
-	TcpServer() : epollfd_(-1) {
+	TcpServer() : epollfd_(-1), acceptor_(NULL) {
 	}
 	~TcpServer();
 	void Run();
@@ -16,6 +17,7 @@ public:
 private:
 	int setNonblock(int fd);
 	int epollfd_;
+	Acceptor* acceptor_;
 	struct epoll_event events_[1024];
 };
 

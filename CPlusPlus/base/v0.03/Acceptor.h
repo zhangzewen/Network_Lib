@@ -3,7 +3,7 @@
 
 #include "AcceptorCallBack.h"
 
-class Acceptor
+class Acceptor : public ChannelCallBack
 {
 public:
 	Acceptor() {}
@@ -12,10 +12,12 @@ public:
 	int createSocketAndListen(bool nonblocking);
 	int setEvents(int event);
 	int registerEvent();
+	void channelCallBack();
 private:
 	int listenfd_;
 	int epollfd_;
 	int events_;
 	AcceptorCallBack* callBack_;
+
 };
 #endif
