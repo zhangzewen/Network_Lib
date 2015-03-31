@@ -4,6 +4,6 @@
 class AcceptorCallBack
 {
 public:
-	void acceptorCallBack() = 0;
+	virtual void acceptorCallBack() = 0;
 };
 #endif

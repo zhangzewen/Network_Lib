@@ -1,6 +1,7 @@
 #ifndef _SERVER_H_INCLUDED_
 #define _SERVER_H_INCLUDED_
 
+#include <stdio.h>
 #include <sys/epoll.h>
 #include "ChannelCallBack.h"
 #include "AcceptorCallBack.h"
@@ -13,9 +14,8 @@ public:
 	}
 	~TcpServer();
 	void Run();
-	void acceptorCallBack(int fd);
+	void acceptorCallBack();
 private:
-	int setNonblock(int fd);
 	int epollfd_;
 	Acceptor* acceptor_;
 	struct epoll_event events_[1024];

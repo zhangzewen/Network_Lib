@@ -16,28 +16,18 @@ TcpServer::~TcpServer()
 }
 void TcpServer::Run()
 {
-	int connfd = 0;
-	struct epoll_event ev;
-	acceptor_ = new Acceptor();
-
-	if (acceptor_->createSocketAndListen(true) < 0) {
-		std::cout << "CreateSocketAndListen Error!" << std::endl;
-		return ;
+	if ((epollfd_ = epoll_create(0)) < 0) {
+		std::cerr << "Create epollfd error!" << std::endl;
+		exit(-1);
 	}
-	epollfd_ = epoll_create(10);
-	if (epollfd_ < 0) {
-		std::cerr << "Create epollfd Error!" << std::endl;
-		exit (-1);
+	acceptor_ = new Acceptor(epollfd_);
+	if (NULL == acceptor_) {
+		std::cerr << "Create Acceptor error!" << std::endl;
+		exit(-1);
 	}
-
-	Channel* channel = new Channel(epollfd_, listenfd_);
-	channel->setCallBack(this);
-	channel->setEvents(EPOLLIN);
-	if (channel->registerEvent() != 0) {
-		std::cerr << "listen Event register Error!" << std::endl;
-		return;
+	if (acceptor_->start() < 0) {
+		std::cerr << "Start server error!" << std::endl;
 	}
-
 	while(1) {
 		int nfds = epoll_wait(epollfd_, events_, 1024, -1);
 		if (nfds == -1) {
@@ -52,22 +42,9 @@ void TcpServer::Run()
 }
 
 
-int TcpServer::setNonblock(int fd)
-{
-	int ret;
-	if ((ret = fcntl(fd, F_GETFL)) < 0) {
-		std::cerr << "fnctl F_GETFL error!" << std::endl;
-		return -1;
-	}
-	ret |= O_NONBLOCK;
-	if (fcntl(fd, F_SETFL, ret) < 0) {
-		std::cerr << "fcntl F_SETFL NONBLOCK errot!" << std::endl;
-		return -1;
-	}
-	return 0;
-}
 
-void TcpServer::callBack(int sockfd) {
+void TcpServer::acceptorCallBack() {
+#if 0
 	int connfd = -1;
 	struct sockaddr_in cliaddr; // cli addr
 	struct epoll_event ev;
@@ -104,5 +81,6 @@ void TcpServer::callBack(int sockfd) {
 			}
 		}
 	}
+#endif
 }
 
