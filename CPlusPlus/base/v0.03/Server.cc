@@ -16,7 +16,7 @@ TcpServer::~TcpServer()
 }
 void TcpServer::Run()
 {
-	if ((epollfd_ = epoll_create(0)) < 0) {
+	if ((epollfd_ = epoll_create(1)) < 0) {
 		std::cerr << "Create epollfd error!" << std::endl;
 		exit(-1);
 	}
@@ -43,8 +43,8 @@ void TcpServer::Run()
 
 
 
-void TcpServer::acceptorCallBack() {
 #if 0
+void TcpServer::acceptorCallBack() {
 	int connfd = -1;
 	struct sockaddr_in cliaddr; // cli addr
 	struct epoll_event ev;
@@ -81,6 +81,7 @@ void TcpServer::acceptorCallBack() {
 			}
 		}
 	}
-#endif
+	return;
 }
+#endif
 

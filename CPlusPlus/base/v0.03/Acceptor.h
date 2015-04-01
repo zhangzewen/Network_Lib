@@ -7,14 +7,14 @@ class Acceptor : public ChannelCallBack
 {
 public:
 	Acceptor(int epollfd) : epollfd_(epollfd) {}
-	~Acceptor() {}
+	~Acceptor();
 	int createSocketAndListen(bool nonblocking);
 	void setEvents(int event);
 	int registerEvent();
-	virtual void callBack(int fd);
 	int getSockfd()const;
 	int setNonBlock(int fd);
 	int start();
+	void callBack(int fd);
 private:
 	int listenfd_;
 	int epollfd_;

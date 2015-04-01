@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/fcntl.h>
+#include <unistd.h>
 #include <iostream>
 
 int Acceptor::setNonBlock(int fd)
@@ -77,13 +78,14 @@ int Acceptor::getSockfd()const
 	return listenfd_;
 }
 
-void Acceptor::callBack(int sockfd)
+void Acceptor::callBack(int fd)
 {
 	int connfd = -1;
 	struct sockaddr_in cliaddr; // cli addr
 	struct epoll_event ev;
 	socklen_t len = sizeof(cliaddr);
-	if (sockfd == listenfd_) {
+	std::cout << "listenfd_ : " << listenfd_ << std::endl;
+	if (fd == listenfd_) {
 		connfd = accept(listenfd_, (struct sockaddr*)&cliaddr, &len);
 		if (connfd < 0) {
 			return;
@@ -120,4 +122,10 @@ int Acceptor::start()
 		std::cerr << "listen Event register Error!" << std::endl;
 		return -1;
 	}
+	return 0;
+}
+
+Acceptor::~Acceptor()
+{
+	close(listenfd_);
 }

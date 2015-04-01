@@ -7,14 +7,13 @@
 #include "AcceptorCallBack.h"
 #include "Acceptor.h"
 
-class TcpServer : public AcceptorCallBack
+class TcpServer
 {
 public:
 	TcpServer() : epollfd_(-1), acceptor_(NULL) {
 	}
 	~TcpServer();
 	void Run();
-	void acceptorCallBack();
 private:
 	int epollfd_;
 	Acceptor* acceptor_;
