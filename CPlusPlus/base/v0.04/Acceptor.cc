@@ -60,22 +60,15 @@ void Acceptor::setEvents(int event)
 	events_ = event;
 }
 
-//int Acceptor::registerEvent()
-//{
-//	struct epoll_event ev;
-//	ev.data.fd = listenfd_;
-//	ev.data.ptr = static_cast<void*>(this);
-//	ev.events = events_;
-//	if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, listenfd_, &ev) < 0) {
-//		std::cerr << "register listen event error!" << std::endl;
-//		return -1;
-//	}
-//	return 0;
-//}
 
 int Acceptor::getSockfd()const
 {
 	return listenfd_;
+}
+
+int Acceptor::setPollfd(int fd)
+{
+	epollfd_ = fd;
 }
 
 void Acceptor::callBack(int fd)
@@ -95,16 +88,16 @@ void Acceptor::callBack(int fd)
 			return;
 		}
 
-		TcpTransport* transport = new TcpTransport(epollfd_, connfd);
-		if (NULL == transport) {
-			std::cerr << "create TcpTransport error!" << std::endl;
-			return;
-		}
-		Channel* channel = new Channel(epollfd_, connfd);
-		if (NULL == channel) {
-			std::cerr << "Create Channel error!" << std::endl;
-			return ;
-		}
+		std::shared_ptr<TcpTransport> transport(new TcpTransport(epollfd_, connfd));
+		//if (NULL == transport) {
+		//	std::cerr << "create TcpTransport error!" << std::endl;
+		//	return;
+		//}
+		std::shared_ptr<Channel> channel(new Channel(epollfd_, connfd));
+		//if (NULL == channel) {
+		//	std::cerr << "Create Channel error!" << std::endl;
+		//	return ;
+		//}
 		channel->setEvents(EPOLLIN);
 		channel->setCallBack(transport);
 		if (channel->registerEvent() != 0) {
@@ -120,8 +113,8 @@ int Acceptor::start()
 		std::cout << "CreateSocketAndListen Error!" << std::endl;
 		return -1;
 	}
-	Channel* channel = new Channel(epollfd_, listenfd_);
-	channel->setCallBack(this);
+	std::shared_ptr<Channel> channel(new Channel(epollfd_, listenfd_));
+	channel->setCallBack(shared_from_this());
 	channel->setEvents(EPOLLIN);
 	if (channel->registerEvent() != 0) {
 		std::cerr << "listen Event register Error!" << std::endl;
@@ -132,5 +125,6 @@ int Acceptor::start()
 
 Acceptor::~Acceptor()
 {
+	std::cout << "~Acceptor() called" << std::endl;
 	close(listenfd_);
 }
