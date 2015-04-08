@@ -4,6 +4,7 @@
 class AcceptorCallBack
 {
 public:
-	virtual void acceptorCallBack() = 0;
+	virtual void newConnection() = 0;
 };
-#endif
+
+#endif //__ACCEPTORCALLBACK_H_INCLUDED__

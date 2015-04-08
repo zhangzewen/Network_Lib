@@ -2,6 +2,7 @@
 #define _ACCEPTOR_H_INCLUDED__
 
 #include "ChannelCallBack.h"
+#include "AcceptorCallBack.h"
 #include <memory>
 #include <iostream>
 
@@ -12,6 +13,7 @@ public:
 	Acceptor(){std::cout << "Acceptor() called" << std::endl;}
 	~Acceptor();
 	int createSocketAndListen(bool nonblocking);
+	void setAcceptorCallBack(std::shared_ptr<AcceptorCallBack> callback);
 	void setEvents(int event);
 	int getSockfd()const;
 	int setNonBlock(int fd);
@@ -22,5 +24,6 @@ private:
 	int listenfd_;
 	int epollfd_;
 	int events_;
+	std::shared_ptr<AcceptorCallBack> acceptorCallBack;
 };
 #endif

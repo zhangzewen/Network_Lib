@@ -10,7 +10,7 @@
 #include "Acceptor.h"
 #include <map>
 
-class TcpServer
+class TcpServer : public AcceptorCallBack
 {
 public:
 	TcpServer() : epollfd_(-1), acceptor_(new Acceptor()) {
