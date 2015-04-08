@@ -71,6 +71,11 @@ int Acceptor::setPollfd(int fd)
 	epollfd_ = fd;
 }
 
+void Acceptor::setAcceptorCallBack(std::shared_ptr<AcceptorCallBack> callback)
+{
+	acceptorCallBack = callback;
+}
+
 void Acceptor::callBack(int fd)
 {
 	int connfd = -1;

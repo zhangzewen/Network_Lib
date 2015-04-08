@@ -17,6 +17,7 @@ public:
 	}
 	~TcpServer();
 	void Run();
+	void newConnection();
 private:
 	int epollfd_;
 	std::shared_ptr<Acceptor> acceptor_;
