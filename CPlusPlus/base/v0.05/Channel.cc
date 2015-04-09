@@ -12,7 +12,7 @@ Channel::~Channel()
 {
 }
 
-void Channel::setCallBack(ChannelCallBack* callback)
+void Channel::setCallBack(std::shared_ptr<ChannelCallBack> callback)
 {
 	callBack_ = callback;
 }
@@ -29,7 +29,12 @@ int Channel::getSockfd() const
 
 int Channel::setEvents(int event)
 {
-	events_ = event;
+	events_ |= event;
+}
+
+int Channel::clearEvents(int event)
+{
+	events_ &= ~event;
 }
 
 int Channel::registerEvent()
@@ -37,7 +42,7 @@ int Channel::registerEvent()
 	struct epoll_event ev;
 	ev.events = events_;
 	ev.data.fd = fd_;
-	ev.data.ptr = static_cast<void*>(this);
+	ev.data.ptr = static_cast<void*>(shared_from_this().get());
 	if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd_, &ev) == -1) {
 		std::cerr << "epoll_ctl add connfd error!" << std::endl;
 		return -1;

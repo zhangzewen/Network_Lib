@@ -9,7 +9,7 @@ public:
 	TcpTransport(int epollfd, int sockfd);
 	~TcpTransport();
 	void callBack(int fd);
-	int registerEvent();
+	//int registerEvent();
 	void setEvents(int event);
 	int getSockfd()const;
 private:
