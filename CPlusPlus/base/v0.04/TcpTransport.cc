@@ -18,7 +18,7 @@ TcpTransport::~TcpTransport()
 	close(connfd_);
 }
 
-void TcpTransport::callBack(int fd)
+void TcpTransport::readEventHandle()
 {
 		char buf[1024] = {0};
 		int ret = read(connfd_, buf, 1024);
@@ -27,6 +27,17 @@ void TcpTransport::callBack(int fd)
 		if (strncasecmp(buf, "Done", strlen(buf)) == 0) {
 			close(connfd_);
 		}
+}
+void TcpTransport::writeEventHandle()
+{
+}
+
+void TcpTransport::timeOutEventHandle()
+{
+}
+
+void TcpTransport::errorEventHandle()
+{
 }
 
 int TcpTransport::registerEvent()

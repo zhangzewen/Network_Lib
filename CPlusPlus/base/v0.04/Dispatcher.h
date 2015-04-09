@@ -9,7 +9,11 @@ class Dispatcher
 public:
 	Dispatcher(){}
 	~Dispatcher(){}
+	bool init();
 	void poll();
+	bool addEvent(Channel*);
+	bool delEvent(Channel*);
+	Channel* findChannel(int fd);
 private:
 	int epollfd_;
 	std::map<int fd, Channel*> channels_;

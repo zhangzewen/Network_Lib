@@ -78,40 +78,50 @@ int Acceptor::getSockfd()const
 	return listenfd_;
 }
 
-void Acceptor::callBack(int fd)
+void Acceptor::readEventHandle()
 {
 	int connfd = -1;
 	struct sockaddr_in cliaddr; // cli addr
 	struct epoll_event ev;
 	socklen_t len = sizeof(cliaddr);
 	std::cout << "listenfd_ : " << listenfd_ << std::endl;
-	if (fd == listenfd_) {
-		connfd = accept(listenfd_, (struct sockaddr*)&cliaddr, &len);
-		if (connfd < 0) {
-			return;
-		}
-		if (setNonBlock(connfd) < 0) {
-			std::cerr << "connection set nonblocking error!" << std::endl;
-			return;
-		}
-
-		TcpTransport* transport = new TcpTransport(epollfd_, connfd);
-		if (NULL == transport) {
-			std::cerr << "create TcpTransport error!" << std::endl;
-			return;
-		}
-		Channel* channel = new Channel(epollfd_, connfd);
-		if (NULL == channel) {
-			std::cerr << "Create Channel error!" << std::endl;
-			return ;
-		}
-		channel->setEvents(EPOLLIN);
-		channel->setCallBack(transport);
-		if (channel->registerEvent() != 0) {
-			std::cerr << "RegisterEvent error!" << std::endl;
-			return ;
-		}
+	connfd = accept(listenfd_, (struct sockaddr*)&cliaddr, &len);
+	if (connfd < 0) {
+		return;
 	}
+	if (setNonBlock(connfd) < 0) {
+		std::cerr << "connection set nonblocking error!" << std::endl;
+		return;
+	}
+
+	TcpTransport* transport = new TcpTransport(epollfd_, connfd);
+	if (NULL == transport) {
+		std::cerr << "create TcpTransport error!" << std::endl;
+		return;
+	}
+	Channel* channel = new Channel(epollfd_, connfd);
+	if (NULL == channel) {
+		std::cerr << "Create Channel error!" << std::endl;
+		return ;
+	}
+	channel->setEvents(EPOLLIN);
+	channel->setCallBack(transport);
+	if (channel->registerEvent() != 0) {
+		std::cerr << "RegisterEvent error!" << std::endl;
+		return ;
+	}
+}
+
+void Acceptor::writeEventHandle()
+{
+}
+
+void Acceptor::timeOutEventHandle()
+{
+}
+
+void Acceptor::errorEventHandle()
+{
 }
 
 int Acceptor::start()
