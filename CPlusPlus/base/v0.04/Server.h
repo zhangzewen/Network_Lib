@@ -6,18 +6,19 @@
 #include "ChannelCallBack.h"
 #include "AcceptorCallBack.h"
 #include "Acceptor.h"
+#include "Dispatcher.h"
 
 class TcpServer
 {
 public:
-	TcpServer() : epollfd_(-1), acceptor_(NULL) {
+	TcpServer() : epollfd_(-1), acceptor_(NULL), base_(NULL) {
 	}
 	~TcpServer();
 	void Run();
 private:
 	int epollfd_;
 	Acceptor* acceptor_;
-	struct epoll_event events_[1024];
+	Dispatcher* base_;
 };
 
 #endif

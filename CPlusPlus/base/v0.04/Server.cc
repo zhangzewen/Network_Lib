@@ -16,11 +16,11 @@ TcpServer::~TcpServer()
 }
 void TcpServer::Run()
 {
-	if ((epollfd_ = epoll_create(1)) < 0) {
-		std::cerr << "Create epollfd error!" << std::endl;
-		exit(-1);
-	}
-	acceptor_ = new Acceptor(epollfd_);
+
+	base_ = new Dispatcher();
+	base_->init();
+
+	acceptor_ = new Acceptor(base_);
 	if (NULL == acceptor_) {
 		std::cerr << "Create Acceptor error!" << std::endl;
 		exit(-1);
@@ -28,6 +28,8 @@ void TcpServer::Run()
 	if (acceptor_->start() < 0) {
 		std::cerr << "Start server error!" << std::endl;
 	}
+
+	base_->poll();
 //	while(1) {
 //		int nfds = epoll_wait(epollfd_, events_, 1024, -1);
 //		if (nfds == -1) {

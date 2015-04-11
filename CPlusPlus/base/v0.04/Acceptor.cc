@@ -8,6 +8,26 @@
 #include <unistd.h>
 #include <iostream>
 
+Acceptor::Acceptor(Dispatcher* base) : base_(base)
+{
+
+}
+
+Acceptor::Acceptor()
+{
+
+}
+
+void Acceptor::setDispatcher(Dispatcher* base)
+{
+	base_ = base;
+}
+
+Dispatcher* Acceptor::getDispatcher() const
+{
+	return base_;
+}
+
 int Acceptor::setNonBlock(int fd)
 {
 	int ret;
@@ -99,14 +119,15 @@ void Acceptor::readEventHandle()
 		std::cerr << "create TcpTransport error!" << std::endl;
 		return;
 	}
-	Channel* channel = new Channel(epollfd_, connfd);
+
+	Channel* channel = new Channel(connfd, getDispatcher());
 	if (NULL == channel) {
 		std::cerr << "Create Channel error!" << std::endl;
 		return ;
 	}
-	channel->setEvents(EPOLLIN);
+	//channel->setEvents(EPOLLIN);
 	channel->setCallBack(transport);
-	if (channel->registerEvent() != 0) {
+	if (channel->registerEvent(EPOLLIN) != 0) {
 		std::cerr << "RegisterEvent error!" << std::endl;
 		return ;
 	}
@@ -130,10 +151,10 @@ int Acceptor::start()
 		std::cout << "CreateSocketAndListen Error!" << std::endl;
 		return -1;
 	}
-	Channel* channel = new Channel(epollfd_, listenfd_);
+	Channel* channel = new Channel(listenfd_, base_);
 	channel->setCallBack(this);
-	channel->setEvents(EPOLLIN);
-	if (channel->registerEvent() != 0) {
+	//channel->setEvents(EPOLLIN);
+	if (channel->registerEvent(EPOLLIN) != 0) {
 		std::cerr << "listen Event register Error!" << std::endl;
 		return -1;
 	}

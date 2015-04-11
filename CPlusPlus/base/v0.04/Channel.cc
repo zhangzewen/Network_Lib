@@ -49,7 +49,7 @@ void Channel::handleEvent(int activeEvents)
 	}
 }
 
-int Channel::getSockfd() const
+int Channel::getFd() const
 {
 	return fd_;
 }
@@ -61,14 +61,14 @@ int Channel::setEvents(int event)
 
 int Channel::registerEvent(int events)
 {
-	base_->addEvent(&this, int events);
+	base_->addEvent(this, events);
 	return 0;
 }
 
 
 int Channel::unRegisterEvent(int events)
 {
-	base_->delEvent(&this, int events);
+	base_->delEvent(this, events);
 	return 0;
 }
 

@@ -1,7 +1,15 @@
 #include "Dispatcher.h"
+#include <sys/epoll.h>
+#include <sys/fcntl.h>
+#include <netinet/in.h>
+#include <sys/types.h>
+#include <iostream>
+#include <unistd.h>
+#include <stdlib.h>
 
 Dispatcher::Dispatcher()
 {
+	channels_.clear();
 }
 
 Dispatcher::~Dispatcher()
@@ -17,7 +25,7 @@ bool Dispatcher::init()
 	channels_.clear();
 	return true;
 }
-Dispatcher::poll()
+void Dispatcher::poll()
 {
 	while(1) {
 		int nfds = epoll_wait(epollfd_, events_, 1024, -1);
@@ -31,7 +39,7 @@ Dispatcher::poll()
 				continue;
 			}
 			Channel* channel = channels_[activefd];
-			channel->handleEvent();
+			channel->handleEvent(events_[i].events);
 		}
 	}
 }
@@ -42,18 +50,20 @@ bool Dispatcher::addEvent(Channel* channel, int event)
 	int fd = channel->getFd();
 	int op = 0; // EPOLL_CTL_ADD ,default
 
+	Channel* temp = NULL;
 
-	if (channels_.find(fd) != channels_.end()) {
+
+	if ((temp = findChannel(fd)) != NULL) {
 		op = EPOLL_CTL_MOD;
 	} else {
 		op = EPOLL_CTL_ADD;
 		channels_[fd] = channel;
 	}
 	revents |= event;
-	channel->setEvent(revents);
+	channel->setEvents(revents);
 
 	struct epoll_event ev;
-	ev.events = events;
+	ev.events = revents;
 	ev.data.fd = fd;
 
 	if (epoll_ctl(epollfd_, op, fd, &ev) == -1) {
@@ -85,7 +95,7 @@ bool Dispatcher::delEvent(Channel* channel, int events)
 	return true;
 }
 
-Channel* Dispatcher::findChannel(int fd, int events)
+Channel* Dispatcher::findChannel(int fd)
 {
 	if (!channels_.size()) {
 		return NULL;

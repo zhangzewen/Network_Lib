@@ -3,6 +3,9 @@
 
 #include "EventCallBack.h"
 #include "Dispatcher.h"
+
+class Dispatcher;
+
 class Channel
 {
 public:
@@ -18,7 +21,7 @@ public:
 	int getEvents()const;
 	int setEvents(int event);
 	int registerEvent(int event);
-	int unregisterEvent(int event);
+	int unRegisterEvent(int event);
 private:
 	int fd_;
 	int events_;
