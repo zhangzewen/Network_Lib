@@ -16,8 +16,9 @@ public:
 	void setFd(int);
 	void setDispatcher(Dispatcher*);
 	int getEvents()const;
-	int registerEvent();
 	int setEvents(int event);
+	int registerEvent(int event);
+	int unregisterEvent(int event);
 private:
 	int fd_;
 	int events_;
@@ -25,5 +26,5 @@ private:
 	Dispatcher* base_;
 };
 
-#endif
+#endif //_CHANNEL_H_INCLUDED__
 

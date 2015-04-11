@@ -36,25 +36,28 @@ Dispatcher::poll()
 	}
 }
 
-bool Dispatcher::addEvent(Channel* channel)
+bool Dispatcher::addEvent(Channel* channel, int event)
 {
-	int events = channel->getEvents();
+	int revents = channel->getEvents();
 	int fd = channel->getFd();
+	int op = 0; // EPOLL_CTL_ADD ,default
+
+
+	if (channels_.find(fd) != channels_.end()) {
+		op = EPOLL_CTL_MOD;
+	} else {
+		op = EPOLL_CTL_ADD;
+		channels_[fd] = channel;
+	}
+	revents |= event;
+	channel->setEvent(revents);
 
 	struct epoll_event ev;
 	ev.events = events;
 	ev.data.fd = fd;
 
-	if (channels_.find(fd) != channels_.end()) { //means that that fd has already register,now just EPOLL_CTL_MOD
-		if (epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &ev) == -1) {
-			std::cerr << "epoll_ctl add connfd error!" << std::endl;
-			return false;
-		}
-	}
-
-	channels_[fd] = channel;
-	if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd_, &ev) == -1) {
-		std::cerr << "epoll_ctl add connfd error!" << std::endl;
+	if (epoll_ctl(epollfd_, op, fd, &ev) == -1) {
+		std::cerr << "epoll_ctl connfd error!" << std::endl;
 		return false;
 	}
 	return true;
@@ -62,23 +65,23 @@ bool Dispatcher::addEvent(Channel* channel)
 
 bool Dispatcher::delEvent(Channel* channel, int events)
 {
-
-	//分del和mod两种模式
-	int events = channel->getEvents();
+	int revents = channel->getEvents();
 	int fd = channel->getFd();
+	int op = 0;
 
 	struct epoll_event ev;
 	ev.events = events;
 	ev.data.fd = fd;
 
-	if (channels_.find(fd) != channels_.end()) { //means that that fd has already register,now just EPOLL_CTL_MOD
+	if (channels_.find(fd) != channels_.end()) {
+		op = EPOLL_CTL_MOD;
+	} else {
+		// shoule raise this fd does not register
+	}
 		if (epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &ev) == -1) {
 			std::cerr << "epoll_ctl add connfd error!" << std::endl;
 			return false;
 		}
-	}
-
-	// channel is not exists, return true anyway!
 	return true;
 }
 
