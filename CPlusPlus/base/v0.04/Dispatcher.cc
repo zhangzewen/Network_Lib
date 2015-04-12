@@ -79,19 +79,21 @@ bool Dispatcher::delEvent(Channel* channel, int events)
 	int fd = channel->getFd();
 	int op = 0;
 
-	struct epoll_event ev;
-	ev.events = events;
-	ev.data.fd = fd;
 
 	if (channels_.find(fd) != channels_.end()) {
 		op = EPOLL_CTL_MOD;
 	} else {
 		// shoule raise this fd does not register
 	}
-		if (epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &ev) == -1) {
-			std::cerr << "epoll_ctl add connfd error!" << std::endl;
-			return false;
-		}
+
+	struct epoll_event ev;
+	ev.events = revents;
+	ev.data.fd = fd;
+	
+	if (epoll_ctl(epollfd_, op, fd, &ev) == -1) {
+		std::cerr << "epoll_ctl add connfd error!" << std::endl;
+		return false;
+	}
 	return true;
 }
 

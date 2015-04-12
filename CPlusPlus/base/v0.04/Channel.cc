@@ -2,18 +2,15 @@
 #include <sys/epoll.h>
 #include <iostream>
 
-Channel::Channel(int sockfd, Dispatcher* base)
+Channel::Channel(int sockfd, Dispatcher* base) : fd_(sockfd), base_(base), events_(0)
 {
-	fd_ = sockfd;
-	base_ = base;
 }
 
-Channel::Channel(int sockfd) : base_(NULL)
+Channel::Channel(int sockfd) : fd_(sockfd), base_(NULL), events_(0)
 {
-	fd_ = sockfd;
 }
 
-Channel::Channel() : fd_(-1), base_(NULL)
+Channel::Channel() : fd_(-1), base_(NULL), events_(0)
 {
 }
 
