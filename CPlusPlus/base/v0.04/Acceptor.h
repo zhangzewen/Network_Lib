@@ -12,7 +12,6 @@ public:
 	~Acceptor();
 	int createSocketAndListen(bool nonblocking);
 	void setEvents(int event);
-	//int registerEvent();
 	int getSockfd()const;
 	int setNonBlock(int fd);
 	int start();

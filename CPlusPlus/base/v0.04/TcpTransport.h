@@ -8,7 +8,6 @@ class TcpTransport : public EventCallBack
 public:
 	TcpTransport(int epollfd, int sockfd);
 	~TcpTransport();
-	int registerEvent();
 	void setEvents(int event);
 	int getSockfd()const;
 	void readEventHandle();

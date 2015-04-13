@@ -17,7 +17,7 @@ TcpServer::~TcpServer()
 void TcpServer::Run()
 {
 
-	base_ = new Dispatcher();
+	base_ = new EpollDispatcher();
 	base_->init();
 
 	acceptor_ = new Acceptor(base_);

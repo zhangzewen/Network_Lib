@@ -7,16 +7,16 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-Dispatcher::Dispatcher()
+EpollDispatcher::EpollDispatcher()
 {
 	channels_.clear();
 }
 
-Dispatcher::~Dispatcher()
+EpollDispatcher::~EpollDispatcher()
 {
 }
 
-bool Dispatcher::init()
+bool EpollDispatcher::init()
 {
 	epollfd_ = epoll_create(1);
 	if (epollfd_ < 0) {
@@ -25,7 +25,7 @@ bool Dispatcher::init()
 	channels_.clear();
 	return true;
 }
-void Dispatcher::poll()
+void EpollDispatcher::poll()
 {
 	while(1) {
 		int nfds = epoll_wait(epollfd_, events_, 1024, -1);
@@ -44,7 +44,7 @@ void Dispatcher::poll()
 	}
 }
 
-bool Dispatcher::addEvent(Channel* channel, int event)
+bool EpollDispatcher::addEvent(Channel* channel, int event)
 {
 	int revents = channel->getEvents();
 	int fd = channel->getFd();
@@ -73,7 +73,7 @@ bool Dispatcher::addEvent(Channel* channel, int event)
 	return true;
 }
 
-bool Dispatcher::delEvent(Channel* channel, int events)
+bool EpollDispatcher::delEvent(Channel* channel, int events)
 {
 	int revents = channel->getEvents();
 	int fd = channel->getFd();
@@ -97,7 +97,7 @@ bool Dispatcher::delEvent(Channel* channel, int events)
 	return true;
 }
 
-Channel* Dispatcher::findChannel(int fd)
+Channel* EpollDispatcher::findChannel(int fd)
 {
 	if (!channels_.size()) {
 		return NULL;
@@ -109,3 +109,56 @@ Channel* Dispatcher::findChannel(int fd)
 	return NULL;
 }
 
+
+//select
+SelectDispatcher::SelectDispatcher()
+{
+}
+
+SelectDispatcher::~SelectDispatcher()
+{
+}
+
+bool SelectDispatcher::init()
+{
+}
+
+void SelectDispatcher::poll()
+{
+}
+
+bool SelectDispatcher::addEvent(Channel* channel, int event)
+{
+
+}
+bool SelectDispatcher::delEvent(Channel* channel, int event)
+{
+
+}
+
+
+//poll
+PollDispatcher::PollDispatcher()
+{
+}
+
+PollDispatcher::~PollDispatcher()
+{
+}
+
+bool PollDispatcher::init()
+{
+}
+
+void PollDispatcher::poll()
+{
+}
+
+bool PollDispatcher::addEvent(Channel* channel, int event)
+{
+
+}
+bool PollDispatcher::delEvent(Channel* channel, int event)
+{
+
+}
