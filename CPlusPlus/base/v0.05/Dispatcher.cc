@@ -9,11 +9,13 @@
 
 EpollDispatcher::EpollDispatcher()
 {
+	std::cout << "EpollDispatcher::EpollDispatcher()" << std::endl;
 	channels_.clear();
 }
 
 EpollDispatcher::~EpollDispatcher()
 {
+	std::cout << "EpollDispatcher::~EpollDispatcher()" << std::endl;
 }
 
 bool EpollDispatcher::init()
@@ -27,7 +29,8 @@ bool EpollDispatcher::init()
 }
 void EpollDispatcher::poll()
 {
-	while(1) {
+	int n = 3;
+	while(n) {
 		int nfds = epoll_wait(epollfd_, events_, 1024, -1);
 		if (nfds == -1) {
 			std::cerr << "epoll_wait error!" << std::endl;
@@ -41,6 +44,7 @@ void EpollDispatcher::poll()
 			std::shared_ptr<Channel> channel = channels_[activefd];
 			channel->handleEvent(events_[i].events);
 		}
+		--n;
 	}
 }
 

@@ -13,7 +13,7 @@ public:
 	Channel(int fd);
 	Channel(int fd, std::shared_ptr<Dispatcher>);
 	Channel();
-	~Channel();
+	virtual ~Channel();
 	void setCallBack(std::shared_ptr<EventCallBack> callback);
 	void handleEvent(int activeEvents);
 	int getFd()const;
@@ -27,7 +27,7 @@ private:
 	int fd_;
 	int events_;
 	std::shared_ptr<EventCallBack> callBack_;
-	std::shared_ptr<Dispatcher> base_;
+	std::weak_ptr<Dispatcher> base_;
 };
 
 #endif //_CHANNEL_H_INCLUDED__

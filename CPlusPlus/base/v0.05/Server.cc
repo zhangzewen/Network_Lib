@@ -13,6 +13,7 @@
 TcpServer::~TcpServer()
 {
 	close(epollfd_);
+	std::cout << "TcpServer::~TcpServer()" << std::endl;
 }
 void TcpServer::Run()
 {

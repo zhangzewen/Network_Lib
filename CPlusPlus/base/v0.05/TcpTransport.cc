@@ -9,6 +9,7 @@
 
 TcpTransport::TcpTransport(int epollfd, int sockfd)
 {
+	std::cout << "TcpTransprot::TcpTransprot()" << std::endl;
 	epollfd_ = epollfd;
 	connfd_ = sockfd;
 }
@@ -16,6 +17,7 @@ TcpTransport::TcpTransport(int epollfd, int sockfd)
 TcpTransport::~TcpTransport()
 {
 	close(connfd_);
+	std::cout << "TcpTransprot::~TcpTransprot()" << std::endl;
 }
 
 void TcpTransport::readEventHandle()

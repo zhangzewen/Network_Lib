@@ -10,7 +10,7 @@
 class TcpServer
 {
 public:
-	TcpServer() : epollfd_(-1), acceptor_(new Acceptor()), base_(new Dispatcher()) {
+	TcpServer() : epollfd_(-1), acceptor_(new Acceptor()), base_(new EpollDispatcher()) {
 	}
 	~TcpServer();
 	void Run();

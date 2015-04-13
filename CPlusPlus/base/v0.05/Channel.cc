@@ -1,21 +1,27 @@
 #include "Channel.h"
 #include <sys/epoll.h>
 #include <iostream>
+#include <unistd.h>
 
 Channel::Channel(int sockfd, std::shared_ptr<Dispatcher> base) : fd_(sockfd), base_(base), events_(0)
 {
+	std::cout << "Channel::Channel(int sockfd, std::shared_ptr<Dispatcher> base)" << std::endl;
 }
 
 Channel::Channel(int sockfd) : fd_(sockfd), base_(std::shared_ptr<Dispatcher>()), events_(0)
 {
+	std::cout << "Channel::Channel(int sockfd)" << std::endl;
 }
 
 Channel::Channel() : fd_(-1), base_(std::shared_ptr<Dispatcher>()), events_(0)
 {
+	std::cout << "Channel::Channel()" << std::endl;
 }
 
 Channel::~Channel()
 {
+	close(fd_);
+	std::cout << "Channel::~Channel()" << std::endl;
 }
 
 void Channel::setFd(int fd)

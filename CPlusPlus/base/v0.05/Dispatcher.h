@@ -5,6 +5,7 @@
 #include <sys/epoll.h>
 #include "Channel.h"
 #include <memory>
+#include <iostream>
 
 class Channel;
 
@@ -12,7 +13,7 @@ class Dispatcher
 {
 public:
 	Dispatcher() {}
-	virtual ~Dispatcher() {}
+	virtual ~Dispatcher() {std::cout << "Dispatcher::~Dispatcher()" << std::endl;}
 	virtual bool init() {}
 	virtual void poll() {}
 	virtual bool addEvent(std::shared_ptr<Channel>, int) {}

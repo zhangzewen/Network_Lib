@@ -24,4 +24,5 @@ clean :
 	rm -fr *.o
 	rm -fr main
 	rm -fr core.*
+	rm -fr core
 

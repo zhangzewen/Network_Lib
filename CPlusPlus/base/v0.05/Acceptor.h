@@ -12,7 +12,7 @@ class Acceptor : public EventCallBack, public std::enable_shared_from_this<Accep
 public:
 	Acceptor(std::shared_ptr<Dispatcher> base);
 	Acceptor();
-	~Acceptor();
+	virtual ~Acceptor();
 	int createSocketAndListen(bool nonblocking);
 	void setEvents(int event);
 	int getSockfd()const;
@@ -28,6 +28,6 @@ private:
 	int listenfd_;
 	int epollfd_;
 	int events_;
-	std::shared_ptr<Dispatcher> base_;
+	std::weak_ptr<Dispatcher> base_;
 };
 #endif

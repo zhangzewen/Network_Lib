@@ -11,12 +11,18 @@
 
 Acceptor::Acceptor(std::shared_ptr<Dispatcher> base) : base_(base)
 {
-
+	std::cout << "Acceptor::Acceptor(std::shared_ptr<Dispatcher> base)" << std::endl;
 }
 
 Acceptor::Acceptor()
 {
+	std::cout << "Acceptor::Acceptor()" << std::endl;
+}
 
+Acceptor::~Acceptor()
+{
+	std::cout << "Acceptor::~Acceptor()" << std::endl;
+	close(listenfd_);
 }
 
 void Acceptor::setDispatcher(std::shared_ptr<Dispatcher> base)
@@ -139,7 +145,8 @@ int Acceptor::start()
 		std::cout << "CreateSocketAndListen Error!" << std::endl;
 		return -1;
 	}
-	Channel* channel = new Channel(listenfd_, base_);
+	std::shared_ptr<Channel> channel(new Channel(listenfd_, base_));
+	//Channel* channel = new Channel(listenfd_, base_);
 	channel->setCallBack(shared_from_this());
 	//channel->setEvents(EPOLLIN);
 	if (channel->registerEvent(EPOLLIN) != 0) {
@@ -149,7 +156,3 @@ int Acceptor::start()
 	return 0;
 }
 
-Acceptor::~Acceptor()
-{
-	close(listenfd_);
-}
