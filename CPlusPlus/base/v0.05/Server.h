@@ -4,25 +4,20 @@
 #include <stdio.h>
 #include <sys/epoll.h>
 #include <memory>
-#include <iostream>
-#include "ChannelCallBack.h"
-#include "AcceptorCallBack.h"
 #include "Acceptor.h"
-#include <map>
+#include "Dispatcher.h"
 
-class TcpServer : public AcceptorCallBack
+class TcpServer
 {
 public:
-	TcpServer() : epollfd_(-1), acceptor_(new Acceptor()) {
+	TcpServer() : epollfd_(-1), acceptor_(new Acceptor()), base_(new Dispatcher()) {
 	}
 	~TcpServer();
 	void Run();
-	void newConnection();
 private:
 	int epollfd_;
 	std::shared_ptr<Acceptor> acceptor_;
-	struct epoll_event events_[1024];
-	std::map<int fd, std::shared_ptr<Channel> > registedChannels_;
+	std::shared_ptr<Dispatcher> base_;
 };
 
 #endif

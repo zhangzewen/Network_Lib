@@ -1,29 +1,33 @@
 #ifndef _ACCEPTOR_H_INCLUDED__
 #define _ACCEPTOR_H_INCLUDED__
 
-#include "ChannelCallBack.h"
-#include "AcceptorCallBack.h"
+#include "EventCallBack.h"
+#include "Dispatcher.h"
 #include <memory>
-#include <iostream>
 
-class Acceptor : public ChannelCallBack, public std::enable_shared_from_this<Acceptor>
+class Dispatcher;
+
+class Acceptor : public EventCallBack, public std::enable_shared_from_this<Acceptor>
 {
 public:
-	Acceptor(int epollfd) : epollfd_(epollfd) {}
-	Acceptor(){std::cout << "Acceptor() called" << std::endl;}
+	Acceptor(std::shared_ptr<Dispatcher> base);
+	Acceptor();
 	~Acceptor();
 	int createSocketAndListen(bool nonblocking);
-	void setAcceptorCallBack(std::shared_ptr<AcceptorCallBack> callback);
 	void setEvents(int event);
 	int getSockfd()const;
 	int setNonBlock(int fd);
-	int setPollfd(int fd);
 	int start();
-	void callBack(int fd);
+	void setDispatcher(std::shared_ptr<Dispatcher> base);
+	std::shared_ptr<Dispatcher> getDispatcher() const;
+	void readEventHandle();
+	void writeEventHandle();
+	void timeOutEventHandle();
+	void errorEventHandle();
 private:
 	int listenfd_;
 	int epollfd_;
 	int events_;
-	std::shared_ptr<AcceptorCallBack> acceptorCallBack;
+	std::shared_ptr<Dispatcher> base_;
 };
 #endif

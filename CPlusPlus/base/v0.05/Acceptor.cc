@@ -7,6 +7,27 @@
 #include <sys/fcntl.h>
 #include <unistd.h>
 #include <iostream>
+#include <memory>
+
+Acceptor::Acceptor(std::shared_ptr<Dispatcher> base) : base_(base)
+{
+
+}
+
+Acceptor::Acceptor()
+{
+
+}
+
+void Acceptor::setDispatcher(std::shared_ptr<Dispatcher> base)
+{
+	base_ = base;
+}
+
+std::shared_ptr<Dispatcher> Acceptor::getDispatcher() const
+{
+	return base_;
+}
 
 int Acceptor::setNonBlock(int fd)
 {
@@ -60,56 +81,56 @@ void Acceptor::setEvents(int event)
 	events_ = event;
 }
 
-
 int Acceptor::getSockfd()const
 {
 	return listenfd_;
 }
 
-int Acceptor::setPollfd(int fd)
-{
-	epollfd_ = fd;
-}
-
-void Acceptor::setAcceptorCallBack(std::shared_ptr<AcceptorCallBack> callback)
-{
-	acceptorCallBack = callback;
-}
-
-void Acceptor::callBack(int fd)
+void Acceptor::readEventHandle()
 {
 	int connfd = -1;
 	struct sockaddr_in cliaddr; // cli addr
 	struct epoll_event ev;
 	socklen_t len = sizeof(cliaddr);
 	std::cout << "listenfd_ : " << listenfd_ << std::endl;
-	if (fd == listenfd_) {
-		connfd = accept(listenfd_, (struct sockaddr*)&cliaddr, &len);
-		if (connfd < 0) {
-			return;
-		}
-		if (setNonBlock(connfd) < 0) {
-			std::cerr << "connection set nonblocking error!" << std::endl;
-			return;
-		}
-
-		std::shared_ptr<TcpTransport> transport(new TcpTransport(epollfd_, connfd));
-		//if (NULL == transport) {
-		//	std::cerr << "create TcpTransport error!" << std::endl;
-		//	return;
-		//}
-		std::shared_ptr<Channel> channel(new Channel(epollfd_, connfd));
-		//if (NULL == channel) {
-		//	std::cerr << "Create Channel error!" << std::endl;
-		//	return ;
-		//}
-		channel->setEvents(EPOLLIN);
-		channel->setCallBack(transport);
-		if (channel->registerEvent() != 0) {
-			std::cerr << "RegisterEvent error!" << std::endl;
-			return ;
-		}
+	connfd = accept(listenfd_, (struct sockaddr*)&cliaddr, &len);
+	if (connfd < 0) {
+		return;
 	}
+	if (setNonBlock(connfd) < 0) {
+		std::cerr << "connection set nonblocking error!" << std::endl;
+		return;
+	}
+
+	std::shared_ptr<TcpTransport> transport(new TcpTransport(epollfd_, connfd));
+	if (NULL == transport) {
+		std::cerr << "create TcpTransport error!" << std::endl;
+		return;
+	}
+
+	std::shared_ptr<Channel> channel(new Channel(connfd, getDispatcher()));
+	if (NULL == channel) {
+		std::cerr << "Create Channel error!" << std::endl;
+		return ;
+	}
+	//channel->setEvents(EPOLLIN);
+	channel->setCallBack(transport);
+	if (channel->registerEvent(EPOLLIN) != 0) {
+		std::cerr << "RegisterEvent error!" << std::endl;
+		return ;
+	}
+}
+
+void Acceptor::writeEventHandle()
+{
+}
+
+void Acceptor::timeOutEventHandle()
+{
+}
+
+void Acceptor::errorEventHandle()
+{
 }
 
 int Acceptor::start()
@@ -118,10 +139,10 @@ int Acceptor::start()
 		std::cout << "CreateSocketAndListen Error!" << std::endl;
 		return -1;
 	}
-	std::shared_ptr<Channel> channel(new Channel(epollfd_, listenfd_));
+	Channel* channel = new Channel(listenfd_, base_);
 	channel->setCallBack(shared_from_this());
-	channel->setEvents(EPOLLIN);
-	if (channel->registerEvent() != 0) {
+	//channel->setEvents(EPOLLIN);
+	if (channel->registerEvent(EPOLLIN) != 0) {
 		std::cerr << "listen Event register Error!" << std::endl;
 		return -1;
 	}
@@ -130,6 +151,5 @@ int Acceptor::start()
 
 Acceptor::~Acceptor()
 {
-	std::cout << "~Acceptor() called" << std::endl;
 	close(listenfd_);
 }
