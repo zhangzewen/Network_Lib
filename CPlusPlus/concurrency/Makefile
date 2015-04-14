@@ -1,6 +1,6 @@
 OBJECTS=$(patsubst %.cc, %.o, $(wildcard *.cc))
 CC=g++
-CFLAGS+=-g3 -W -Werror
+CFLAGS+=-g3 -W -Werror -std=c++11
 LDFLAGS+= -pthread
 PWD=$(shell pwd)
 TEST_DIR=$(PWD)/test
