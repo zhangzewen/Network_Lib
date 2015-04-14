@@ -29,7 +29,6 @@ bool EpollDispatcher::init()
 }
 void EpollDispatcher::poll()
 {
-	int n = 3;
 	while(n) {
 		int nfds = epoll_wait(epollfd_, events_, 1024, -1);
 		if (nfds == -1) {
@@ -44,7 +43,6 @@ void EpollDispatcher::poll()
 			std::shared_ptr<Channel> channel = channels_[activefd];
 			channel->handleEvent(events_[i].events);
 		}
-		--n;
 	}
 }
 
