@@ -15,7 +15,6 @@ public:
 	Channel();
 	virtual ~Channel();
 	void setCallBack(std::shared_ptr<EventCallBack> callback);
-	void handleEvent(int activeEvents);
 	int getFd()const;
 	void setFd(int);
 	void setDispatcher(std::weak_ptr<Dispatcher>);
@@ -23,6 +22,7 @@ public:
 	int setEvents(int event);
 	int registerEvent(int event);
 	int unRegisterEvent(int event);
+	void handleEvent(int activeEvents);
 private:
 	int fd_;
 	int events_;

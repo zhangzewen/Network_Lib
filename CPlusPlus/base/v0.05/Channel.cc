@@ -4,12 +4,14 @@
 #include <unistd.h>
 
 Channel::Channel(int sockfd, std::weak_ptr<Dispatcher> base)
-			: fd_(sockfd), base_(base), events_(0)
+	: fd_(sockfd), base_(base), events_(0)
 {
-	std::cout << "Channel::Channel(int sockfd, std::weak_ptr<Dispatcher> base)" << std::endl;
+	std::cout << "Channel::Channel(int sockfd, std::weak_ptr<Dispatcher> base)"
+						<< std::endl;
 }
 
-Channel::Channel(int sockfd) : fd_(sockfd), base_(std::weak_ptr<Dispatcher>()), events_(0)
+Channel::Channel(int sockfd)
+	: fd_(sockfd), base_(std::weak_ptr<Dispatcher>()), events_(0)
 {
 	std::cout << "Channel::Channel(int sockfd)" << std::endl;
 }
@@ -30,14 +32,42 @@ void Channel::setFd(int fd)
 	fd_ = fd;
 }
 
+int Channel::getFd() const
+{
+	return fd_;
+}
+
 void Channel::setDispatcher(std::weak_ptr<Dispatcher> base)
 {
 	base_ = base;
 }
 
+int Channel::setEvents(int event)
+{
+	events_ = event;
+}
+int Channel::getEvents()const
+{
+	return events_;
+}
+
 void Channel::setCallBack(std::shared_ptr<EventCallBack> callback)
 {
 	callBack_ = callback;
+}
+
+int Channel::registerEvent(int events)
+{
+	std::shared_ptr<Dispatcher> base = base_.lock();
+	base->addEvent(shared_from_this(), events);
+	return 0;
+}
+
+int Channel::unRegisterEvent(int events)
+{
+	std::shared_ptr<Dispatcher> base = base_.lock();
+	base->delEvent(shared_from_this(), events);
+	return 0;
 }
 
 void Channel::handleEvent(int activeEvents)
@@ -51,35 +81,4 @@ void Channel::handleEvent(int activeEvents)
 	} else { // others are error event
 		callBack_->errorEventHandle();
 	}
-}
-
-int Channel::getFd() const
-{
-	return fd_;
-}
-
-int Channel::setEvents(int event)
-{
-	events_ = event;
-}
-
-int Channel::registerEvent(int events)
-{
-	std::shared_ptr<Dispatcher> base = base_.lock();
-	base->addEvent(shared_from_this(), events);
-	return 0;
-}
-
-
-int Channel::unRegisterEvent(int events)
-{
-	std::shared_ptr<Dispatcher> base = base_.lock();
-	base->delEvent(shared_from_this(), events);
-	return 0;
-}
-
-
-int Channel::getEvents()const
-{
-	return events_;
 }

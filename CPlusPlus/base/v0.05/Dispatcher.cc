@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-EpollDispatcher::EpollDispatcher()
+EpollDispatcher::EpollDispatcher() : Dispatcher()
 {
 	std::cout << "EpollDispatcher::EpollDispatcher()" << std::endl;
 	channels_.clear();
@@ -29,7 +29,7 @@ bool EpollDispatcher::init()
 }
 void EpollDispatcher::poll()
 {
-	while(n) {
+	while(1) {
 		int nfds = epoll_wait(epollfd_, events_, 1024, -1);
 		if (nfds == -1) {
 			std::cerr << "epoll_wait error!" << std::endl;

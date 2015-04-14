@@ -11,7 +11,8 @@
 
 Acceptor::Acceptor(std::weak_ptr<Dispatcher> base) : base_(base)
 {
-	std::cout << "Acceptor::Acceptor(std::shared_ptr<Dispatcher> base)" << std::endl;
+	std::cout << "Acceptor::Acceptor(std::weak_ptr<Dispatcher> base)"
+						<< std::endl;
 }
 
 Acceptor::Acceptor()
