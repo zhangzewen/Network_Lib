@@ -10,7 +10,7 @@ class Dispatcher;
 class Acceptor : public EventCallBack, public std::enable_shared_from_this<Acceptor>
 {
 public:
-	Acceptor(std::shared_ptr<Dispatcher> base);
+	Acceptor(std::weak_ptr<Dispatcher> base);
 	Acceptor();
 	virtual ~Acceptor();
 	int createSocketAndListen(bool nonblocking);
@@ -18,8 +18,8 @@ public:
 	int getSockfd()const;
 	int setNonBlock(int fd);
 	int start();
-	void setDispatcher(std::shared_ptr<Dispatcher> base);
-	std::shared_ptr<Dispatcher> getDispatcher() const;
+	void setDispatcher(std::weak_ptr<Dispatcher> base);
+	std::weak_ptr<Dispatcher> getDispatcher() const;
 	void readEventHandle();
 	void writeEventHandle();
 	void timeOutEventHandle();

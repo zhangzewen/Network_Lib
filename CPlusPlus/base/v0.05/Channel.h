@@ -11,14 +11,14 @@ class Channel : public std::enable_shared_from_this<Channel>
 {
 public:
 	Channel(int fd);
-	Channel(int fd, std::shared_ptr<Dispatcher>);
+	Channel(int fd, std::weak_ptr<Dispatcher>);
 	Channel();
 	virtual ~Channel();
 	void setCallBack(std::shared_ptr<EventCallBack> callback);
 	void handleEvent(int activeEvents);
 	int getFd()const;
 	void setFd(int);
-	void setDispatcher(std::shared_ptr<Dispatcher>);
+	void setDispatcher(std::weak_ptr<Dispatcher>);
 	int getEvents()const;
 	int setEvents(int event);
 	int registerEvent(int event);

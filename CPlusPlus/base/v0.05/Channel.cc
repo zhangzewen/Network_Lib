@@ -3,17 +3,18 @@
 #include <iostream>
 #include <unistd.h>
 
-Channel::Channel(int sockfd, std::shared_ptr<Dispatcher> base) : fd_(sockfd), base_(base), events_(0)
+Channel::Channel(int sockfd, std::weak_ptr<Dispatcher> base)
+			: fd_(sockfd), base_(base), events_(0)
 {
 	std::cout << "Channel::Channel(int sockfd, std::shared_ptr<Dispatcher> base)" << std::endl;
 }
 
-Channel::Channel(int sockfd) : fd_(sockfd), base_(std::shared_ptr<Dispatcher>()), events_(0)
+Channel::Channel(int sockfd) : fd_(sockfd), base_(std::weak_ptr<Dispatcher>()), events_(0)
 {
 	std::cout << "Channel::Channel(int sockfd)" << std::endl;
 }
 
-Channel::Channel() : fd_(-1), base_(std::shared_ptr<Dispatcher>()), events_(0)
+Channel::Channel() : fd_(-1), base_(std::weak_ptr<Dispatcher>()), events_(0)
 {
 	std::cout << "Channel::Channel()" << std::endl;
 }
@@ -29,7 +30,7 @@ void Channel::setFd(int fd)
 	fd_ = fd;
 }
 
-void Channel::setDispatcher(std::shared_ptr<Dispatcher> base)
+void Channel::setDispatcher(std::weak_ptr<Dispatcher> base)
 {
 	base_ = base;
 }
@@ -64,14 +65,16 @@ int Channel::setEvents(int event)
 
 int Channel::registerEvent(int events)
 {
-	base_->addEvent(shared_from_this(), events);
+	std::shared_ptr<Dispatcher> base = base_.lock();
+	base->addEvent(shared_from_this(), events);
 	return 0;
 }
 
 
 int Channel::unRegisterEvent(int events)
 {
-	base_->delEvent(shared_from_this(), events);
+	std::shared_ptr<Dispatcher> base = base_.lock();
+	base->delEvent(shared_from_this(), events);
 	return 0;
 }
 

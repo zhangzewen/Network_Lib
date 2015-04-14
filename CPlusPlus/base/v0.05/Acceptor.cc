@@ -9,7 +9,7 @@
 #include <iostream>
 #include <memory>
 
-Acceptor::Acceptor(std::shared_ptr<Dispatcher> base) : base_(base)
+Acceptor::Acceptor(std::weak_ptr<Dispatcher> base) : base_(base)
 {
 	std::cout << "Acceptor::Acceptor(std::shared_ptr<Dispatcher> base)" << std::endl;
 }
@@ -25,12 +25,12 @@ Acceptor::~Acceptor()
 	close(listenfd_);
 }
 
-void Acceptor::setDispatcher(std::shared_ptr<Dispatcher> base)
+void Acceptor::setDispatcher(std::weak_ptr<Dispatcher> base)
 {
 	base_ = base;
 }
 
-std::shared_ptr<Dispatcher> Acceptor::getDispatcher() const
+std::weak_ptr<Dispatcher> Acceptor::getDispatcher() const
 {
 	return base_;
 }
@@ -119,7 +119,6 @@ void Acceptor::readEventHandle()
 		std::cerr << "Create Channel error!" << std::endl;
 		return ;
 	}
-	//channel->setEvents(EPOLLIN);
 	channel->setCallBack(transport);
 	if (channel->registerEvent(EPOLLIN) != 0) {
 		std::cerr << "RegisterEvent error!" << std::endl;
@@ -146,9 +145,7 @@ int Acceptor::start()
 		return -1;
 	}
 	std::shared_ptr<Channel> channel(new Channel(listenfd_, base_));
-	//Channel* channel = new Channel(listenfd_, base_);
 	channel->setCallBack(shared_from_this());
-	//channel->setEvents(EPOLLIN);
 	if (channel->registerEvent(EPOLLIN) != 0) {
 		std::cerr << "listen Event register Error!" << std::endl;
 		return -1;
