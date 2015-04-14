@@ -6,7 +6,7 @@
 Channel::Channel(int sockfd, std::weak_ptr<Dispatcher> base)
 			: fd_(sockfd), base_(base), events_(0)
 {
-	std::cout << "Channel::Channel(int sockfd, std::shared_ptr<Dispatcher> base)" << std::endl;
+	std::cout << "Channel::Channel(int sockfd, std::weak_ptr<Dispatcher> base)" << std::endl;
 }
 
 Channel::Channel(int sockfd) : fd_(sockfd), base_(std::weak_ptr<Dispatcher>()), events_(0)
