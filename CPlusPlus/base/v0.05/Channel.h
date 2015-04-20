@@ -4,17 +4,22 @@
 #include "EventCallBack.h"
 #include "Dispatcher.h"
 #include <memory>
+#include <functional>
 
 class Dispatcher;
 
 class Channel : public std::enable_shared_from_this<Channel>
 {
 public:
+    std::function<void()> callbackFunctor;
 	Channel(int fd);
 	Channel(int fd, std::weak_ptr<Dispatcher>);
 	Channel();
 	virtual ~Channel();
-	void setCallBack(std::shared_ptr<EventCallBack> callback);
+	void setReadCallBack(std::shared_ptr<EventCallBack> callback);
+	void setWriteCallBack(std::shared_ptr<EventCallBack> callback);
+	void setErrorCallBack(std::shared_ptr<EventCallBack> callback);
+	void setTimeOutCallBack(std::shared_ptr<EventCallBack> callback);
 	int getFd()const;
 	void setFd(int);
 	void setDispatcher(std::weak_ptr<Dispatcher>);
@@ -28,6 +33,10 @@ private:
 	int events_;
 	std::shared_ptr<EventCallBack> callBack_;
 	std::weak_ptr<Dispatcher> base_;
+    callbackFunctor readCallBack_;
+    callbackFunctor writeCallBack_;
+    callbackFunctor errorCallBack_;
+    callbackFunctor TimeOutCallBack_;
 };
 
 #endif //_CHANNEL_H_INCLUDED__

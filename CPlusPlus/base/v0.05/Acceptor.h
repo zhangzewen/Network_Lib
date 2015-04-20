@@ -4,10 +4,11 @@
 #include "EventCallBack.h"
 #include "Dispatcher.h"
 #include <memory>
+#include <functional>
 
 class Dispatcher;
 
-class Acceptor : public EventCallBack, public std::enable_shared_from_this<Acceptor>
+class Acceptor : public std::enable_shared_from_this<Acceptor>
 {
 public:
 	Acceptor(std::weak_ptr<Dispatcher> base);
