@@ -3,8 +3,6 @@
 
 #include <stdio.h>
 #include <sys/epoll.h>
-#include "ChannelCallBack.h"
-#include "AcceptorCallBack.h"
 #include "Acceptor.h"
 
 class TcpServer

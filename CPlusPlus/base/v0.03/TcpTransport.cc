@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <iostream>
+#include <functional>
 
 TcpTransport::TcpTransport(int epollfd, int sockfd)
 {
@@ -18,7 +19,7 @@ TcpTransport::~TcpTransport()
 	close(connfd_);
 }
 
-void TcpTransport::callBack(int fd)
+void TcpTransport::callBack()
 {
 		char buf[1024] = {0};
 		int ret = read(connfd_, buf, 1024);

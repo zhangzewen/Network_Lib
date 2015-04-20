@@ -30,65 +30,65 @@
 struct event_base;
 
 struct event_epoll{
-	struct event *read;
-	struct event *write;
+    struct event *read;
+    struct event *write;
 };
 
 struct epoll_loop{
-	struct event_epoll *fds;
-	int nfds;
-	struct epoll_event *events;
-	int nevents;
-	int epfd;
+    struct event_epoll *fds;
+    int nfds;
+    struct epoll_event *events;
+    int nevents;
+    int epfd;
 };
 
 struct event{
-	char *name;
-  struct event_base *ev_base;
-	struct timeval ev_timeout;
+    char *name;
+    struct event_base *ev_base;
+    struct timeval ev_timeout;
 
-  int ev_fd;
-  short ev_events;
-  short ev_ncalls;
-  short *ev_pncalls;
+    int ev_fd;
+    short ev_events;
+    short ev_ncalls;
+    short *ev_pncalls;
 
-	struct rbtree_node_st timer; //红黑树节点
-	unsigned int timeout:1; //是否timeout了，是：1，否：0
-	unsigned int timeout_set:1;
-	unsigned int active:1;
-	unsigned int ready:1;
+    struct rbtree_node_st timer; //红黑树节点
+    unsigned int timeout:1; //是否timeout了，是：1，否：0
+    unsigned int timeout_set:1;
+    unsigned int active:1;
+    unsigned int ready:1;
 
-  void (*callback)(struct event *ev);
-  void *ev_arg;
-  int ev_res;
-  int ev_flags;
-  struct list_head event_list;
-	struct list_head active_list;
+    void (*callback)(struct event *ev);
+    void *ev_arg;
+    int ev_res;
+    int ev_flags;
+    struct list_head event_list;
+    struct list_head active_list;
 };
 
 struct eventop {
-	const char *name;
-	struct epoll_loop *(*init)(void);
-	int (*add)(struct epoll_loop *loop, struct event *);
-	int (*del)(struct epoll_loop *loop, struct event *);
-	int (*dispatch)(struct epoll_loop *loop, struct timeval *tv);
-	void (*dealloc)(struct epoll_loop **loop);
+    const char *name;
+    struct epoll_loop *(*init)(void);
+    int (*add)(struct epoll_loop *loop, struct event *);
+    int (*del)(struct epoll_loop *loop, struct event *);
+    int (*dispatch)(struct epoll_loop *loop, struct timeval *tv);
+    void (*dealloc)(struct epoll_loop **loop);
 };
 
 struct event_base {
-	struct eventop *evsel;
-	struct epoll_loop *evbase;
-	int event_count;
-	int event_count_active;
+    struct eventop *evsel;
+    struct epoll_loop *evbase;
+    int event_count;
+    int event_count_active;
 
-	struct rbtree_st timeout; //维护一个红黑树来管理时间
-	struct timeval tv_cache;
-	struct timeval event_tv;
+    struct rbtree_st timeout; //维护一个红黑树来管理时间
+    struct timeval tv_cache;
+    struct timeval event_tv;
 
-	int nactivequeues;
+    int nactivequeues;
 
-	struct list_head activequeue;
-	struct list_head eventqueue;
+    struct list_head activequeue;
+    struct list_head eventqueue;
 };
 
 #endif

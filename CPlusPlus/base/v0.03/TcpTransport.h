@@ -1,14 +1,12 @@
 #ifndef __TCPTRANSPORT_H_INCLUDED_
 #define __TCPTRANSPORT_H_INCLUDED_
 
-#include "ChannelCallBack.h"
-
-class TcpTransport : public ChannelCallBack
+class TcpTransport
 {
 public:
 	TcpTransport(int epollfd, int sockfd);
 	~TcpTransport();
-	void callBack(int fd);
+	void callBack();
 	int registerEvent();
 	void setEvents(int event);
 	int getSockfd()const;

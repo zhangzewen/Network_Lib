@@ -28,8 +28,7 @@ void TcpServer::Run()
 	if (acceptor_->start() < 0) {
 		std::cerr << "Start server error!" << std::endl;
 	}
-	int n = 10;
-	while(n) {
+	while(1) {
 		int nfds = epoll_wait(epollfd_, events_, 1024, -1);
 		if (nfds == -1) {
 			std::cerr << "epoll_wait error!" << std::endl;
@@ -39,7 +38,6 @@ void TcpServer::Run()
 			Channel* channel = static_cast<Channel*>(events_[i].data.ptr);
 			channel->handleEvent();
 		}
-		--n;
 	}
 }
 

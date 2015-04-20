@@ -7,6 +7,9 @@
 #include <sys/fcntl.h>
 #include <unistd.h>
 #include <iostream>
+//#include <boost/function.hpp>
+//#include <boost/bind.hpp>
+#include <functional>
 
 int Acceptor::setNonBlock(int fd)
 {
@@ -78,14 +81,14 @@ int Acceptor::getSockfd()const
 	return listenfd_;
 }
 
-void Acceptor::callBack(int fd)
+void Acceptor::callBack()
 {
 	int connfd = -1;
 	struct sockaddr_in cliaddr; // cli addr
 	struct epoll_event ev;
 	socklen_t len = sizeof(cliaddr);
 	std::cout << "listenfd_ : " << listenfd_ << std::endl;
-	if (fd == listenfd_) {
+	if (listenfd_) {
 		connfd = accept(listenfd_, (struct sockaddr*)&cliaddr, &len);
 		if (connfd < 0) {
 			return;
@@ -106,7 +109,7 @@ void Acceptor::callBack(int fd)
 			return ;
 		}
 		channel->setEvents(EPOLLIN);
-		channel->setCallBack(transport);
+		channel->setReadCallBack(std::bind(&TcpTransport::callBack, transport));
 		if (channel->registerEvent() != 0) {
 			std::cerr << "RegisterEvent error!" << std::endl;
 			return ;
@@ -121,7 +124,7 @@ int Acceptor::start()
 		return -1;
 	}
 	Channel* channel = new Channel(epollfd_, listenfd_);
-	channel->setCallBack(this);
+	channel->setReadCallBack(std::bind(&Acceptor::callBack, this));
 	channel->setEvents(EPOLLIN);
 	if (channel->registerEvent() != 0) {
 		std::cerr << "listen Event register Error!" << std::endl;

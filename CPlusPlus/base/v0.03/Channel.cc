@@ -12,14 +12,14 @@ Channel::~Channel()
 {
 }
 
-void Channel::setCallBack(ChannelCallBack* callback)
+void Channel::setReadCallBack(const callback& cb)
 {
-	callBack_ = callback;
+	readcallback = cb;
 }
 
 void Channel::handleEvent()
 {
-	callBack_->callBack(fd_);
+    readcallback();
 }
 
 int Channel::getSockfd() const

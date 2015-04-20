@@ -1,13 +1,15 @@
 #ifndef _CHANNEL_H_INCLUDED__
 #define _CHANNEL_H_INCLUDED__
 
-#include "ChannelCallBack.h"
+//#include <boost/function.hpp>
+#include <functional>
 class Channel
 {
 public:
+    typedef std::function<void ()> callback;
 	Channel(int epollfd, int sockfd);
 	~Channel();
-	void setCallBack(ChannelCallBack* callback);
+	void setReadCallBack(const callback& cb);
 	void handleEvent();
 	int getSockfd()const;
 	int setEvents(int event);
@@ -16,7 +18,8 @@ private:
 	int epollfd_;
 	int fd_;
 	int events_;
-	ChannelCallBack* callBack_;
+//	ChannelCallBack* callBack_;
+    callback readcallback;
 };
 
 #endif
