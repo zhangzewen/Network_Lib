@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <memory>
+#include <functional>
 
 Acceptor::Acceptor(std::weak_ptr<Dispatcher> base) : base_(base)
 {
@@ -120,7 +121,7 @@ void Acceptor::readEventHandle()
 		std::cerr << "Create Channel error!" << std::endl;
 		return ;
 	}
-	channel->setCallBack(transport);
+	channel->setReadCallBack(std::bind(&TcpTransport::readEventHandle, transport));
 	if (channel->registerEvent(EPOLLIN) != 0) {
 		std::cerr << "RegisterEvent error!" << std::endl;
 		return ;
@@ -146,7 +147,7 @@ int Acceptor::start()
 		return -1;
 	}
 	std::shared_ptr<Channel> channel(new Channel(listenfd_, base_));
-	channel->setCallBack(shared_from_this());
+	channel->setReadCallBack(std::bind(&Acceptor::readEventHandle, shared_from_this()));
 	if (channel->registerEvent(EPOLLIN) != 0) {
 		std::cerr << "listen Event register Error!" << std::endl;
 		return -1;

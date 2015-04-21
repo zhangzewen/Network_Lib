@@ -51,10 +51,6 @@ int Channel::getEvents()const
 	return events_;
 }
 
-void Channel::setCallBack(std::shared_ptr<EventCallBack> callback)
-{
-	callBack_ = callback;
-}
 
 int Channel::registerEvent(int events)
 {
@@ -73,12 +69,12 @@ int Channel::unRegisterEvent(int events)
 void Channel::handleEvent(int activeEvents)
 {
 	if (activeEvents & EPOLLIN) { //read event
-		callBack_->readEventHandle();
+		readCallBack_;
 	} else if (activeEvents & EPOLLOUT) { //write event
-		callBack_->writeEventHandle();
+		writeCallBack_;
 	} else if (activeEvents & 0x20){ // time out event ,there will be a timeout macro
-		callBack_->timeOutEventHandle();
+		errorCallBack_;
 	} else { // others are error event
-		callBack_->errorEventHandle();
+		TimeOutCallBack_;
 	}
 }
