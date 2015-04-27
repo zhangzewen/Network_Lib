@@ -1,13 +1,19 @@
 #ifndef __ADAPTOR_LISTENER_H_INCLUDED__
 #define __ADAPTOR_LISTENER_H_INCLUDED__
 
+
+#include <string>
+
+struct event_base;
+
 class listener
 {
 public:
-    listener(struct event_base* base);
-    listener(struct event_base* base, const std::string& host, int port);
+	listener(struct event_base* base, const std::string& host, int port);
+	~listener();
 private:
-    struct event_base* base;
+	int createSocketAndListen();
+    struct event_base* base_;
     int listenfd_;
     struct event* ev_;
     std::string host_;

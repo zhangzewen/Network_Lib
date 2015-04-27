@@ -10,7 +10,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <http_parser.h>
+#include "http_parser.h"
+
 
 int
 dontcall_message_begin_cb (http_parser *p)
@@ -80,46 +81,7 @@ dontcall_message_complete_cb (http_parser *p)
 }
 
 
-int createSocketAndListen()
-{
-	struct sockaddr_in srvaddr;
-	int listenfd;
-	socklen_t len = sizeof(srvaddr);
-	listenfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (listenfd < 0) {
-        std::cerr <<  "socket error!" << std::endl;
-		exit(-1);
-	}
-	srvaddr.sin_family = AF_INET;
-	srvaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	srvaddr.sin_port = htons(8080);
-	len = sizeof(srvaddr);
-	if (bind(listenfd, (struct sockaddr*)&srvaddr, len) < 0) {
-        std::cerr << "socket bind error!" << std::endl;
-		exit(-1);
-	}
-	int ret = listen(listenfd, 100);
-	if (ret < 0) {
-        std::cerr << "listen error" << std::endl;
-		exit(-1);
-	}
-	return listenfd;
-}
 
-int setNonBlock(int fd)
-{
-	int ret;
-	if ((ret = fcntl(fd, F_GETFL)) < 0) {
-		std::cerr << "fnctl F_GETFL error!" << std::endl;
-		return -1;
-	}
-	ret |= O_NONBLOCK;
-	if (fcntl(fd, F_SETFL, ret) < 0) {
-		std::cerr << "fcntl F_SETFL NONBLOCK errot!" << std::endl;
-		return -1;
-	}
-	return 0;
-}
 
 void onMessage(int fd, short event, void* arg)
 {
@@ -179,6 +141,7 @@ void makeConnection(int fd, short event, void* arg)
 
 int main(int argc, char** argv)
 {
+#if 0
     struct event_base* base;
     base  = event_base_new();
     if (NULL == base) {
@@ -186,17 +149,14 @@ int main(int argc, char** argv)
         return 0;
     }
     int listenfd = 0;
-    listenfd = createSocketAndListen();
     if (listenfd < 0) {
         std::cerr << "Create and listen fd error!" << std::endl;
-    }
-    if (setNonBlock(listenfd) < 0) {
-        std::cerr << "Set listenfd nonblocking error!" << std::endl;
     }
     struct event ev;
     event_set(&ev, listenfd, EV_READ |EV_PERSIST, makeConnection, &ev);
     event_base_set(base, &ev);
     event_add(&ev, NULL);
     event_base_dispatch(base);
+#endif
     return 0;
 }
