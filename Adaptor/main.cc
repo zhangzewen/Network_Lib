@@ -117,27 +117,6 @@ void onMessage(int fd, short event, void* arg)
     }
 }
 
-void makeConnection(int fd, short event, void* arg)
-{
-    if (event & EV_READ) {
-        struct event* ev = static_cast<struct event*> (arg);
-        struct sockaddr_in cliaddr;
-        socklen_t len;
-        int connfd = 0;
-        if ((connfd = accept(fd, (struct sockaddr*)&cliaddr, &len)) < 0) {
-            std::cerr << "Make connection error!" << std::endl;
-            return;
-        }
-
-        fcntl(connfd, F_SETFL, O_NONBLOCK);
-        struct event* connev = (struct event*)malloc(sizeof(struct event));
-        event_set(connev, connfd, EV_READ | EV_WRITE | EV_PERSIST, onMessage, &connev);
-        event_base_set(ev->ev_base, connev);
-        event_add(connev, NULL);
-    } else {
-        std::cerr << "We do not care listener write or error!" << std::endl;
-    }
-}
 
 int main(int argc, char** argv)
 {

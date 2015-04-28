@@ -9,15 +9,17 @@ struct event_base;
 class listener
 {
 public:
-	listener(struct event_base* base, const std::string& host, int port);
+	listener(struct event_base* base);
 	~listener();
+    void startListen();
 private:
+    void makeConnection(int fd, short event, void* arg);
 	int createSocketAndListen();
     struct event_base* base_;
     int listenfd_;
     struct event* ev_;
-    std::string host_;
-    int port_;
+    //std::string host_;
+    //int port_;
 };
 
 #endif //__ADAPTOR_LISTENER_H_INCLUDED__
