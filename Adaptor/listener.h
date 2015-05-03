@@ -11,9 +11,13 @@ class listener
 public:
 	listener(struct event_base* base);
 	~listener();
-    void startListen();
+    void start();
+    struct event_base* getEventBase() {
+        return base_;
+    }
+    void makeConnection(int, struct event_base*);
 private:
-    void makeConnection(int fd, short event, void* arg);
+    static void listenCallBack(int fd, short event, void* arg);
 	int createSocketAndListen();
     struct event_base* base_;
     int listenfd_;

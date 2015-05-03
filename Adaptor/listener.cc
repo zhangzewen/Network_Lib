@@ -1,5 +1,6 @@
 #include "listener.h"
 #include "util.h"
+#include "connection.h"
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -16,10 +17,21 @@ listener::listener(struct event_base* base) : base_(base) {
 
 }
 
-
-void listener::makeConnection(int fd, short event, void* arg)
+void listener::makeConnection(int connfd, struct event_base* base)
 {
-#if 0
+    connection* conn = new connection(connfd, base);
+    if (NULL == conn) {
+        std::cout << "create connection error!" << std::endl;
+    }
+    if (!conn->init()) {
+        std::cout << "connection init error!" << std::endl;
+    }
+}
+
+
+void listener::listenCallBack(int fd, short event, void* arg)
+{
+    listener* listen = static_cast<listener*>(arg);
     if (event & EV_READ) {
         struct event* ev = static_cast<struct event*> (arg);
         struct sockaddr_in cliaddr;
@@ -30,18 +42,13 @@ void listener::makeConnection(int fd, short event, void* arg)
             return;
         }
 
-        //fcntl(connfd, F_SETFL, O_NONBLOCK);
         if (Util::setNonBlock(connfd) < 0) { // can not set nonblocking just return and lost this connection!
             return;
         }
-        struct event* connev = (struct event*)malloc(sizeof(struct event));
-        event_set(connev, connfd, EV_READ | EV_WRITE | EV_PERSIST, onMessage, &connev);
-        event_base_set(ev->ev_base, connev);
-        event_add(connev, NULL);
+        listen->makeConnection(connfd, listen->getEventBase());
     } else {
         std::cerr << "We do not care listener write or error!" << std::endl;
     }
-#endif
 }
 
 int listener::createSocketAndListen()
@@ -73,5 +80,16 @@ int listener::createSocketAndListen()
 		return -1;
 	}
 	return 0;
+}
+
+void listener::start()
+{
+    if (createSocketAndListen() < 0) {
+        return ;
+    }
+    ev_  = (struct event*)malloc(sizeof(struct event));
+    event_set(ev_, listenfd_, EV_READ |EV_PERSIST, listenCallBack, this);
+    event_base_set(base_, ev_);
+    event_add(ev_, NULL);
 }
 
