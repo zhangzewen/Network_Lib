@@ -6,9 +6,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <iostream>
+#include <sys/socket.h>
+#include "event.h"
 
 connection::connection(int fd, struct event_base* base) : connfd_(fd),
-    read_state_(READBEGIN), buf_(NULL), parser_(NULL), settings_(NULL),
+    read_state_(READING), buf_(NULL), parser_(NULL), settings_(NULL),
     base_(base)
 {
 }
@@ -102,11 +104,11 @@ bool connection::init()
     http_parser_init(parser_, HTTP_REQUEST);
     parser_->data = static_cast<void*>(this);
     bufferevent_enable(buf_, EV_READ);
-    bufferevent_setcb(buf_, eventReadCallBack, eventWriteCallBack, eventErrorCallBack, this);
+    bufferevent_setcb(buf_, eventReadCallBack, NULL, NULL, this);
     return true;
 }
 
-int connection::onMessage()
+connection::READ_STATE connection::onMessage()
 {
     int nparsed = 0;
     char buffer[4096] = {0};
@@ -117,6 +119,8 @@ int connection::onMessage()
     } else if (nparsed != nread) {
         //Handle error. Usually just close the connection.
     }
+	// 这边应该是处理adaptor的
+	return READDONE;
 }
 
 void connection::eventReadCallBack(bufferevent* buf, void* arg)
@@ -127,33 +131,50 @@ void connection::eventReadCallBack(bufferevent* buf, void* arg)
 void connection::eventWriteCallBack(bufferevent* buf, void* arg)
 {
     connection* conn = static_cast<connection*>(arg);
-    conn->handleRead();
+    conn->handleWrite();
 }
 void connection::eventErrorCallBack(bufferevent* buf, short event, void* arg)
 {
     connection* conn = static_cast<connection*>(arg);
-    conn->handleRead();
+    conn->handleError();
 }
 void connection::eventTimeoutCallBack(bufferevent* buf, void* arg)
 {
     connection* conn = static_cast<connection*>(arg);
-    conn->handleRead();
+    conn->handleTimeOut();
 }
 
 int connection::handleRead()
 {
     switch(read_state_) {
-        case READBEGIN:
+        case READING:
             read_state_ = onMessage();
             break;
-        case READING:
-            break;
         case READERROR:
-            close(connfd_);
+			//主动关闭连接
+			CloseConnection();
             break;
         case READDONE:
+			//处理业务逻辑
             break;
         default:
             break;
     }
+}
+
+int connection::CloseConnection() //主动关闭连接
+{
+
+	if (conn_state_ == DISCONNECTED) { //如果连接状态已经是关闭的，则不做任何处理，直接返回
+		return 0;
+	}
+	conn_state_ = DISCONNECTING;
+	//step 1. close read
+	bufferevent_disable(buf_, EV_READ);
+	shutdown(connfd_, SHUT_RD);
+	//step 2. 如果buffer中还有数据没有发送完，发送完数据，并重新设置超时时间
+	if (buf_->output->off) {
+		bufferevent_setcb(buf_, NULL, NULL, NULL, this);
+		bufferevent_enable(buf_, EV_WRITE);
+	}
 }

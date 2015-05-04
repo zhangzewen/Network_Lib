@@ -9,16 +9,23 @@ struct event_base;
 class connection
 {
 public:
+	typedef enum {
+		CONNECT_INIT = 0,
+		CONNECTING,
+		CONNECTED,
+		DISCONNECTING,
+		DISCONNECTED,
+	} CONN_STATE;
     typedef enum {
-        READBEGIN = 0,
-        READING,
+        READING = 0,
         READERROR,
         READDONE
     } READ_STATE;
     connection(int fd, struct event_base* base);
     ~connection();
     bool init();
-    int onMessage();
+    READ_STATE onMessage();
+	int CloseConnection();
 private:
     int handleRead();
     int handleWrite();
@@ -29,7 +36,8 @@ private:
     static void eventErrorCallBack(bufferevent*, short, void*);
     static void eventTimeoutCallBack(bufferevent*, void*);
     int connfd_;
-    int read_state_;
+    READ_STATE read_state_;
+    CONN_STATE conn_state_;
     bufferevent* buf_;
     http_parser* parser_;
     http_parser_settings* settings_;
