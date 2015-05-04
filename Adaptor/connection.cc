@@ -80,13 +80,12 @@ int dontcall_message_complete_cb (http_parser *p)
 
 bool connection::init()
 {
-    buf_ = (bufferevent*)malloc(sizeof(bufferevent));
+    buf_ = bufferevent_new(connfd_, eventReadCallBack, eventWriteCallBack, eventErrorCallBack, this);
     if (NULL == buf_) {
         std::cout << "bufferevent malloc error!" << std::endl;
         return false;
     }
     bufferevent_base_set(base_, buf_);
-    bufferevent_setcb(buf_, eventReadCallBack, eventWriteCallBack, eventErrorCallBack, this);
     settings_ = (http_parser_settings*)malloc(sizeof(http_parser_settings));
     settings_->on_message_begin = ::dontcall_message_begin_cb;
     settings_->on_header_field = ::dontcall_header_field_cb;
@@ -103,6 +102,8 @@ bool connection::init()
     http_parser_init(parser_, HTTP_REQUEST);
     parser_->data = static_cast<void*>(this);
     bufferevent_enable(buf_, EV_READ);
+    bufferevent_setcb(buf_, eventReadCallBack, eventWriteCallBack, eventErrorCallBack, this);
+    return true;
 }
 
 int connection::onMessage()
