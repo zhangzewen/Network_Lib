@@ -21,11 +21,7 @@ connection::~connection()
 
 int dontcall_message_begin_cb (http_parser *p)
 {
-	if (p) {
-
-	}
-  fprintf(stderr, "\n\n*** on_message_begin() called on paused parser ***\n\n");
-	return 0;
+    return 0;
 }
 
 int dontcall_header_field_cb (http_parser *p, const char *buf, size_t len)
@@ -34,7 +30,10 @@ int dontcall_header_field_cb (http_parser *p, const char *buf, size_t len)
 	assert( buf != NULL);
 	assert( len != 0);
     fprintf(stderr, "\n\n*** on_header_field() called on paused parser ***\n\n");
-    fprintf(stderr, "len: %d", len);
+    connection* conn = static_cast<connection*>(p->data);
+    std::string key(buf, len);
+    conn->key_ = key;
+    conn->kvs_[key] = "";
 	return 0;
 }
 
@@ -44,8 +43,9 @@ int dontcall_header_value_cb (http_parser *p, const char *buf, size_t len)
     assert( buf != NULL);
     assert( len != 0);
     fprintf(stderr, "\n\n*** on_header_field() called on paused parser ***\n\n");
-    fprintf(stderr, "len: %d", len);
-
+    connection* conn = static_cast<connection*>(p->data);
+    std::string value(buf, len);
+    conn->kvs_[conn->key_] = value;
 	return 0;
 }
 
@@ -53,9 +53,10 @@ int dontcall_request_url_cb (http_parser *p, const char *buf, size_t len)
 {
   if (p || buf || len) { } // gcc
   fprintf(stderr, "\n\n*** on_request_url() called on paused parser ***\n\n");
-	char buffer[1024] = {0};
-	snprintf(buffer,len + 1, " %s", buf);
-    fprintf(stderr, "url: %s\n", buffer);
+    connection* conn = static_cast<connection*>(p->data);
+    std::string key("url");
+    std::string value(buf, len);
+    conn->kvs_[key] = value;
 	return 0;
 }
 
@@ -63,7 +64,10 @@ int dontcall_body_cb (http_parser *p, const char *buf, size_t len)
 {
   if (p || buf || len) { } // gcc
   fprintf(stderr, "\n\n*** on_body_cb() called on paused parser ***\n\n");
-  fprintf(stderr, "%s", buf);
+    connection* conn = static_cast<connection*>(p->data);
+    std::string key("body");
+    std::string value(buf, len);
+    conn->kvs_[key] = value;
 	return 0;
 }
 
@@ -79,6 +83,12 @@ int dontcall_message_complete_cb (http_parser *p)
 {
   fprintf(stderr, "\n\n*** on_message_complete() called on paused "
                   "parser ***\n\n");
+    connection* conn = static_cast<connection*>(p->data);
+    for(std::map<std::string, std::string>::const_iterator iter = conn->kvs_.begin();
+            iter != conn->kvs_.end();
+            ++iter) {
+        std::cout << iter->first << ": " << iter->second << std::endl;
+    }
     if (http_should_keep_alive(p) == 0) {
         std::cerr << "connection close" << std::endl;
         connection* conn = static_cast<connection*>(p->data);

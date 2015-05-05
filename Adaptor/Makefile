@@ -2,7 +2,7 @@ FLAGS=-g3 -W -Werror -I/usr/local/libevent/include
 LDFLAGS=-L/usr/local/libevent/lib -levent
 
 main: main.o connection.o listener.o http_parser.o util.o
-	g++ main.o connection.o listener.o http_parser.o util.o  $(LDFLAGS) -o main
+	g++ main.o connection.o listener.o  http_parser.o util.o  $(LDFLAGS) -o main
 connection.o: connection.cc
 	g++ $(FLAGS) -c connection.cc $(LDFLAGS) -o connection.o
 listener.o: listener.cc

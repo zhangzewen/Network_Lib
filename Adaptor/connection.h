@@ -1,6 +1,8 @@
 #ifndef _ADAPTOR_CONNECTION_H_INCLUDED__
 #define _ADAPTOR_CONNECTION_H_INCLUDED__
 
+#include <map>
+#include <string>
 struct http_parser;
 struct bufferevent;
 struct http_parser_settings;
@@ -27,6 +29,8 @@ public:
     READ_STATE onMessage();
 	int CloseConnection();
     int doCloseConnection();
+    std::string key_;
+    std::map<std::string, std::string> kvs_;
 private:
     int handleRead();
     int handleWrite();
