@@ -12,6 +12,12 @@ class connection
 {
 public:
 	typedef enum {
+		PARSEINIT,
+		PARSEING,
+		PARSEERROR,
+		PARSEDONE
+	}PARSER_STATE;
+	typedef enum {
 		CONNECT_INIT = 0,
 		CONNECTING,
 		CONNECTED,
@@ -31,16 +37,19 @@ public:
     int doCloseConnection();
     std::string key_;
     std::map<std::string, std::string> kvs_;
+	PARSER_STATE parse_state_;
+	int getFlowSource(std::string url);
 private:
-    int handleRead();
-    int handleWrite();
-    int handleError();
-    int handleTimeOut();
+    void handleRead();
+    void handleWrite();
+    void handleError();
+    void handleTimeOut();
     static void eventReadCallBack(bufferevent*, void*);
     static void eventWriteCallBack(bufferevent*, void*);
     static void eventErrorCallBack(bufferevent*, short, void*);
     static void eventTimeoutCallBack(bufferevent*, void*);
     int connfd_;
+	int current_flow_source_;//当前流量平台
     READ_STATE read_state_;
     CONN_STATE conn_state_;
     bufferevent* buf_;

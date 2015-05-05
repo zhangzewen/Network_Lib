@@ -11,7 +11,7 @@
 
 connection::connection(int fd, struct event_base* base) : connfd_(fd),
     read_state_(READING), buf_(NULL), parser_(NULL), settings_(NULL),
-    base_(base)
+    base_(base),parse_state_(PARSEINIT)
 {
 }
 
@@ -21,6 +21,8 @@ connection::~connection()
 
 int dontcall_message_begin_cb (http_parser *p)
 {
+	connection* conn = static_cast<connection*>(p->data);
+	conn->parse_state_ = connection::PARSEING;
     return 0;
 }
 
@@ -89,6 +91,7 @@ int dontcall_message_complete_cb (http_parser *p)
             ++iter) {
         std::cout << iter->first << ": " << iter->second << std::endl;
     }
+	conn->parse_state_ = connection::PARSEDONE;
     if (http_should_keep_alive(p) == 0) {
         std::cerr << "connection close" << std::endl;
         connection* conn = static_cast<connection*>(p->data);
@@ -136,13 +139,23 @@ connection::READ_STATE connection::onMessage()
         //do something
     } else if (nparsed != nread) {
         //Handle error. Usually just close the connection.
+		parse_state_ = PARSEERROR;
     }
 	// 这边应该是处理adaptor的
-    if (http_body_is_final(parser_)) { // 这个connection 已经完成
-        std::cerr << "http body parser is done" << std::endl;
-	    return READDONE;
-    }
-    return READING;
+    //if (http_body_is_final(parser_)) { // 这个connection 已经完成
+    //    std::cerr << "http body parser is done" << std::endl;
+	//   return READDONE;
+    //}
+
+	switch(parse_state_) {
+		case PARSEING:
+			return READING;
+		case PARSEERROR:
+			return READERROR;
+		default:
+			break;
+	}
+    return READDONE;
 }
 
 void connection::eventReadCallBack(bufferevent* buf, void* arg)
@@ -166,11 +179,11 @@ void connection::eventTimeoutCallBack(bufferevent* buf, void* arg)
     conn->handleTimeOut();
 }
 
-int connection::handleRead()
+void connection::handleRead()
 {
+    read_state_ = onMessage(); //主要是处理数据的读入和parse
     switch(read_state_) {
         case READING:
-            read_state_ = onMessage();
             break;
         case READERROR:
 			//主动关闭连接
@@ -178,20 +191,21 @@ int connection::handleRead()
             break;
         case READDONE:
 			//处理业务逻辑
+			//此时应该让读事件放空或者关闭读事件，专心处理业务逻辑
             break;
         default:
             break;
     }
 }
 
-int connection::handleWrite()
+void connection::handleWrite()
 {
 }
 
-int connection::handleError()
+void connection::handleError()
 {
 }
-int connection::handleTimeOut()
+void connection::handleTimeOut()
 {
 }
 
@@ -224,4 +238,13 @@ int connection::doCloseConnection()
     free(parser_);
     //step3. close connfd
     close(connfd_);
+}
+int connection::getFlowSource(std::string url)
+{
+	if(strncasecmp(url.c_str(), "/bid", 4) == 0) {
+		return 0x02;
+	} else if (strncasecmp(url.c_str(), "/baidu", 6) == 0) {
+		return 0x04;
+	}
+	return 0x00;
 }
