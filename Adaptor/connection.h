@@ -26,6 +26,7 @@ public:
     bool init();
     READ_STATE onMessage();
 	int CloseConnection();
+    int doCloseConnection();
 private:
     int handleRead();
     int handleWrite();

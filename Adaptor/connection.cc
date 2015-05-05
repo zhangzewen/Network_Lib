@@ -34,6 +34,7 @@ int dontcall_header_field_cb (http_parser *p, const char *buf, size_t len)
 	assert( buf != NULL);
 	assert( len != 0);
     fprintf(stderr, "\n\n*** on_header_field() called on paused parser ***\n\n");
+    fprintf(stderr, "len: %d", len);
 	return 0;
 }
 
@@ -43,6 +44,7 @@ int dontcall_header_value_cb (http_parser *p, const char *buf, size_t len)
     assert( buf != NULL);
     assert( len != 0);
     fprintf(stderr, "\n\n*** on_header_field() called on paused parser ***\n\n");
+    fprintf(stderr, "len: %d", len);
 
 	return 0;
 }
@@ -52,7 +54,8 @@ int dontcall_request_url_cb (http_parser *p, const char *buf, size_t len)
   if (p || buf || len) { } // gcc
   fprintf(stderr, "\n\n*** on_request_url() called on paused parser ***\n\n");
 	char buffer[1024] = {0};
-	sprintf(buffer, buf, len);
+	snprintf(buffer,len + 1, " %s", buf);
+    fprintf(stderr, "url: %s\n", buffer);
 	return 0;
 }
 
@@ -76,6 +79,11 @@ int dontcall_message_complete_cb (http_parser *p)
 {
   fprintf(stderr, "\n\n*** on_message_complete() called on paused "
                   "parser ***\n\n");
+    if (http_should_keep_alive(p) == 0) {
+        std::cerr << "connection close" << std::endl;
+        connection* conn = static_cast<connection*>(p->data);
+        conn->doCloseConnection();
+    }
 	return 0;
 }
 
@@ -120,7 +128,11 @@ connection::READ_STATE connection::onMessage()
         //Handle error. Usually just close the connection.
     }
 	// 这边应该是处理adaptor的
-	return READDONE;
+    if (http_body_is_final(parser_)) { // 这个connection 已经完成
+        std::cerr << "http body parser is done" << std::endl;
+	    return READDONE;
+    }
+    return READING;
 }
 
 void connection::eventReadCallBack(bufferevent* buf, void* arg)
@@ -152,7 +164,7 @@ int connection::handleRead()
             break;
         case READERROR:
 			//主动关闭连接
-			CloseConnection();
+            doCloseConnection();
             break;
         case READDONE:
 			//处理业务逻辑
@@ -160,6 +172,17 @@ int connection::handleRead()
         default:
             break;
     }
+}
+
+int connection::handleWrite()
+{
+}
+
+int connection::handleError()
+{
+}
+int connection::handleTimeOut()
+{
 }
 
 int connection::CloseConnection() //主动关闭连接
@@ -177,4 +200,18 @@ int connection::CloseConnection() //主动关闭连接
 		bufferevent_setcb(buf_, NULL, NULL, NULL, this);
 		bufferevent_enable(buf_, EV_WRITE);
 	}
+}
+
+int connection::doCloseConnection()
+{
+    //step 1. delete read and write event
+    //bufferevent_disable(buf_, EV_READ);
+    //bufferevent_disable(buf_, EV_WRITE);
+    //just use bufferevent_free is ok
+    bufferevent_free(buf_);
+    //step2. freep http_parser
+    free(settings_);
+    free(parser_);
+    //step3. close connfd
+    close(connfd_);
 }

@@ -1,5 +1,5 @@
-FLAGS=-g3 -W -Werror -I/usr/local/libevent144/include
-LDFLAGS=-L/usr/local/libevent144/lib -levent
+FLAGS=-g3 -W -Werror -I/usr/local/libevent/include
+LDFLAGS=-L/usr/local/libevent/lib -levent
 
 main: main.o connection.o listener.o http_parser.o util.o
 	g++ main.o connection.o listener.o http_parser.o util.o  $(LDFLAGS) -o main
