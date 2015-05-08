@@ -21,9 +21,16 @@ void RedisAsyncClient::connect()
     redisAsyncSetConnectCallback(context_,connectCallBack);
     redisAsyncSetDisconnectCallback(context_,disConnectCallBack);
 }
+void RedisAsyncClient::disConnect()
+{
+    if (isConnected())
+    {
+        redisAsyncDisconnect(context_);
+    }
+}
 bool RedisAsyncClient::isConnected()
 {
-    return false;
+    return context_ && (context_->c.flags & REDIS_CONNECTED);
 }
 
 int RedisAsyncClient::command(customizeCallBack func, std::string cmd, ...)
@@ -66,9 +73,31 @@ void RedisAsyncClient::disConnectCallBack(const struct redisAsyncContext* contex
 
 void RedisAsyncClient::connectCallBack(int status)
 {
+    if (status != REDIS_OK)
+    {
+        // do some logging
+    }
+    if (onConnect)
+    {
+        onConnect(this, status);
+    }
 }
 
 void RedisAsyncClient::disConnectCallBack(int status)
 {
+
+    if (onDisConnect)
+    {
+        onDisConnect(this, status);
+    }
+
 }
 
+void RedisAsyncClient::setRedisAsyncClientConnectCallBack(customizeConnectCallBack cb)
+{
+    onConnect = cb;
+}
+void RedisAsyncClient::setRedisAsyncClientDisConnectCallBack(customizeDisConnectCallBack cb)
+{
+    onDisConnect = cb;
+}
