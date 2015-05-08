@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <sys/socket.h>
+#include <strings.h>
 #include "event.h"
 
 connection::connection(int fd, struct event_base* base) : connfd_(fd),
