@@ -23,6 +23,7 @@ void listener::makeConnection(int connfd, struct event_base* base)
     if (NULL == conn) {
         std::cout << "create connection error!" << std::endl;
     }
+    conn->setListener(this);
     if (!conn->init()) {
         std::cout << "connection init error!" << std::endl;
     }

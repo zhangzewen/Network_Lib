@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <strings.h>
 #include "event.h"
+#include "listener.h"
 
 connection::connection(int fd, struct event_base* base) : connfd_(fd),
     read_state_(READING), buf_(NULL), parser_(NULL), settings_(NULL),
@@ -98,6 +99,7 @@ int dontcall_message_complete_cb (http_parser *p)
         connection* conn = static_cast<connection*>(p->data);
         conn->doCloseConnection();
     }
+    conn->setKeepAlived(true);
 	return 0;
 }
 
@@ -164,6 +166,12 @@ void connection::eventReadCallBack(bufferevent* buf, void* arg)
     connection* conn = static_cast<connection*>(arg);
     conn->handleRead();
 }
+
+void connection::eventEmptyCallBack(bufferevent* buf, void* arg)
+{
+    // just doing nothing
+}
+
 void connection::eventWriteCallBack(bufferevent* buf, void* arg)
 {
     connection* conn = static_cast<connection*>(arg);
@@ -193,7 +201,14 @@ void connection::handleRead()
         case READDONE:
 			//处理业务逻辑
 			//此时应该让读事件放空或者关闭读事件，专心处理业务逻辑
+            bufferevent_setcb(buf_, eventEmptyCallBack, NULL, NULL, NULL);
+            bufferevent_enable(buf_, EV_READ);
             break;
+        case PROCESSING:
+            // the request is processing
+            break;
+        case PROCESSERROR:
+
         default:
             break;
     }
@@ -249,3 +264,19 @@ int connection::getFlowSource(std::string url)
 	}
 	return 0x00;
 }
+
+void connection::setKeepAlived(bool isKeepAlived)
+{
+    keep_alived_ = isKeepAlived;
+}
+void connection::setListener(listener* listen)
+{
+    listener_ = listen;
+}
+
+connection::READ_STATE process(connection* conn)
+{
+
+}
+
+

@@ -7,6 +7,7 @@ struct http_parser;
 struct bufferevent;
 struct http_parser_settings;
 struct event_base;
+class listener;
 
 class connection
 {
@@ -27,7 +28,10 @@ public:
     typedef enum {
         READING = 0,
         READERROR,
-        READDONE
+        READDONE,
+        PROCESSING,
+        PROCESSERROR,
+        PROCESSDONE
     } READ_STATE;
     connection(int fd, struct event_base* base);
     ~connection();
@@ -39,11 +43,15 @@ public:
     std::map<std::string, std::string> kvs_;
 	PARSER_STATE parse_state_;
 	int getFlowSource(std::string url);
+    void setKeepAlived(bool isKeepAlived);
+    void setListener(listener*);
+    READ_STATE process(connection*);
 private:
     void handleRead();
     void handleWrite();
     void handleError();
     void handleTimeOut();
+    static void eventEmptyCallBack(bufferevent*, void*);
     static void eventReadCallBack(bufferevent*, void*);
     static void eventWriteCallBack(bufferevent*, void*);
     static void eventErrorCallBack(bufferevent*, short, void*);
@@ -56,5 +64,7 @@ private:
     http_parser* parser_;
     http_parser_settings* settings_;
     event_base* base_;
+    bool keep_alived_;
+    listener* listener_;
 };
 #endif //_ADAPTOR_CONNECTION_H_INCLUDED__
