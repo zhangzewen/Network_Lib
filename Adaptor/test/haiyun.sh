@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #curl -v -H'Content-Type: application/json' 'http://192.168.1.154/haiyun/a.gif' -d '
-curl -vv -H'Content-Type: application/json' 'http://localhost:8080/haiyun/a.gif' -d '
+curl -vv -H'Content-Type: application/json' 'http://192.168.1.154:8080/haiyun/a.gif' -d '
 {
     "dsp_id": "369",
     "token": "8409a4022a2c4c5a",

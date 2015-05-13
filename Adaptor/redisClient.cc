@@ -33,7 +33,7 @@ bool RedisAsyncClient::isConnected()
     return context_ && (context_->c.flags & REDIS_CONNECTED);
 }
 
-int RedisAsyncClient::command(customizeCallBack func, std::string cmd, ...)
+int RedisAsyncClient::command(customizeCommandCallBack func, std::string cmd, ...)
 {
     if (isConnected()) {
         return REDIS_ERR;
@@ -50,11 +50,11 @@ void RedisAsyncClient::commandCallBack(struct redisAsyncContext* context, void* 
         void* privdata)
 {
     redisReply* reply = static_cast<redisReply*>(r);
-    customizeCallBack cb = (customizeCallBack)privdata;
+    customizeCommandCallBack cb = (customizeCommandCallBack)privdata;
     RedisAsyncClient* client = static_cast<RedisAsyncClient*>(context->data);
     client->commandCallBack(reply, cb);
 }
-void RedisAsyncClient::commandCallBack(redisReply* reply, customizeCallBack cb)
+void RedisAsyncClient::commandCallBack(redisReply* reply, customizeCommandCallBack cb)
 {
     cb(this, reply);
 }

@@ -1,6 +1,8 @@
 #ifndef _ASYNCREDISCLIENT_H_INCLUDE__
 #define _ASYNCREDISCLIENT_H_INCLUDE__
 
+#include <string>
+
 struct event_base;
 struct redisReply;
 struct redisAsyncContext;
@@ -8,7 +10,7 @@ struct redisAsyncContext;
 class RedisAsyncClient
 {
 public:
-    typedef void(*customizeCallBack)(RedisAsyncClient*, redisReply*);
+    typedef void(*customizeCommandCallBack)(RedisAsyncClient*, redisReply*);
     typedef void(*customizeConnectCallBack)(RedisAsyncClient*, int);
     typedef void(*customizeDisConnectCallBack)(RedisAsyncClient*, int);
     RedisAsyncClient(struct event_base* base, const std::string& addr,
@@ -16,12 +18,12 @@ public:
     void connect();
     void disConnect();
     bool isConnected();
-    int command(customizeCallBack func, std::string cmd, ...);
+    int command(customizeCommandCallBack func, std::string cmd, ...);
     void setRedisAsyncClientConnectCallBack(customizeConnectCallBack cb);
     void setRedisAsyncClientDisConnectCallBack(customizeDisConnectCallBack cb);
 private:
     static void commandCallBack(struct redisAsyncContext* context, void* r, void* privdata);
-    void commandCallBack(redisReply* reply, customizeCallBack cb);
+    void commandCallBack(redisReply* reply, customizeCommandCallBack cb);
     static void connectCallBack(const struct redisAsyncContext*, int status);
     void connectCallBack(int);
     static void disConnectCallBack(const struct redisAsyncContext*, int status);
