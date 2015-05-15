@@ -5,15 +5,24 @@
 #include <event.h>
 #include <hiredis.h>
 
-void connectCallback(RedisAsyncClient* client, int status) {
+void selectCallBack(RedisAsyncClient* client, redisReply* reply)
+{
+    printf("Reply: [%s]", reply->str);
+    client->disConnect();
+}
+
+void connectCallback(const RedisAsyncClient* client, int status) {
     redisAsyncContext* context = client->getRedisAsyncContext();
     if (status != REDIS_OK) {
         printf("Error: %s\n", context->errstr);
     }
     printf("Connected...\n");
+    std::string db = client->getDbName();
+    printf("Let's just select db %s....", db.c_str());
+    client->command(selectCallBack, "select %s", db.c_str());
 }
 
-void disconnectCallback(RedisAsyncClient* client, int status) {
+void disconnectCallback(const RedisAsyncClient* client, int status) {
     redisAsyncContext* context = client->getRedisAsyncContext();
     if (status != REDIS_OK) {
         printf("Error: %s\n", context->errstr);
@@ -23,13 +32,14 @@ void disconnectCallback(RedisAsyncClient* client, int status) {
 }
 
 
+
 int main(int argc, char** argv)
 {
     struct event_base* base = event_base_new();
     if (NULL == base) {
         exit(1);
     }
-    RedisAsyncClient* client = new RedisAsyncClient(base, std::string("127.0.0.1"), 6367, std::string("0"));
+    RedisAsyncClient* client = new RedisAsyncClient(base, std::string("127.0.0.1"), 6379, std::string("0"));
     client->setRedisAsyncClientConnectCallBack(connectCallback);
     client->setRedisAsyncClientDisConnectCallBack(disconnectCallback);
     client->connect();

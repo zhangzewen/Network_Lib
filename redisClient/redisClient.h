@@ -9,10 +9,13 @@ class RedisAsyncClient
 {
 public:
     typedef void(*customizeCommandCallBack)(RedisAsyncClient*, redisReply*);
-    typedef void(*customizeConnectCallBack)(RedisAsyncClient*, int);
-    typedef void(*customizeDisConnectCallBack)(RedisAsyncClient*, int);
+    typedef void(*customizeConnectCallBack)(const RedisAsyncClient*, int);
+    typedef void(*customizeDisConnectCallBack)(const RedisAsyncClient*, int);
     RedisAsyncClient(struct event_base* base, const std::string& addr,
             int port, const std::string& dbname);
+    std::string getDbName() const {
+        return dbname_;
+    }
     void connect();
     void disConnect();
     bool isConnected();
