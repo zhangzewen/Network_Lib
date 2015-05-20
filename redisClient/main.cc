@@ -15,6 +15,7 @@ void connectCallback(const RedisAsyncClient* client, int status) {
     redisAsyncContext* context = client->getRedisAsyncContext();
     if (status != REDIS_OK) {
         printf("Error: %s\n", context->errstr);
+        return;
     }
     printf("Connected...\n");
 }
@@ -41,7 +42,7 @@ int main(int argc, char** argv)
     client->setRedisAsyncClientDisConnectCallBack(disconnectCallback);
     client->connect();
     std::string db = client->getDbName();
-    printf("Let's just select db %s....", db.c_str());
+    printf("Let's just select db %s....\n", db.c_str());
     client->command(selectCallBack, "select %s", db.c_str());
     event_base_dispatch(base);
     return 0;

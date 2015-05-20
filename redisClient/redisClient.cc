@@ -21,7 +21,7 @@ void RedisAsyncClient::connect()
 }
 void RedisAsyncClient::disConnect()
 {
-    if (isConnected())
+    if (!isConnected())
     {
         redisAsyncDisconnect(context_);
     }
@@ -33,7 +33,7 @@ bool RedisAsyncClient::isConnected()
 
 int RedisAsyncClient::command(customizeCommandCallBack func, std::string cmd, ...)
 {
-    if (isConnected()) {
+    if (!isConnected()) {
         return REDIS_ERR;
     }
     va_list args;
