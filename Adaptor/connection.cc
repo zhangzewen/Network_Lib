@@ -12,97 +12,13 @@
 #include "listener.h"
 
 connection::connection(int fd, struct event_base* base) : connfd_(fd),
-    read_state_(READING), buf_(NULL), parser_(NULL), settings_(NULL),
-    base_(base),parse_state_(PARSEINIT)
+    read_state_(READING), buf_(NULL), base_(base)
 {
 }
 
 connection::~connection()
 {
 }
-
-int dontcall_message_begin_cb (http_parser *p)
-{
-	connection* conn = static_cast<connection*>(p->data);
-	conn->parse_state_ = connection::PARSEING;
-    return 0;
-}
-
-int dontcall_header_field_cb (http_parser *p, const char *buf, size_t len)
-{
-	assert( p != NULL);
-	assert( buf != NULL);
-	assert( len != 0);
-    fprintf(stderr, "\n\n*** on_header_field() called on paused parser ***\n\n");
-    connection* conn = static_cast<connection*>(p->data);
-    std::string key(buf, len);
-    conn->key_ = key;
-    conn->kvs_[key] = "";
-	return 0;
-}
-
-int dontcall_header_value_cb (http_parser *p, const char *buf, size_t len)
-{
-    assert( p != NULL);
-    assert( buf != NULL);
-    assert( len != 0);
-    fprintf(stderr, "\n\n*** on_header_field() called on paused parser ***\n\n");
-    connection* conn = static_cast<connection*>(p->data);
-    std::string value(buf, len);
-    conn->kvs_[conn->key_] = value;
-	return 0;
-}
-
-int dontcall_request_url_cb (http_parser *p, const char *buf, size_t len)
-{
-  if (p || buf || len) { } // gcc
-  fprintf(stderr, "\n\n*** on_request_url() called on paused parser ***\n\n");
-    connection* conn = static_cast<connection*>(p->data);
-    std::string key("url");
-    std::string value(buf, len);
-    conn->kvs_[key] = value;
-	return 0;
-}
-
-int dontcall_body_cb (http_parser *p, const char *buf, size_t len)
-{
-  if (p || buf || len) { } // gcc
-  fprintf(stderr, "\n\n*** on_body_cb() called on paused parser ***\n\n");
-    connection* conn = static_cast<connection*>(p->data);
-    std::string key("body");
-    std::string value(buf, len);
-    conn->kvs_[key] = value;
-	return 0;
-}
-
-int dontcall_headers_complete_cb (http_parser *p)
-{
-  if (p) { } // gcc
-  fprintf(stderr, "\n\n*** on_headers_complete() called on paused "
-                  "parser ***\n\n");
-	return 0;
-}
-
-int dontcall_message_complete_cb (http_parser *p)
-{
-  fprintf(stderr, "\n\n*** on_message_complete() called on paused "
-                  "parser ***\n\n");
-    connection* conn = static_cast<connection*>(p->data);
-    for(std::map<std::string, std::string>::const_iterator iter = conn->kvs_.begin();
-            iter != conn->kvs_.end();
-            ++iter) {
-        std::cout << iter->first << ": " << iter->second << std::endl;
-    }
-	conn->parse_state_ = connection::PARSEDONE;
-    if (http_should_keep_alive(p) == 0) {
-        std::cerr << "connection close" << std::endl;
-        connection* conn = static_cast<connection*>(p->data);
-        conn->doCloseConnection();
-    }
-    conn->setKeepAlived(true);
-	return 0;
-}
-
 
 bool connection::init()
 {
@@ -112,28 +28,14 @@ bool connection::init()
         return false;
     }
     bufferevent_base_set(base_, buf_);
-    settings_ = (http_parser_settings*)malloc(sizeof(http_parser_settings));
-    settings_->on_message_begin = ::dontcall_message_begin_cb;
-    settings_->on_header_field = ::dontcall_header_field_cb;
-    settings_->on_header_value = ::dontcall_header_value_cb;
-    settings_->on_url = ::dontcall_request_url_cb;
-    settings_->on_body = ::dontcall_body_cb;
-    settings_->on_headers_complete = ::dontcall_headers_complete_cb;
-    settings_->on_message_complete = ::dontcall_message_complete_cb;
-
-	parser_ = (http_parser*)malloc(sizeof(http_parser));
-    if (NULL == parser_) {
-        return false;
-    }
-    http_parser_init(parser_, HTTP_REQUEST);
-    parser_->data = static_cast<void*>(this);
-    bufferevent_enable(buf_, EV_READ);
-    bufferevent_setcb(buf_, eventReadCallBack, NULL, NULL, this);
+    //bufferevent_enable(buf_, EV_READ);
+    //bufferevent_setcb(buf_, eventReadCallBack, NULL, NULL, this);
     return true;
 }
 
 connection::READ_STATE connection::onMessage()
 {
+#if 0
     int nparsed = 0;
     char buffer[4096] = {0};
     int nread = bufferevent_read(buf_, buffer, 4095);
@@ -158,13 +60,23 @@ connection::READ_STATE connection::onMessage()
 		default:
 			break;
 	}
-    return READDONE;
+#endif
+	// this is ugly now,  there must will be a recv buffer conf
+	char buffer[4096] = {0};
+	int nread = bufferevent_read(buf_, buffer, 4095);
+	READ_STATE ret;
+	if (customizeOnMessageCallBack_) {
+		ret = customizeOnMessageCallBack_(this, buffer, nread);
+	}
+
+    return ret;
 }
 
 void connection::eventReadCallBack(bufferevent* buf, void* arg)
 {
     connection* conn = static_cast<connection*>(arg);
-    conn->handleRead();
+	conn->conn_state_ = CON_READING; // read event fired, change conn_state to reading
+    conn->handleRead();//handle read
 }
 
 void connection::eventEmptyCallBack(bufferevent* buf, void* arg)
@@ -228,11 +140,10 @@ void connection::handleTimeOut()
 int connection::CloseConnection() //主动关闭连接
 {
 
-	if (conn_state_ == DISCONNECTED) { //如果连接状态已经是关闭的，则不做任何处理，直接返回
+	if (conn_state_ == CON_DISCONNECTED) { //如果连接状态已经是关闭的，则不做任何处理，直接返回
 		return 0;
 	}
-	conn_state_ = DISCONNECTING;
-	//step 1. close read
+	conn_state_ = CON_DISCONNECTING; //step 1. close read
 	bufferevent_disable(buf_, EV_READ);
 	shutdown(connfd_, SHUT_RD);
 	//step 2. 如果buffer中还有数据没有发送完，发送完数据，并重新设置超时时间
@@ -250,19 +161,8 @@ int connection::doCloseConnection()
     //just use bufferevent_free is ok
     bufferevent_free(buf_);
     //step2. freep http_parser
-    free(settings_);
-    free(parser_);
     //step3. close connfd
     close(connfd_);
-}
-int connection::getFlowSource(std::string url)
-{
-	if(strncasecmp(url.c_str(), "/bid", 4) == 0) {
-		return 0x02;
-	} else if (strncasecmp(url.c_str(), "/baidu", 6) == 0) {
-		return 0x04;
-	}
-	return 0x00;
 }
 
 void connection::setKeepAlived(bool isKeepAlived)
