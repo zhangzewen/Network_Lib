@@ -13,17 +13,13 @@ class connection
 {
 public:
 	typedef enum {
-		PARSEINIT,
-		PARSEING,
-		PARSEERROR,
-		PARSEDONE
-	}PARSER_STATE;
-	typedef enum {
-		CONNECT_INIT = 0,
-		CONNECTING,
-		CONNECTED,
-		DISCONNECTING,
-		DISCONNECTED,
+		CON_CONNECTING,
+		CON_CONNECTED,
+		CON_DISCONNECTING,
+		CON_DISCONNECTED,
+		CON_IDLE,
+		CON_READING,
+		CON_WRITTING
 	} CONN_STATE;
     typedef enum {
         READING = 0,
@@ -33,16 +29,13 @@ public:
         PROCESSERROR,
         PROCESSDONE
     } READ_STATE;
+	typedef READ_STATE (*onMessageCallBack)(connnection*, char*, int);
     connection(int fd, struct event_base* base);
     ~connection();
     bool init();
     READ_STATE onMessage();
 	int CloseConnection();
     int doCloseConnection();
-    std::string key_;
-    std::map<std::string, std::string> kvs_;
-	PARSER_STATE parse_state_;
-	int getFlowSource(std::string url);
     void setKeepAlived(bool isKeepAlived);
     void setListener(listener*);
     READ_STATE process(connection*);
@@ -56,13 +49,11 @@ private:
     static void eventWriteCallBack(bufferevent*, void*);
     static void eventErrorCallBack(bufferevent*, short, void*);
     static void eventTimeoutCallBack(bufferevent*, void*);
+	onMessageCallBack customizeOnMessageCallBack_;
     int connfd_;
-	int current_flow_source_;//当前流量平台
     READ_STATE read_state_;
     CONN_STATE conn_state_;
     bufferevent* buf_;
-    http_parser* parser_;
-    http_parser_settings* settings_;
     event_base* base_;
     bool keep_alived_;
     listener* listener_;
