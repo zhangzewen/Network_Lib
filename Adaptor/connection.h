@@ -29,16 +29,22 @@ public:
         PROCESSERROR,
         PROCESSDONE
     } READ_STATE;
-	typedef READ_STATE (*onMessageCallBack)(connnection*, char*, int);
+	typedef READ_STATE (*onMessageCallBack)(connection*, char*, int);
     connection(int fd, struct event_base* base);
     ~connection();
     bool init();
     READ_STATE onMessage();
-	int CloseConnection();
+	int closeConnection();
     int doCloseConnection();
     void setKeepAlived(bool isKeepAlived);
     void setListener(listener*);
     READ_STATE process(connection*);
+    bool reuseConnection();
+    void EnableRead();
+    void EnableWrite();
+    void DisableRead();
+    void DisableWrite();
+    void DisableReadWrite();
 private:
     void handleRead();
     void handleWrite();
@@ -57,5 +63,8 @@ private:
     event_base* base_;
     bool keep_alived_;
     listener* listener_;
+    bool reuseEvBuffer(struct evbuffer*);
+    bool reuseBufferEvent(struct bufferevent*);
+    short bufferevent_get_enabled(struct bufferevent*);
 };
 #endif //_ADAPTOR_CONNECTION_H_INCLUDED__

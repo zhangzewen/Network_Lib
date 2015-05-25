@@ -137,7 +137,7 @@ void connection::handleTimeOut()
 {
 }
 
-int connection::CloseConnection() //主动关闭连接
+int connection::closeConnection() //主动关闭连接
 {
 
 	if (conn_state_ == CON_DISCONNECTED) { //如果连接状态已经是关闭的，则不做任何处理，直接返回
@@ -148,7 +148,7 @@ int connection::CloseConnection() //主动关闭连接
 	shutdown(connfd_, SHUT_RD);
 	//step 2. 如果buffer中还有数据没有发送完，发送完数据，并重新设置超时时间
 	if (buf_->output->off) {
-		bufferevent_setcb(buf_, NULL, NULL, NULL, this);
+		bufferevent_setcb(buf_, NULL, eventWriteCallBack, NULL, this);
 		bufferevent_enable(buf_, EV_WRITE);
 	}
 }
@@ -165,6 +165,14 @@ int connection::doCloseConnection()
     close(connfd_);
 }
 
+bool connection::reuseConnection()
+{
+    keep_alived_ = false;
+    listener_ = NULL;
+    conn_state_ = CON_CONNECTING;
+    connfd_ = -1;
+}
+
 void connection::setKeepAlived(bool isKeepAlived)
 {
     keep_alived_ = isKeepAlived;
@@ -179,4 +187,60 @@ connection::READ_STATE process(connection* conn)
 
 }
 
+bool connection::reuseEvBuffer(struct evbuffer* buf)
+{
+    if (NULL == buf) {
+        return true;
+    }
+    buf->buffer = buf->orig_buffer;
+    buf->misalign = 0;;
+    buf->off = 0;
+    buf->cb = NULL;
+    buf->cbarg = NULL;
+}
+
+bool connection::reuseBufferEvent(struct bufferevent* bufev)
+{
+    event_del(&bufev->ev_read);
+    event_del(&bufev->ev_write);
+    reuseEvBuffer(bufev->input);
+    reuseEvBuffer(bufev->output);
+    return true;
+}
+
+short connection::bufferevent_get_enabled(struct bufferevent* bufev)
+{
+    return bufev->enabled;
+}
+void connection::EnableRead() {
+    int event = bufferevent_get_enabled(buf_);
+    if (event & EV_READ)
+        return;
+    bufferevent_enable(buf_, EV_READ);
+}
+
+void connection::EnableWrite() {
+    int event = bufferevent_get_enabled(buf_);
+    if (event & EV_WRITE)
+        return;
+    bufferevent_enable(buf_, EV_WRITE);
+}
+
+void connection::DisableRead() {
+    int event = bufferevent_get_enabled(buf_);
+    if (event & EV_READ)
+        bufferevent_disable(buf_, EV_READ);
+}
+
+void connection::DisableWrite() {
+    int event = bufferevent_get_enabled(buf_);
+    if (event & EV_WRITE)
+        bufferevent_disable(buf_, EV_WRITE);
+}
+
+void connection::DisableReadWrite() {
+    int old = bufferevent_get_enabled(buf_);
+    if (old)
+        bufferevent_disable(buf_, old);
+}
 
