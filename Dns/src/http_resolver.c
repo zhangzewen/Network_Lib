@@ -43,7 +43,7 @@ int get_ip_port(const char *address, char *host, char *port)
 			strncpy(host, address, len);
       return 0;
     }
-    
+
     strncpy(host, address, ptr - address);
     strcpy(port, ptr + 1);
 		return 0;
@@ -62,7 +62,7 @@ int get_nameservers(struct dns_server *dns, int *count)
 	size_t len = 0;
 	ssize_t read;
 	int current = 0;
-	
+
 	fp = fopen(RESOLVER_CONFIG_FILE, "r");
 	if (fp == NULL) {
 		return -1;
@@ -70,7 +70,7 @@ int get_nameservers(struct dns_server *dns, int *count)
 
 	while ((read = getline(&line, &len, fp)) != -1) {
 		printf("%s", line);
-		
+
 		if (line[0] == '#') {
 			continue;
 		}
@@ -87,7 +87,7 @@ int get_nameservers(struct dns_server *dns, int *count)
 			strcpy(dns[current].host, host);
 			dns[current].port = port[0] == 0 ? 53 : atoi(port);
 			current++;
-		} 	
+		}
 	}
 
 	if (line) {
@@ -105,8 +105,8 @@ struct resolver_result *resolver_result_new()
 	new = (struct resolver_result *)calloc(1, sizeof(struct resolver_result));
 	if (NULL == new) {
 		return NULL;
-	}	
-	
+	}
+
 	new->ev = (struct event *)calloc(1, sizeof(struct event));
 
 	if (NULL == new->ev) {
@@ -125,9 +125,9 @@ struct resolver_st* resolver_create()
 		fprintf(stderr, "malloc resolver_st error!\n");
 		return NULL;
 	}
-	
+
 	new->base = event_base_new();
-	
+
 	if (NULL == new->base) {
 		perror("malloc event_base error!\n");
 		free(new);
@@ -160,11 +160,11 @@ void resolve_name(struct resolver_st *resolver, unsigned char *host)
 	int fd = -1;
 	int robin = -1;
 	unsigned char buf[65536] = {0};
-	
+
 	int sfd = -1;
 
 	result = resolver_result_new();
-	
+
 	if (NULL == result) {
 		fprintf(stderr, "calloc error!\n");
 		return;
@@ -197,13 +197,13 @@ void resolve_name(struct resolver_st *resolver, unsigned char *host)
 
 	create_dns_query(host, T_A, buf, &result->question_len, &result->query_len);
 	nwrite = write(fd, buf, result->query_len);
-	
+
 	if (nwrite < 0) {
 		fprintf(stderr, "Can not send dns request!\n");
 		free(result);
 		return;
 	}
-	
+
 	event_set(resolver->base, result->ev, fd, EV_READ | EV_PERSIST, parse_dns, (void *)result, NULL);
 	event_add(result->ev, NULL);
 	return ;
@@ -211,6 +211,6 @@ void resolve_name(struct resolver_st *resolver, unsigned char *host)
 
 void resolver_distory(struct resolver_st *resolver)
 {
-	
+
 }
 

@@ -18,12 +18,12 @@ int main(int argc, char *argv[])
 {
 	struct resolver_st* resolve = NULL;
 	resolve = resolver_create();
-	
+
 	resolver_init(resolve);
-	
+
 	unsigned char name_1[60] = "www.baidu.com";
-#if 0
 	unsigned char name_2[60] = "www.baidu.com";
+#if 0
 	unsigned char name_3[60] = "www.csdn.com";
 	unsigned char name_4[60] = "www.kuwo.com";
 	unsigned char name_5[60] = "www.163.com";
@@ -35,8 +35,8 @@ int main(int argc, char *argv[])
 	unsigned char name_11[60] = "www.zhangzewen.sinaapp.com";
 #endif
 	resolve_name(resolve, name_1);
-#if 0
 	resolve_name(resolve, name_2);
+#if 0
 	resolve_name(resolve, name_3);
 	resolve_name(resolve, name_4);
 	resolve_name(resolve, name_5);

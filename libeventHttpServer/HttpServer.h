@@ -9,11 +9,12 @@ struct evhttp_bound_socket;
 class HttpServer
 {
 public:
+    typedef void (*pathHandle)(struct evhttp_request *req, void *arg);
     HttpServer(struct event_base* base, const std::string& host, int port);
     ~HttpServer();
     void registePath(const std::string& path,
-            void(*)(struct evhttp_request *req, void *arg));
-    void run();
+            pathHandle handle);
+    void listen();
 private:
     struct event_base* base_;
     struct evhttp* httpServer_;
