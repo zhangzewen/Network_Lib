@@ -2,7 +2,7 @@
 #include <stdarg.h>
 #include <iostream>
 #include <adapters/libevent.h>
-#include <event2/event.h>
+#include <event.h>
 #include "redisClient.h"
 
 RedisAsyncClient::RedisAsyncClient(struct event_base* base, const std::string& addr,
@@ -31,14 +31,16 @@ bool RedisAsyncClient::isConnected()
     return context_ && (context_->c.flags & REDIS_CONNECTED);
 }
 
-int RedisAsyncClient::command(customizeCommandCallBack func, std::string cmd, ...)
+int RedisAsyncClient::command(const customizeCommandCallBack& func, std::string cmd, ...)
 {
     if (!isConnected()) {
         return REDIS_ERR;
     }
+
+	customizeCommandCallBack* p = new customizeCommandCallBack(func);
     va_list args;
     va_start(args, cmd);
-    int ret = redisvAsyncCommand(context_, commandCallBack, (void*)func,
+    int ret = redisvAsyncCommand(context_, commandCallBack, p,
             cmd.c_str(), args);
     va_end(args);
     return ret;
@@ -48,13 +50,14 @@ void RedisAsyncClient::commandCallBack(struct redisAsyncContext* context, void* 
         void* privdata)
 {
     redisReply* reply = static_cast<redisReply*>(r);
-    customizeCommandCallBack cb = (customizeCommandCallBack)privdata;
+    customizeCommandCallBack* cb = static_cast<customizeCommandCallBack*>(privdata);
     RedisAsyncClient* client = static_cast<RedisAsyncClient*>(context->data);
     client->commandCallBack(reply, cb);
 }
-void RedisAsyncClient::commandCallBack(redisReply* reply, customizeCommandCallBack cb)
+void RedisAsyncClient::commandCallBack(redisReply* reply, customizeCommandCallBack* cb)
 {
-    cb(this, reply);
+    (*cb)(this, reply);
+	delete cb;
 }
 void RedisAsyncClient::connectCallBack(const struct redisAsyncContext* context,
         int status)
@@ -91,11 +94,11 @@ void RedisAsyncClient::disConnectCallBack(int status)
 
 }
 
-void RedisAsyncClient::setRedisAsyncClientConnectCallBack(customizeConnectCallBack cb)
+void RedisAsyncClient::setRedisAsyncClientConnectCallBack(const customizeConnectCallBack& cb)
 {
     onConnect = cb;
 }
-void RedisAsyncClient::setRedisAsyncClientDisConnectCallBack(customizeDisConnectCallBack cb)
+void RedisAsyncClient::setRedisAsyncClientDisConnectCallBack(const customizeDisConnectCallBack& cb)
 {
     onDisConnect = cb;
 }

@@ -1,5 +1,5 @@
-CFLAGS=-g -Wall -Werror -I/usr/local/libevent2/include/ -I/usr/local/include/hiredis/
-LDFLAGS=-g -L/usr/local/libevent2/lib -levent -lhiredis
+CFLAGS=-g -Wall -Werror -I/usr/local/libevent144/include/ -I/usr/local/include/hiredis/
+LDFLAGS=-g -L/usr/local/libevent144/lib -levent -lhiredis  -L/usr/lib64/ -lboost_atomic -lboost_chrono -lboost_context -lboost_locale -lboost_regex -lboost_serialization
 
 main: main.o redisClient.o
 	g++ ${LDFLAGS} main.o redisClient.o -o main
