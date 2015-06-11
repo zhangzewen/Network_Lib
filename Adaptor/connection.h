@@ -53,6 +53,8 @@ public:
     void DisableRead();
     void DisableWrite();
     void DisableReadWrite();
+	void setPrivData(void *);
+	void* getPrivData() const;
 private:
     void handleRead();
     void handleWrite();
@@ -73,5 +75,6 @@ private:
     bool reuseEvBuffer(struct evbuffer*);
     bool reuseBufferEvent(struct bufferevent*);
     short bufferevent_get_enabled(struct bufferevent*);
+	void* privdata_;
 };
 #endif //_ADAPTOR_CONNECTION_H_INCLUDED__

@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include "http_parser.h"
+//#include "http_parser.h"
 #include "listener.h"
 
 
@@ -23,6 +23,7 @@ int main(int argc, char** argv)
         std::cerr << "Create and listen fd error!" << std::endl;
     }
 #endif
+#if 0
     struct event_base* base;
     base  = event_base_new();
     if (NULL == base) {
@@ -32,5 +33,6 @@ int main(int argc, char** argv)
     listener* listen = new listener(base);
     listen->start();
     event_base_dispatch(base);
+#endif
     return 0;
 }

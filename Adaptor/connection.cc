@@ -2,7 +2,7 @@
 #include <event.h>
 #include <stdio.h>
 #include <assert.h>
-#include "http_parser.h"
+//#include "http_parser.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <iostream>
@@ -12,7 +12,7 @@
 #include "listener.h"
 
 connection::connection(int fd, struct event_base* base) : connfd_(fd),
-	buf_(NULL), base_(base)
+	buf_(NULL), base_(base), privdata_(NULL)
 {
 }
 
@@ -64,7 +64,7 @@ connection::CONN_STATE connection::onMessage()
 	// this is ugly now,  there must will be a recv buffer conf
 	char buffer[4096] = {0};
 	int nread = bufferevent_read(buf_, buffer, 4095);
-	int ret;
+	CONN_STATE ret;
 	if (customizeOnMessageCallBack_) {
 		ret = customizeOnMessageCallBack_(this, buffer, nread);
 	}
@@ -253,5 +253,13 @@ void connection::DisableReadWrite() {
     int old = bufferevent_get_enabled(buf_);
     if (old)
         bufferevent_disable(buf_, old);
+}
+
+void connection::setPrivData(void* data) {
+	privdata_ = data;
+}
+
+void* connection::getPrivData() const {
+	return privdata_;
 }
 
