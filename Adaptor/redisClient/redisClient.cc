@@ -1,7 +1,7 @@
 #include <hiredis.h>
 #include <async.h>
 #include <adapters/libevent.h>
-#include <event2/event.h>
+#include <event.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <iostream>

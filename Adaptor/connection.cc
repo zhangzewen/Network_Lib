@@ -12,7 +12,7 @@
 #include "listener.h"
 
 connection::connection(int fd, struct event_base* base) : connfd_(fd),
-    read_state_(READING), buf_(NULL), base_(base)
+	buf_(NULL), base_(base)
 {
 }
 
@@ -33,7 +33,7 @@ bool connection::init()
     return true;
 }
 
-connection::READ_STATE connection::onMessage()
+connection::CONN_STATE connection::onMessage()
 {
 #if 0
     int nparsed = 0;
@@ -64,7 +64,7 @@ connection::READ_STATE connection::onMessage()
 	// this is ugly now,  there must will be a recv buffer conf
 	char buffer[4096] = {0};
 	int nread = bufferevent_read(buf_, buffer, 4095);
-	READ_STATE ret;
+	int ret;
 	if (customizeOnMessageCallBack_) {
 		ret = customizeOnMessageCallBack_(this, buffer, nread);
 	}
@@ -102,25 +102,36 @@ void connection::eventTimeoutCallBack(bufferevent* buf, void* arg)
 
 void connection::handleRead()
 {
-    read_state_ = onMessage(); //主要是处理数据的读入和parse
-    switch(read_state_) {
-        case READING:
+    switch(conn_state_) {
+        case CON_READING:
+			conn_state_ = onMessage();
             break;
-        case READERROR:
+        case CON_READERROR:
 			//主动关闭连接
             doCloseConnection();
             break;
-        case READDONE:
-			//处理业务逻辑
-			//此时应该让读事件放空或者关闭读事件，专心处理业务逻辑
+        case CON_READDONE:
+			//here we just make read event hanld empty, just let the TCP/IP recv data,
+			//another thing is: for http,we just support keepalive ,not pipeline
+			//when reading done,let's process the request,there will be a handler for customizeing
+			//and when read done,let the process begin
             bufferevent_setcb(buf_, eventEmptyCallBack, NULL, NULL, NULL);
             bufferevent_enable(buf_, EV_READ);
+			conn_state_ = CON_PROCESSING;
             break;
-        case PROCESSING:
+        case CON_PROCESSING:
             // the request is processing
             break;
-        case PROCESSERROR:
-
+        case CON_PROCESSERROR:
+            break;
+        case CON_PROCESSDONE:
+            break;
+        case CON_WRITTING:
+            break;
+		case CON_WRITEERROR:
+            break;
+		case CON_WRITEDONE:
+			break;
         default:
             break;
     }
@@ -182,7 +193,7 @@ void connection::setListener(listener* listen)
     listener_ = listen;
 }
 
-connection::READ_STATE process(connection* conn)
+connection::CONN_STATE process(connection* conn)
 {
 
 }

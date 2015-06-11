@@ -17,28 +17,36 @@ public:
 		CON_CONNECTED,
 		CON_DISCONNECTING,
 		CON_DISCONNECTED,
-		CON_IDLE,
+		CON_IDLE,//  After connected, this state is between registed Read Event  and a read event fired
 		CON_READING,
-		CON_WRITTING
+		CON_READERROR,
+		CON_READDONE,
+		CON_PROCESSING,
+		CON_PROCESSERROR,
+		CON_PROCESSDONE,
+		CON_WRITTING,
+		CON_WRITEERROR,
+		CON_WRITEDONE
 	} CONN_STATE;
-    typedef enum {
-        READING = 0,
-        READERROR,
-        READDONE,
-        PROCESSING,
-        PROCESSERROR,
-        PROCESSDONE
-    } READ_STATE;
-	typedef READ_STATE (*onMessageCallBack)(connection*, char*, int);
+//    typedef enum {
+//        READING = 0,
+//        READERROR,
+//        READDONE,
+//        PROCESSING,
+//        PROCESSERROR,
+//        PROCESSDONE
+//    } READ_STATE;
+	typedef CONN_STATE (*onMessageCallBack)(connection*, char*, int);
+	//typedef CONN_STATE (*OnProcessCallBack)(connection*);
     connection(int fd, struct event_base* base);
     ~connection();
     bool init();
-    READ_STATE onMessage();
+    CONN_STATE onMessage();
 	int closeConnection();
     int doCloseConnection();
     void setKeepAlived(bool isKeepAlived);
     void setListener(listener*);
-    READ_STATE process(connection*);
+    //CON_STATE process(connection*); why should there have a  process method ,this should be customized
     bool reuseConnection();
     void EnableRead();
     void EnableWrite();
@@ -57,7 +65,6 @@ private:
     static void eventTimeoutCallBack(bufferevent*, void*);
 	onMessageCallBack customizeOnMessageCallBack_;
     int connfd_;
-    READ_STATE read_state_;
     CONN_STATE conn_state_;
     bufferevent* buf_;
     event_base* base_;
