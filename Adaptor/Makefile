@@ -1,6 +1,6 @@
 FLAGS=-g3 -W -Werror -Wall
-INCLUDES=-I/usr/local/libevent144/include -I/usr/local/include/hiredis/
-LDFLAGS=-L/usr/local/libevent144/lib -levent -lhiredis
+INCLUDES=-I/usr/local/libevent1414/include -I/usr/local/include/hiredis/
+LDFLAGS=-L/usr/local/libevent1414/lib -levent -lhiredis
 
 OBJS := $(patsubst %.cc, %.o, $(wildcard *.cc))
 LIBNAME=Net

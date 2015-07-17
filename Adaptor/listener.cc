@@ -34,7 +34,7 @@ void listener::listenCallBack(int fd, short event, void* arg)
 {
     listener* listen = static_cast<listener*>(arg);
     if (event & EV_READ) {
-        struct event* ev = static_cast<struct event*> (arg);
+        //struct event* ev = static_cast<struct event*> (arg);
         struct sockaddr_in cliaddr;
         socklen_t len;
         int connfd = 0;
