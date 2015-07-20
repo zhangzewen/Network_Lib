@@ -6,6 +6,7 @@
 namespace Util
 {
 #define ARRAY_LENGTH(x) (sizeof(x)/sizeof(x[0]))
+
 int setNonBlock(int fd);
 
 class StringTokenizer
