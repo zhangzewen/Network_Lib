@@ -7,27 +7,33 @@
 #include <event.h>
 #include <stdlib.h>
 #include <iostream>
+#include <unistd.h>
+#include <arpa/inet.h>
 
-//listener::listener(struct event_base* base, const std::string& host,
-//		int port) : base_(base), host_(host),
-//			port_(port), listenfd_(-1), ev_(NULL) {
-//
+listener::listener(const std::string& host, int port, struct event_base* base) : host_(host),
+	port_(port), base_(base) {
+}
+
+listener::listener(const std::string& host, int port) : host_(host),
+	port_(port), base_(NULL) {
+}
+
+
+//bool listener::makeConnection(int connfd, struct event_base* base)
+//{
+//    connection* conn = new connection(connfd, base);
+//    if (NULL == conn) {
+//        std::cout << "create connection error!" << std::endl;
+//		return false;
+//    }
+//    conn->setListener(this);
+//	//conn->setCustomizeOnMessageCallBack(cb);
+//    if (!conn->init()) {
+//        std::cout << "connection init error!" << std::endl;
+//		return false;
+//    }
+//	return true;
 //}
-listener::listener(struct event_base* base) : base_(base) {
-
-}
-
-void listener::makeConnection(int connfd, struct event_base* base)
-{
-    connection* conn = new connection(connfd, base);
-    if (NULL == conn) {
-        std::cout << "create connection error!" << std::endl;
-    }
-    conn->setListener(this);
-    if (!conn->init()) {
-        std::cout << "connection init error!" << std::endl;
-    }
-}
 
 
 void listener::listenCallBack(int fd, short event, void* arg)
@@ -42,14 +48,34 @@ void listener::listenCallBack(int fd, short event, void* arg)
             std::cerr << "Make connection error!" << std::endl;
             return;
         }
+		if (!listen->doMakeConnection(connfd)) {
+			std::cerr << "Make a New Connection Error" << std::endl;
+		} else {
+			std::cerr << "Make a New Connection OK" << std::endl;
+		}
 
-        if (Util::setNonBlock(connfd) < 0) { // can not set nonblocking just return and lost this connection!
-            return;
-        }
-        listen->makeConnection(connfd, listen->getEventBase());
     } else {
         std::cerr << "We do not care listener write or error!" << std::endl;
     }
+}
+
+bool listener::doMakeConnection(int connfd)
+{
+	//listen->makeConnection(connfd, listen->getEventBase());
+	if (makeNewConnectionCallBack_) {
+		if (Util::setNonBlock(connfd) < 0) { // can not set nonblocking just return and lost this connection!
+			std::cerr << "set NonBlocking Error" << std::endl;
+			close(connfd);
+			return false;
+		}
+		if (makeNewConnectionCallBack_(connfd, getEventBase())) {
+			return true;
+		}
+	} else {
+		close(connfd);
+		return false;
+	}
+	return true;
 }
 
 int listener::createSocketAndListen()
@@ -62,8 +88,9 @@ int listener::createSocketAndListen()
 		return -1;
 	}
 	srvaddr.sin_family = AF_INET;
-	srvaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	srvaddr.sin_port = htons(8080);
+	//srvaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	inet_aton(host_.c_str(), &(srvaddr.sin_addr));
+	srvaddr.sin_port = htons(port_);
 	len = sizeof(srvaddr);
 	if (bind(listenfd_, (struct sockaddr*)&srvaddr, len) < 0) {
         std::cerr << "socket bind error!" << std::endl;

@@ -3,6 +3,8 @@
 
 #include <map>
 #include <string>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 struct http_parser;
 struct bufferevent;
 struct http_parser_settings;
@@ -28,15 +30,8 @@ public:
 		CON_WRITEERROR,
 		CON_WRITEDONE
 	} CONN_STATE;
-//    typedef enum {
-//        READING = 0,
-//        READERROR,
-//        READDONE,
-//        PROCESSING,
-//        PROCESSERROR,
-//        PROCESSDONE
-//    } READ_STATE;
-	typedef CONN_STATE (*onMessageCallBack)(connection*, char*, int);
+	//typedef CONN_STATE (*onMessageCallBack)(connection*, char*, int);
+	typedef boost::function<CONN_STATE(connection*, char*, int)> onMessageCallBack;
 	//typedef CONN_STATE (*OnProcessCallBack)(connection*);
     connection(int fd, struct event_base* base);
     ~connection();
@@ -55,6 +50,9 @@ public:
     void DisableReadWrite();
 	void setPrivData(void *);
 	void* getPrivData() const;
+	void setCustomizeOnMessageCallBack(onMessageCallBack cb) {
+		customizeOnMessageCallBack_ = cb;
+	}
 private:
     void handleRead();
     void handleWrite();
@@ -66,15 +64,15 @@ private:
     static void eventErrorCallBack(bufferevent*, short, void*);
     static void eventTimeoutCallBack(bufferevent*, void*);
 	onMessageCallBack customizeOnMessageCallBack_;
+    bool reuseEvBuffer(struct evbuffer*);
+    bool reuseBufferEvent(struct bufferevent*);
+    short bufferevent_get_enabled(struct bufferevent*);
     int connfd_;
     CONN_STATE conn_state_;
     bufferevent* buf_;
     event_base* base_;
     bool keep_alived_;
     listener* listener_;
-    bool reuseEvBuffer(struct evbuffer*);
-    bool reuseBufferEvent(struct bufferevent*);
-    short bufferevent_get_enabled(struct bufferevent*);
 	void* privdata_;
 };
 #endif //_ADAPTOR_CONNECTION_H_INCLUDED__

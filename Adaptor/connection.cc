@@ -28,8 +28,8 @@ bool connection::init()
         return false;
     }
     bufferevent_base_set(base_, buf_);
-    //bufferevent_enable(buf_, EV_READ);
-    //bufferevent_setcb(buf_, eventReadCallBack, NULL, NULL, this);
+    bufferevent_setcb(buf_, eventReadCallBack, NULL, NULL, this);
+    bufferevent_enable(buf_, EV_READ);
     return true;
 }
 
@@ -199,31 +199,6 @@ connection::CONN_STATE process(connection* conn)
 }
 
 bool connection::reuseEvBuffer(struct evbuffer* buf)
-{
-    if (NULL == buf) {
-        return true;
-    }
-    buf->buffer = buf->orig_buffer;
-    buf->misalign = 0;;
-    buf->off = 0;
-    buf->cb = NULL;
-    buf->cbarg = NULL;
-}
-
-bool connection::reuseEvBuffer(struct evbuffer_chain* chain)
-{
-    if (NULL == chain) {
-        return true;
-    }
-
-    struct evbuffer_chain* next = NULL;
-    next = chain->next;
-    for (;next;next = chain->next) {
-        reuseEvBufferChain(next);
-    }
-}
-
-bool connection::reuseEvBufferChain(struct evbuffer_chain* chain)
 {
     if (NULL == buf) {
         return true;

@@ -1,6 +1,6 @@
 FLAGS=-g3 -W -Werror -Wall
 INCLUDES=-I/usr/local/libevent1414/include -I/usr/local/include/hiredis/
-LDFLAGS=-L/usr/local/libevent1414/lib -levent -lhiredis
+LDFLAGS=-L/usr/local/libevent1414/lib -levent -lhiredis -lboost_atomic -lboost_chrono -lboost_context -lboost_locale -lboost_regex -lboost_serialization
 
 OBJS := $(patsubst %.cc, %.o, $(wildcard *.cc))
 LIBNAME=Net
