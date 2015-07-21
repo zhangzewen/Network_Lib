@@ -1,4 +1,20 @@
 #ifndef _STATES_H_INCLUDED_
 #define _STATES_H_INCLUDED_
+typedef enum {
+  CON_CONNECTING,
+  CON_CONNECTED,
+  CON_DISCONNECTING,
+  CON_DISCONNECTED,
+  CON_IDLE,//  After connected, this state is between registed Read Event  and a read event fired
+  CON_READING,
+  CON_READERROR,
+  CON_READDONE,
+  CON_PROCESSING,
+  CON_PROCESSERROR,
+  CON_PROCESSDONE,
+  CON_WRITTING,
+  CON_WRITEERROR,
+  CON_WRITEDONE
+} CONN_STATE;
 
 #endif //_STATES_H_INCLUDED_

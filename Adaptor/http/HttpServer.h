@@ -9,6 +9,18 @@ class event_base;
 class HttpServer
 {
 public:
+  typedef enum {
+    WAIT_REQUEST,
+    REQUEST_PARSERING,
+    REQUEST_PARSER_ERROR
+    REQUEST_PARSER_DONE,
+    REQUEST_PROCESSING,
+    REQUEST_PROCESS_ERROR,
+    REQUEST_PROCESS_DONE,
+    REQUEST_SENT_RESPONSE
+    REQUEST_SENT_RESPONSE_ERROR,
+    REQUEST_SENT_RESPONSE_DONE,
+  }REQUEST_STATE;
 	HttpServer(const std::string&, int port);
 	void start();
 	bool makeNewConnection(int fd, struct event_base* base);
