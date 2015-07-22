@@ -41,13 +41,14 @@ public:
   int doCloseConnection();
   void setKeepAlived(bool isKeepAlived);
   void setListener(listener*);
+  bool isKeepAlived();
   //CON_STATE process(connection*); why should there have a  process method ,this should be customized
   bool reuseConnection();
-  void EnableRead();
-  void EnableWrite();
-  void DisableRead();
-  void DisableWrite();
-  void DisableReadWrite();
+  void enableRead();
+  void enableWrite();
+  void disableRead();
+  void disableWrite();
+  void disableReadWrite();
   void setPrivData(void *);
   void* getPrivData() const;
   void setCustomizeOnMessageCallBack(onMessageCallBack cb) {

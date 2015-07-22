@@ -83,7 +83,8 @@ int connection::tryWrite()
   if (!EVBUFFER_LENGTH(buf_->output)) {
     return -1;
   }
-  EnableWrite();
+  enableWrite();
+  return 0;
 }
 
 void connection::eventReadCallBack(bufferevent* buf, void* arg)
@@ -124,6 +125,14 @@ void connection::eventTimeoutCallBack(bufferevent* buf, void* arg)
 //
 void connection::startRead()
 {
+  assert(buf_->input);
+  disableWrite();//close write event
+  enableRead();// enable read event
+  conn_state_ = CON_READING;
+  
+  if (EVBUFFER_LENGTH(buf_->input)) {
+    handleRead();
+  }
 }
 
 void connection::readDone()
@@ -132,11 +141,33 @@ void connection::readDone()
 
 void connection::startWrite()
 {
-
+  if (!EVBUFFER_LENGTH(buf_->output)) {
+    // write buff is empty 
+    // just return
+    return ;
+  }
+  
+  conn_state_ = CON_WRITTING;
+  //int ret = tryWrite();
+  //TODO: write data 
+  if (!EVBUFFER_LENGTH(buf_->output)) {
+    // write done
+    writeDone();
+    return ;
+  }
+  enableWrite();
+  return ;
 }
 
 void connection::writeDone()
 {
+  if(!isKeepAlived()) {
+     //just free connection
+     closeConnection();
+  }
+  // this connnection is keepalived,just reset buffers and enable read ,wait reading
+  startRead();
+  return ;
 }
 
 void connection::handleRead()
@@ -187,15 +218,16 @@ void connection::handleTimeOut()
 {
 }
 
+// this function has some errors
 int connection::closeConnection() //主动关闭连接
 {
 
   if (conn_state_ == CON_DISCONNECTED) { //如果连接状态已经是关闭的，则不做任何处理，直接返回
     return 0;
   }
-  conn_state_ = CON_DISCONNECTING; //step 1. close read
-  bufferevent_disable(buf_, EV_READ);
-  shutdown(connfd_, SHUT_RD);
+  conn_state_ = CON_DISCONNECTING; //step 1. shut down Write ,send FIN
+  bufferevent_disable(buf_, EV_WRITE);
+  shutdown(connfd_, SHUT_WR);
   //step 2. 如果buffer中还有数据没有发送完，发送完数据，并重新设置超时时间
   if (buf_->output->off) {
     bufferevent_setcb(buf_, NULL, eventWriteCallBack, NULL, this);
@@ -229,6 +261,11 @@ bool connection::reuseConnection()
 void connection::setKeepAlived(bool isKeepAlived)
 {
   keep_alived_ = isKeepAlived;
+}
+
+bool connection::isKeepAlived()
+{
+  return keep_alived_;
 }
 
 void connection::setListener(listener* listen)
@@ -267,33 +304,33 @@ short connection::bufferevent_get_enabled(struct bufferevent* bufev)
 {
   return bufev->enabled;
 }
-void connection::EnableRead() {
+void connection::enableRead() {
   int event = bufferevent_get_enabled(buf_);
   if (event & EV_READ)
     return;
   bufferevent_enable(buf_, EV_READ);
 }
 
-void connection::EnableWrite() {
+void connection::enableWrite() {
   int event = bufferevent_get_enabled(buf_);
   if (event & EV_WRITE)
     return;
   bufferevent_enable(buf_, EV_WRITE);
 }
 
-void connection::DisableRead() {
+void connection::disableRead() {
   int event = bufferevent_get_enabled(buf_);
   if (event & EV_READ)
     bufferevent_disable(buf_, EV_READ);
 }
 
-void connection::DisableWrite() {
+void connection::disableWrite() {
   int event = bufferevent_get_enabled(buf_);
   if (event & EV_WRITE)
     bufferevent_disable(buf_, EV_WRITE);
 }
 
-void connection::DisableReadWrite() {
+void connection::disableReadWrite() {
   int old = bufferevent_get_enabled(buf_);
   if (old)
     bufferevent_disable(buf_, old);
