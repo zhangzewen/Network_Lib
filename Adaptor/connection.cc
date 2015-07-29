@@ -63,6 +63,7 @@ connection::CONN_STATE connection::onMessage()
   }
 #endif
   // this is ugly now,  there must will be a recv buffer conf
+  // if input size is empty, just return reading
   if (!EVBUFFER_LENGTH(buf_->input)) {
     return CON_READING;
   }

@@ -1,0 +1,105 @@
+1-frequent item sets:
+wendy hiller	
+marie lohr	
+ray milland	
+ellen drew	
+margaret lockwood	
+derek farr	
+athene seyler	
+peggy ashcroft	
+bernard miles	
+michael redgrave	
+edith evans	
+olivia dehavilland	
+robert morley	
+peter sellers	
+sophia loren	
+alastair sim	
+orson welles	
+michael hodern	
+sig rumann	
+miles mander	
+george zucco	
+oliver hardy	
+stan laurel	
+w.c. fields	
+jean parker	
+charles lane	
+sean connery	
+kate capshaw	
+james finlayson	
+basil rathbone	
+anita louise	
+groucho marx	
+chico marx	
+harpo marx	
+david mccallum	
+keenan wynn	
+charlton heston	
+herbert lom	
+alec guiness	
+james mason	
+bernard lee	
+judy garland	
+mickey rooney	
+david niven	
+robert vaughn	
+leo g. mccarroll	
+robert benchley	
+ralph morgan	
+donald meek	
+gregory peck	
+lewis stone	
+maureen osullivan	
+james stewart	
+dorothy lamour	
+lionel barrymore	
+margaret dumont	
+tony martin	
+fred astaire	
+ann miller	
+felix aylmer	
+bing crosby	
+bob hope	
+deborah kerr	
+raymond massey	
+john carradine	
+grant mitchell	
+jean arthur	
+edward arnold	
+thomas mitchell	
+frank sinatra	
+lionel jeffries	
+fay holden	
+sara haden	
+lois maxwell	
+desmond llewellyn	
+gary cooper	
+cecil parker	
+ian hunter	
+roger moore	
+zeppo marx	
+akim tamiroff	
+2-frequent item sets:
+peter sellers	herbert lom	
+peter sellers	david niven	
+oliver hardy	stan laurel	
+oliver hardy	james finlayson	
+stan laurel	james finlayson	
+sean connery	lois maxwell	
+sean connery	desmond llewellyn	
+groucho marx	chico marx	
+groucho marx	harpo marx	
+groucho marx	margaret dumont	
+groucho marx	zeppo marx	
+chico marx	harpo marx	
+chico marx	margaret dumont	
+chico marx	zeppo marx	
+harpo marx	margaret dumont	
+harpo marx	zeppo marx	
+david mccallum	robert vaughn	
+david mccallum	leo g. mccarroll	
+bernard lee	lois maxwell	
+bernard lee	desmond llewellyn	
+robert vaughn	leo g. mccarroll	
+lois maxwell	desmond llewellyn	
