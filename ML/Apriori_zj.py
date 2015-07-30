@@ -207,9 +207,10 @@ def GenCand(k, LSet, CSet):
             continue
         for i in range(len(Combinations)):
             item = sorted(list(key) + list(Combinations[i]))
-            CSet[k].append(item)
+            #CSet[k].append(item)
             if IsValid(item, LSet[k - 1], k) :
-                LSet[k].append(item)
+                #LSet[k].append(item)
+                CSet[k].append(item)
 	###################################
 	# 2: You need to generate the candidate item sets for (k+1)
 	# You MAY call the function 'IsValid(,)' you have built, and use the dictionary 'PreSetDic' generated above
@@ -266,13 +267,13 @@ while len(LSet[k-1]) > 1:
     LSet[k].sort(CompItemSet)
     CSet[k].sort(CompItemSet)
     print len(CSet[k]), str(k+1)+"-candidate item sets found!"
-
-    #for candlist in CSet[k]:
-    #    count = 0
-    #    for tarlist in TSet:
-    #        count += GetFreq(candlist,tarlist)
-    #    if count >= MinSupCount:
-    #        LSet[k].append(candlist)
+    #pdb.set_trace()
+    for candlist in CSet[k]:
+      count = 0
+      for tarlist in TSet:
+        count += GetFreq(candlist,tarlist)
+      if count >= MinSupCount:
+        LSet[k].append(candlist)
     k += 1
 
 # write the result

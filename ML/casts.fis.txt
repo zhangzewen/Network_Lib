@@ -103,3 +103,18 @@ bernard lee	lois maxwell
 bernard lee	desmond llewellyn	
 robert vaughn	leo g. mccarroll	
 lois maxwell	desmond llewellyn	
+3-frequent item sets:
+oliver hardy	stan laurel	james finlayson	
+sean connery	lois maxwell	desmond llewellyn	
+groucho marx	chico marx	harpo marx	
+groucho marx	chico marx	margaret dumont	
+groucho marx	chico marx	zeppo marx	
+groucho marx	harpo marx	margaret dumont	
+groucho marx	harpo marx	zeppo marx	
+chico marx	harpo marx	margaret dumont	
+chico marx	harpo marx	zeppo marx	
+david mccallum	robert vaughn	leo g. mccarroll	
+bernard lee	lois maxwell	desmond llewellyn	
+4-frequent item sets:
+groucho marx	chico marx	harpo marx	margaret dumont	
+groucho marx	chico marx	harpo marx	zeppo marx	
