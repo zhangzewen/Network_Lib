@@ -28,6 +28,53 @@ def Dedup(items):
 			tempDic[item] = True
 	return tempDic.keys()
 
+
+def createVocal(alldoc):
+	fcount=0
+	hs_w={}
+	hs_word={}
+	hs_file={}
+	hs_file_i={}
+	for dir in alldoc:
+		
+		fcount=fcount+1
+		file=open("data/"+dir,'r')
+		for str in [line.split() for line in file]:
+				
+			for i in str:
+				
+				if (not hs_file_i.has_key(dir+i)):#该文档内的某一词出现过，该词则不++了
+					hs_word[i]=hs_word.get(i,0)+1 			
+				hs_file_i[dir+i]=1									
+				
+		hs_file[dir]=1
+		
+	count=0
+	fw=open('type.txt','w')#存储下纳入词库的，方便查看到底是哪些词
+	dr=open('drop.txt','w') #扔掉的，也就是在多个文章出现的词。
+	vocabSet=[]
+	for key in hs_word:
+			#print sorted(hs_word.items(),key=lambda d:d[1])
+			#o=key+str(hs_word[key])
+			f1=key
+			f2=bytes(hs_word[key])
+			out=f1+f2
+			if hs_word[key] <50:
+				#print key,hs_word[key]
+			
+				fw.write(out);fw.write('\n')
+				count=count+1
+				vocabSet.append(f1)
+			else:
+				#print key,hs_word[key]
+				dr.write(out+'\n')
+				
+	fw.close()
+	dr.close()
+	return vocabSet
+	print "hs_word count:",len(hs_word),"After:",count
+
+
 def LoadData():
   i =0
   infile = file(TrainingDataFile, 'r')
