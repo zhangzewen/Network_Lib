@@ -20,6 +20,7 @@ WordDic = {}
 ClassFeaProb = {}
 ClassDefaultProb = {}
 ClassProb = {}
+ItemVector = []
 
 def Dedup(items):
 	tempDic = {}
@@ -123,6 +124,14 @@ def ComputeModel():
     for classid in ClassFreq.keys():
       ClassProb[classid] = ClassFreq[classid] / (float)sum
     # step two
+    for index in range(len(ItemVector)):
+      for classid in ClassFeaDic.keys():
+        if ItemVector[index] not in ClassFeaProb[classid].keys():
+          classFeaProb[classid][ItemVector[index]] = 1 / (float)ClassFreq[classid]
+        else:
+          classFeaProb[classid][ItemVector[index]] = ClassFeaDic[classid][ItemVector[index]] / (float)ClassFreq[classid]
+        
+      
     
 
 
