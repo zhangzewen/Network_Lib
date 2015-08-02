@@ -2,7 +2,6 @@
 #include <event.h>
 #include <stdio.h>
 #include <assert.h>
-//#include "http_parser.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <iostream>
