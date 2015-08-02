@@ -1,5 +1,5 @@
-#ifndef _ADAPTOR_UTIL_H_INCLUDED__
-#define _ADAPTOR_UTIL_H_INCLUDED__
+#ifndef INTERNET_UTIL_H
+#define INTERNET_UTIL_H
 
 #include <vector>
 #include <string>
@@ -23,4 +23,4 @@ private:
     TokenizerIter current_;
 };
 }
-#endif
+#endif //INTERNET_UTIL_H

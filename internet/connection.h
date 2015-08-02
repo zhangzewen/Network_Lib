@@ -1,5 +1,5 @@
-#ifndef _ADAPTOR_CONNECTION_H_INCLUDED__
-#define _ADAPTOR_CONNECTION_H_INCLUDED__
+#ifndef INTERNET_CONNECTION_H
+#define INTERNET_CONNECTION_H
 
 #include <map>
 #include <string>
@@ -81,4 +81,4 @@ private:
   listener* listener_;
   void* privdata_;
 };
-#endif //_ADAPTOR_CONNECTION_H_INCLUDED__
+#endif //INTERNET_CONNECTION_H

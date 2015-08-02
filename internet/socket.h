@@ -1,5 +1,5 @@
-#ifndef _ADAPTOR_SOCKET_H_INCLUDED_
-#define _ADAPTOR_SOCKET_H_INCLUDED_
+#ifndef INTERNET_SOCKET_H
+#define INTERNET_SOCKET_H
 
 class Socket
 {
@@ -9,4 +9,4 @@ public:
 private:
   int fd_;
 };
-#endif //_ADAPTOR_SOCKET_H_INCLUDED_
+#endif //INTERNET_SOCKET_H

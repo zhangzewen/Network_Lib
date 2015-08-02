@@ -1,5 +1,5 @@
-#ifndef __ADAPTOR_LISTENER_H_INCLUDED__
-#define __ADAPTOR_LISTENER_H_INCLUDED__
+#ifndef INTERNET_LISTENER_H
+#define INTERNET_LISTENER_H
 
 
 #include <string>
@@ -48,4 +48,4 @@ private:
   //onMessageCallBack onMessage_;
 };
 
-#endif //__ADAPTOR_LISTENER_H_INCLUDED__
+#endif //INTERNET_LISTENER_H
