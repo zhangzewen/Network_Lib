@@ -1,5 +1,5 @@
-#ifndef INTERNET_CONNECTION_H
-#define INTERNET_CONNECTION_H
+#ifndef INTERNET_CONNECTION_H_
+#define INTERNET_CONNECTION_H_
 
 #include <map>
 #include <string>
@@ -32,12 +32,14 @@ public:
   } CONN_STATE;
   //typedef CONN_STATE (*onMessageCallBack)(connection*, char*, int);
   typedef boost::function<CONN_STATE(connection*, char*, int)> onMessageCallBack;
+  typedef boost::function<CONN_STATE(connection*)> onProcessCallBack;
   //typedef CONN_STATE (*OnProcessCallBack)(connection*);
   connection(int fd, struct event_base* base);
   ~connection();
   bool init();
   CONN_STATE onMessage();
-  int closeConnection();
+  CONN_STATE doProcess();
+  int closeConnection(); 
   int doCloseConnection();
   void setKeepAlived(bool isKeepAlived);
   void setListener(listener*);
@@ -51,8 +53,11 @@ public:
   void disableReadWrite();
   void setPrivData(void *);
   void* getPrivData() const;
-  void setCustomizeOnMessageCallBack(onMessageCallBack cb) {
+  void setCustomizeOnMessageCallBack(const onMessageCallBack& cb) {
     customizeOnMessageCallBack_ = cb;
+  }
+  void setCustomizeOnProcessCallBack(const onProcessCallBack& cb) {
+    customizeOnProcessCallBack_ = cb;
   }
   void startRead();
   void startWrite();
@@ -70,6 +75,7 @@ private:
   static void eventErrorCallBack(bufferevent*, short, void*);
   static void eventTimeoutCallBack(bufferevent*, void*);
   onMessageCallBack customizeOnMessageCallBack_;
+  onProcessCallBack customizeOnProcessCallBack_;
   bool reuseEvBuffer(struct evbuffer*);
   bool reuseBufferEvent(struct bufferevent*);
   short bufferevent_get_enabled(struct bufferevent*);
@@ -81,4 +87,4 @@ private:
   listener* listener_;
   void* privdata_;
 };
-#endif //INTERNET_CONNECTION_H
+#endif //INTERNET_CONNECTION_H_

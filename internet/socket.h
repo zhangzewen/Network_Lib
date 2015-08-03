@@ -1,5 +1,5 @@
-#ifndef INTERNET_SOCKET_H
-#define INTERNET_SOCKET_H
+#ifndef INTERNET_SOCKET_H_
+#define INTERNET_SOCKET_H_
 
 class Socket
 {

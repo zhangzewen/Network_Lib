@@ -1,6 +1,5 @@
-#ifndef INTERNET_LISTENER_H
-#define INTERNET_LISTENER_H
-
+#ifndef INTERNET_LISTENER_H_
+#define INTERNET_LISTENER_H_
 
 #include <string>
 #include "connection.h"
@@ -45,7 +44,6 @@ private:
   struct event_base* base_;
   struct event* ev_;
   makeNewConnection makeNewConnectionCallBack_;
-  //onMessageCallBack onMessage_;
 };
 
 #endif //INTERNET_LISTENER_H

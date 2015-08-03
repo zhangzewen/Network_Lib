@@ -11,8 +11,8 @@
 #include "event.h"
 #include "listener.h"
 
-connection::connection(int fd, struct event_base* base) : connfd_(fd),
-  buf_(NULL), base_(base), privdata_(NULL)
+connection::connection(int fd, struct event_base* base) : connfd_(fd), 
+  buf_(NULL), base_(base), keep_alived_(false), privdata_(NULL)
 {
 }
 
@@ -20,47 +20,24 @@ connection::~connection()
 {
 }
 
+// just do some init work, and begin to register callback handle
 bool connection::init()
 {
-  buf_ = bufferevent_new(connfd_, eventReadCallBack, eventWriteCallBack, eventErrorCallBack, this);
+  //buf_ = bufferevent_new(connfd_, eventReadCallBack, eventWriteCallBack, eventErrorCallBack, this);
+  buf_ = bufferevent_new(connfd_, NULL, NULL, NULL, this);
   if (NULL == buf_) {
     std::cout << "bufferevent malloc error!" << std::endl;
     return false;
   }
   bufferevent_base_set(base_, buf_);
   bufferevent_setcb(buf_, eventReadCallBack, NULL, NULL, this);
-  bufferevent_enable(buf_, EV_READ);
+  //bufferevent_enable(buf_, EV_READ);
+  startRead();
   return true;
 }
 
 connection::CONN_STATE connection::onMessage()
 {
-#if 0
-  int nparsed = 0;
-  char buffer[4096] = {0};
-  int nread = bufferevent_read(buf_, buffer, 4095);
-  nparsed = http_parser_execute(parser_, settings_, buffer, nread);
-  if (parser_->upgrade) {
-    //do something
-  } else if (nparsed != nread) {
-    //Handle error. Usually just close the connection.
-    parse_state_ = PARSEERROR;
-  }
-  // 这边应该是处理adaptor的
-  //if (http_body_is_final(parser_)) { // 这个connection 已经完成
-  //    std::cerr << "http body parser is done" << std::endl;
-  //   return READDONE;
-  //}
-
-  switch(parse_state_) {
-    case PARSEING:
-      return READING;
-    case PARSEERROR:
-      return READERROR;
-    default:
-      break;
-  }
-#endif
   // this is ugly now,  there must will be a recv buffer conf
   // if input size is empty, just return reading
   if (!EVBUFFER_LENGTH(buf_->input)) {
@@ -72,8 +49,18 @@ connection::CONN_STATE connection::onMessage()
   if (customizeOnMessageCallBack_) {
     ret = customizeOnMessageCallBack_(this, buffer, nread);
   }
-
   return ret;
+}
+
+connection::CONN_STATE connection::doProcess()
+{
+  CONN_STATE ret;
+  if (customizeOnProcessCallBack_) {
+    ret = customizeOnProcessCallBack_(this);
+    return ret;
+  }
+  // when there is no customize process callback just change the states from CON_PROCESSING to CON_PROCESSDONE
+  return CON_PROCESSDONE;
 }
 
 // try to write and regist the write event if it's not registed
@@ -108,6 +95,7 @@ void connection::eventWriteCallBack(bufferevent* buf, void* arg)
   connection* conn = static_cast<connection*>(arg);
   conn->handleWrite();
 }
+
 void connection::eventErrorCallBack(bufferevent* buf, short event, void* arg)
 {
   assert(NULL == buf);
@@ -115,6 +103,7 @@ void connection::eventErrorCallBack(bufferevent* buf, short event, void* arg)
   connection* conn = static_cast<connection*>(arg);
   conn->handleError();
 }
+
 void connection::eventTimeoutCallBack(bufferevent* buf, void* arg)
 {
   assert(NULL == buf);
@@ -129,7 +118,7 @@ void connection::startRead()
   disableWrite();//close write event
   enableRead();// enable read event
   conn_state_ = CON_READING;
-  
+
   if (EVBUFFER_LENGTH(buf_->input)) {
     handleRead();
   }
@@ -146,7 +135,7 @@ void connection::startWrite()
     // just return
     return ;
   }
-  
+
   conn_state_ = CON_WRITTING;
   //int ret = tryWrite();
   //TODO: write data 
@@ -162,8 +151,8 @@ void connection::startWrite()
 void connection::writeDone()
 {
   if(!isKeepAlived()) {
-     //just free connection
-     closeConnection();
+    //just free connection
+    closeConnection();
   }
   // this connnection is keepalived,just reset buffers and enable read ,wait reading
   startRead();
@@ -191,6 +180,7 @@ void connection::handleRead()
       break;
     case CON_PROCESSING:
       // the request is processing
+      conn_state_ = doProcess();
       break;
     case CON_PROCESSERROR:
       break;
@@ -304,6 +294,7 @@ short connection::bufferevent_get_enabled(struct bufferevent* bufev)
 {
   return bufev->enabled;
 }
+
 void connection::enableRead() {
   int event = bufferevent_get_enabled(buf_);
   if (event & EV_READ)

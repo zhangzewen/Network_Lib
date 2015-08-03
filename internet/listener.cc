@@ -10,34 +10,22 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
+//constructor
 listener::listener(const std::string& host, int port, struct event_base* base) : host_(host),
   port_(port), base_(base)
 {
 }
 
+//constructor
 listener::listener(const std::string& host, int port) : host_(host),
   port_(port), base_(NULL)
 {
 }
-
-
-//bool listener::makeConnection(int connfd, struct event_base* base)
-//{
-//    connection* conn = new connection(connfd, base);
-//    if (NULL == conn) {
-//        std::cout << "create connection error!" << std::endl;
-//		return false;
-//    }
-//    conn->setListener(this);
-//	//conn->setCustomizeOnMessageCallBack(cb);
-//    if (!conn->init()) {
-//        std::cout << "connection init error!" << std::endl;
-//		return false;
-//    }
-//	return true;
-//}
-
-
+/**
+  @param fd 
+  @param event 
+  @param arg an argument to be passed to the callback function
+*/
 void listener::listenCallBack(int fd, short event, void* arg)
 {
   assert(fd > 0);
@@ -64,6 +52,9 @@ void listener::listenCallBack(int fd, short event, void* arg)
   }
 }
 
+/**
+ @param
+*/
 bool listener::doMakeConnection(int connfd)
 {
   //listen->makeConnection(connfd, listen->getEventBase());
