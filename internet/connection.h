@@ -30,10 +30,8 @@ public:
     CON_WRITEERROR,
     CON_WRITEDONE
   } CONN_STATE;
-  //typedef CONN_STATE (*onMessageCallBack)(connection*, char*, int);
   typedef boost::function<CONN_STATE(connection*, char*, int)> onMessageCallBack;
   typedef boost::function<CONN_STATE(connection*)> onProcessCallBack;
-  //typedef CONN_STATE (*OnProcessCallBack)(connection*);
   connection(int fd, struct event_base* base);
   ~connection();
   bool init();
@@ -44,7 +42,6 @@ public:
   void setKeepAlived(bool isKeepAlived);
   void setListener(listener*);
   bool isKeepAlived();
-  //CON_STATE process(connection*); why should there have a  process method ,this should be customized
   bool reuseConnection();
   void enableRead();
   void enableWrite();

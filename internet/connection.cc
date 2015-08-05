@@ -11,7 +11,7 @@
 #include "event.h"
 #include "listener.h"
 
-connection::connection(int fd, struct event_base* base) : connfd_(fd), 
+connection::connection(int fd, struct event_base* base) : connfd_(fd), conn_state_(CON_CONNECTING),
   buf_(NULL), base_(base), keep_alived_(false), privdata_(NULL)
 {
 }
@@ -23,7 +23,6 @@ connection::~connection()
 // just do some init work, and begin to register callback handle
 bool connection::init()
 {
-  //buf_ = bufferevent_new(connfd_, eventReadCallBack, eventWriteCallBack, eventErrorCallBack, this);
   buf_ = bufferevent_new(connfd_, NULL, NULL, NULL, this);
   if (NULL == buf_) {
     std::cout << "bufferevent malloc error!" << std::endl;
@@ -31,6 +30,7 @@ bool connection::init()
   }
   bufferevent_base_set(base_, buf_);
   bufferevent_setcb(buf_, eventReadCallBack, NULL, NULL, this);
+  conn_state_ = CON_CONNECTED;
   //bufferevent_enable(buf_, EV_READ);
   startRead();
   return true;
@@ -133,6 +133,7 @@ void connection::startWrite()
   if (!EVBUFFER_LENGTH(buf_->output)) {
     // write buff is empty 
     // just return
+    conn_state_ = CON_WRITTING;
     return ;
   }
 
@@ -159,6 +160,8 @@ void connection::writeDone()
   return ;
 }
 
+
+
 void connection::handleRead()
 {
   switch(conn_state_) {
@@ -169,6 +172,7 @@ void connection::handleRead()
       //主动关闭连接
       doCloseConnection();
       break;
+#if 0
     case CON_READDONE:
       //here we just make read event hanld empty, just let the TCP/IP recv data,
       //another thing is: for http,we just support keepalive ,not pipeline
@@ -183,15 +187,19 @@ void connection::handleRead()
       conn_state_ = doProcess();
       break;
     case CON_PROCESSERROR:
+      // close the connection
+      doCloseConnection();
       break;
     case CON_PROCESSDONE:
+      tryWrite();
       break;
+#endif
     case CON_WRITTING:
       break;
     case CON_WRITEERROR:
       break;
-    case CON_WRITEDONE:
-      break;
+    //case CON_WRITEDONE:
+    //  break;
     default:
       break;
   }
@@ -262,11 +270,6 @@ void connection::setListener(listener* listen)
 {
   listener_ = listen;
 }
-
-//connection::CONN_STATE process(connection* conn)
-//{
-// return CON_PROCESSDONE;
-//}
 
 bool connection::reuseEvBuffer(struct evbuffer* buf)
 {
