@@ -24,19 +24,24 @@ void HttpServer::start()
 bool HttpServer::makeNewConnection(int fd, struct event_base* base)
 {
 	connection* con = new connection(fd, base);
-	con->setCustomizeOnMessageCallBack(boost::bind(&HttpServer::onMessage, this, _1, _2, _3));
 	if (con->init()) {
 		return true;
 	}
+	con->setCustomizeOnMessageCallBack(boost::bind(&HttpServer::onMessage, this, _1, _2, _3));
+  con->setCustomizeOnProcessCallBack(boost::bind(&HttpServer::processRequest, this, _1));
 	return false;
 }
 
 
 connection::CONN_STATE HttpServer::onMessage(connection* con, char*buf, int len)
 {
-	//std::cerr << buf << std::endl;
 	HttpRequest request;
 	request.init();
 	request.parser(buf, len);
 	return  connection::CON_READDONE;
+}
+
+connection::CONN_STATE HTTPsERVER::processRequest(connection* con)
+{
+  HttpReqest* request  = static_cast<HttpReqeust*>conn->privdata;
 }

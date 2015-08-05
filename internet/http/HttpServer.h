@@ -25,6 +25,7 @@ public:
 	void start();
 	bool makeNewConnection(int fd, struct event_base* base);
 	connection::CONN_STATE onMessage(connection*, char*, int);
+	connection::CONN_STATE processRequest(connection*);
 private:
 	std::string host_;
 	int port_;
