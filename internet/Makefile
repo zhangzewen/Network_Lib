@@ -11,14 +11,19 @@ LIB_NAME :=lib$(LIBNAME).a
 #	g++ connection.o listener.o main.o redisClient.o util.o $(LDFLAGS) -o main
 #main: $(OBJS)
 #	g++ $(OBJS) $(LDFLAGS) -o main
-all: $(OBJS)
+all: $(OBJS) echoServer
 	    ar rcs $(LIB_NAME) $(OBJS)
 
 %.o : %.cc
 	g++ $(FLAGS) $(INCLUDES) -c $< $(LDFLAGS) -o $@
+
+echoServer: $(OBJS)
+	g++ $(OBJS) $(LDFLAGS) -o echoServer
+
 clean:
 	rm -fr core.*
 	rm -fr main
 	rm -fr a.out
 	rm -fr *.o
 	rm -fr *.a
+	rm -fr echoServer
