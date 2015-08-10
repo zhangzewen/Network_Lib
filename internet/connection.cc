@@ -111,12 +111,23 @@ void connection::eventErrorCallBack(bufferevent* buf, short event, void* arg)
   conn->handleError();
 }
 
-void connection::eventTimeoutCallBack(bufferevent* buf, void* arg)
+#if 0 
+// for read and write timeout
+void connection::eventReadTimeoutCallBack(bufferevent* buf, void* arg)
 {
   assert(NULL == buf);
   connection* conn = static_cast<connection*>(arg);
   conn->handleTimeOut();
 }
+
+void connection::eventWriteTimeoutCallBack(bufferevent* buf, void* arg)
+{
+  assert(NULL == buf);
+  connection* conn = static_cast<connection*>(arg);
+  conn->handleTimeOut();
+}
+#endif
+
 
 //
 void connection::startRead()
