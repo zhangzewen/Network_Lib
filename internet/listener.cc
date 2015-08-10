@@ -30,7 +30,7 @@ void listener::listenCallBack(int fd, short event, void* arg)
 {
   assert(fd > 0);
   assert(fd & EV_READ);
-  assert(NULL == arg);
+  assert(NULL != arg);
   listener* listen = static_cast<listener*>(arg);
   if (event & EV_READ) {
     //struct event* ev = static_cast<struct event*> (arg);

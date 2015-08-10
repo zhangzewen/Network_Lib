@@ -49,6 +49,10 @@ connection::CONN_STATE connection::onMessage()
   if (customizeOnMessageCallBack_) {
     ret = customizeOnMessageCallBack_(this, buffer, nread);
   }
+
+  if (ret == CON_READDONE) {
+    ret = doProcess();
+  }
   return ret;
 }
 
@@ -57,7 +61,10 @@ connection::CONN_STATE connection::doProcess()
   CONN_STATE ret;
   if (customizeOnProcessCallBack_) {
     ret = customizeOnProcessCallBack_(this);
-    return ret;
+  }
+  
+  if (ret == CON_PROCESSDONE) {
+    tryWrite();
   }
   // when there is no customize process callback just change the states from CON_PROCESSING to CON_PROCESSDONE
   return CON_PROCESSDONE;
@@ -76,9 +83,9 @@ int connection::tryWrite()
 
 void connection::eventReadCallBack(bufferevent* buf, void* arg)
 {
-  assert(NULL == buf);
+  assert(NULL != buf);
   connection* conn = static_cast<connection*>(arg);
-  conn->conn_state_ = CON_READING; // read event fired, change conn_state to reading
+  //conn->conn_state_ = CON_READING; // read event fired, change conn_state to reading
   conn->handleRead();//handle read
 }
 
@@ -114,7 +121,7 @@ void connection::eventTimeoutCallBack(bufferevent* buf, void* arg)
 //
 void connection::startRead()
 {
-  assert(buf_->input);
+  //assert(buf_->input);
   disableWrite();//close write event
   enableRead();// enable read event
   conn_state_ = CON_READING;
@@ -172,14 +179,13 @@ void connection::handleRead()
       //主动关闭连接
       doCloseConnection();
       break;
-#if 0
     case CON_READDONE:
-      //here we just make read event hanld empty, just let the TCP/IP recv data,
+      //here we just make read event handle empty, just let the TCP/IP recv data,
       //another thing is: for http,we just support keepalive ,not pipeline
       //when reading done,let's process the request,there will be a handler for customizeing
       //and when read done,let the process begin
       bufferevent_setcb(buf_, eventEmptyCallBack, NULL, NULL, NULL);
-      bufferevent_enable(buf_, EV_READ);
+      enableRead(); 
       conn_state_ = CON_PROCESSING;
       break;
     case CON_PROCESSING:
@@ -193,7 +199,6 @@ void connection::handleRead()
     case CON_PROCESSDONE:
       tryWrite();
       break;
-#endif
     case CON_WRITTING:
       break;
     case CON_WRITEERROR:
