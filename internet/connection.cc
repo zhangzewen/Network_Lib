@@ -192,7 +192,7 @@ void connection::handleRead()
 {
   switch(conn_state_) {
     case CON_CONNECTED:
-    //case CON_READING:
+    case CON_READING:
     case CON_IDLE:
       conn_state_ = onMessage();
       break;
@@ -373,4 +373,8 @@ void* connection::getPrivData() const {
 
 int connection::doWrite(char* buf, int len)
 {
+  assert(NULL != buf);
+  int ret = 0;
+  ret = bufferevent_write(buf_, buf, len);
+  return ret;
 }
