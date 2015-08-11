@@ -11,9 +11,8 @@ class EchoServer
 public:
 	EchoServer(const std::string&, int port);
 	void start();
-	bool makeNewConnection(int fd, struct event_base* base);
-	connection::CONN_STATE onMessage(connection*, char*, int);
-	connection::CONN_STATE processRequest(connection*);
+	void makeNewConnection(int fd, struct event_base* base);
+	void onMessage(connection*, char*, int);
 private:
 	std::string host_;
 	int port_;
@@ -28,32 +27,30 @@ EchoServer::EchoServer(const std::string& host, int port) : host_(host),
 
 void EchoServer::start()
 {
+#if 0
 	if (NULL == listener_) {
 		std::cerr << "start error!" << std::endl;
 	}
 	listener_->setMakeNewConnectionCallBack(boost::bind(&EchoServer::makeNewConnection, this, _1, _2));
 	listener_->start();
 	event_base_loop(base_, 0);
+#endif
 }
 
-bool EchoServer::makeNewConnection(int fd, struct event_base* base)
+void EchoServer::makeNewConnection(int fd, struct event_base* base)
 {
 	connection* con = new connection(fd, base);
-	con->setCustomizeOnMessageCallBack(boost::bind(&EchoServer::onMessage, this, _1, _2, _3));
-	if (con->init()) {
-		return true;
-	}
-	return false;
+	//con->setCustomizeOnMessageCallBack(boost::bind(&EchoServer::onMessage, this, _1, _2, _3));
+  con->init();
 }
 
 
-connection::CONN_STATE EchoServer::onMessage(connection* conn, char*buf, int len)
+void EchoServer::onMessage(connection* conn, char*buf, int len)
 {
   assert(conn != NULL);
   assert(buf != NULL);
   assert(len != 0);
   std::cout << buf << std::endl;
-	return  connection::CON_READDONE;
 }
 
 #endif //INTERNET_ECHO_H

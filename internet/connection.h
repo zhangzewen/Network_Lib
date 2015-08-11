@@ -21,15 +21,13 @@ public:
     CON_DISCONNECTED,
     CON_IDLE,//  After connected, this state is between registed Read Event  and a read event fired
     CON_READING,
-    CON_READERROR,
     CON_WRITTING,
-    CON_WRITEERROR,
   } CONN_STATE;
   typedef boost::function<CONN_STATE(connection*, char*, int)> onMessageCallBack;
   typedef boost::function<CONN_STATE(connection*)> onProcessCallBack;
   connection(int fd, struct event_base* base);
   ~connection();
-  bool init();
+  void init();
   CONN_STATE onMessage();
   CONN_STATE doProcess();
   int closeConnection(); 
@@ -56,6 +54,10 @@ public:
   void readDone();
   void writeDone();
   int tryWrite();
+  void setConnState(CONN_STATE state) {
+    conn_state_ = state;
+  }
+  int doWrite(char* buf, int len);
 private:
   void handleRead();
   void handleWrite();
@@ -68,7 +70,7 @@ private:
   static void eventTimeoutCallBack(bufferevent*, void*);
   onMessageCallBack customizeOnMessageCallBack_;
   onProcessCallBack customizeOnProcessCallBack_;
-  bool reuseEvBuffer(struct evbuffer*);
+  bool resetEvBuffer(struct evbuffer*);
   bool reuseBufferEvent(struct bufferevent*);
   short bufferevent_get_enabled(struct bufferevent*);
   int connfd_;

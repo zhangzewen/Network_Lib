@@ -21,19 +21,23 @@ connection::~connection()
 }
 
 // just do some init work, and begin to register callback handle
-bool connection::init()
+void connection::init()
 {
-  buf_ = bufferevent_new(connfd_, NULL, NULL, NULL, this);
   if (NULL == buf_) {
-    std::cout << "bufferevent malloc error!" << std::endl;
-    return false;
-  }
+    buf_ = bufferevent_new(connfd_, NULL, NULL, NULL, this);
+    if ( NULL == buf_) {
+      //TODO: close the connection 
+    }
+  } 
+  resetEvBuffer(buf_->input);
+  resetEvBuffer(buf_->output);
   bufferevent_base_set(base_, buf_);
   bufferevent_setcb(buf_, eventReadCallBack, NULL, NULL, this);
-  conn_state_ = CON_CONNECTED;
+  if (conn_state_ == CON_CONNECTING) {
+    conn_state_ = CON_CONNECTED;
+  } 
   //bufferevent_enable(buf_, EV_READ);
   startRead();
-  return true;
 }
 
 connection::CONN_STATE connection::onMessage()
@@ -50,12 +54,15 @@ connection::CONN_STATE connection::onMessage()
     ret = customizeOnMessageCallBack_(this, buffer, nread);
   }
 
+#if 0
   if (ret == CON_READDONE) {
     ret = doProcess();
   }
+#endif
   return ret;
 }
 
+#if 0
 connection::CONN_STATE connection::doProcess()
 {
   CONN_STATE ret;
@@ -69,6 +76,7 @@ connection::CONN_STATE connection::doProcess()
   // when there is no customize process callback just change the states from CON_PROCESSING to CON_PROCESSDONE
   return CON_PROCESSDONE;
 }
+#endif
 
 // try to write and regist the write event if it's not registed
 int connection::tryWrite()
@@ -135,7 +143,6 @@ void connection::startRead()
   //assert(buf_->input);
   disableWrite();//close write event
   enableRead();// enable read event
-  conn_state_ = CON_READING;
 
   if (EVBUFFER_LENGTH(buf_->input)) {
     handleRead();
@@ -174,7 +181,8 @@ void connection::writeDone()
     closeConnection();
   }
   // this connnection is keepalived,just reset buffers and enable read ,wait reading
-  startRead();
+  init();
+  //startRead();
   return ;
 }
 
@@ -183,9 +191,12 @@ void connection::writeDone()
 void connection::handleRead()
 {
   switch(conn_state_) {
-    case CON_READING:
+    case CON_CONNECTED:
+    //case CON_READING:
+    case CON_IDLE:
       conn_state_ = onMessage();
       break;
+#if 0
     case CON_READERROR:
       //主动关闭连接
       doCloseConnection();
@@ -210,10 +221,11 @@ void connection::handleRead()
     case CON_PROCESSDONE:
       tryWrite();
       break;
+#endif
     case CON_WRITTING:
       break;
-    case CON_WRITEERROR:
-      break;
+    //case CON_WRITEERROR:
+    //  break;
     //case CON_WRITEDONE:
     //  break;
     default:
@@ -235,18 +247,22 @@ void connection::handleTimeOut()
 // this function has some errors
 int connection::closeConnection() //主动关闭连接
 {
-
-  if (conn_state_ == CON_DISCONNECTED) { //如果连接状态已经是关闭的，则不做任何处理，直接返回
+  if (conn_state_ == CON_DISCONNECTED) { // if the connection is already closed ,just doing nothing
     return 0;
   }
   conn_state_ = CON_DISCONNECTING; //step 1. shut down Write ,send FIN
-  bufferevent_disable(buf_, EV_WRITE);
+  //bufferevent_disable(buf_, EV_WRITE);
+  //bufferevent_disable(buf_, EV_READ);
+  bufferevent_free(buf_);
+#if 0
   shutdown(connfd_, SHUT_WR);
   //step 2. 如果buffer中还有数据没有发送完，发送完数据，并重新设置超时时间
   if (buf_->output->off) {
     bufferevent_setcb(buf_, NULL, eventWriteCallBack, NULL, this);
     bufferevent_enable(buf_, EV_WRITE);
   }
+#endif
+  close(connfd_);
   return 0;
 }
 
@@ -287,10 +303,10 @@ void connection::setListener(listener* listen)
   listener_ = listen;
 }
 
-bool connection::reuseEvBuffer(struct evbuffer* buf)
+bool connection::resetEvBuffer(struct evbuffer* buf)
 {
   if (NULL == buf) {
-    return true;
+    return false;
   }
   buf->buffer = buf->orig_buffer;
   buf->misalign = 0;;
@@ -304,8 +320,8 @@ bool connection::reuseBufferEvent(struct bufferevent* bufev)
 {
   event_del(&bufev->ev_read);
   event_del(&bufev->ev_write);
-  reuseEvBuffer(bufev->input);
-  reuseEvBuffer(bufev->output);
+  resetEvBuffer(bufev->input);
+  resetEvBuffer(bufev->output);
   return true;
 }
 
@@ -354,3 +370,7 @@ void* connection::getPrivData() const {
   return privdata_;
 }
 
+
+int connection::doWrite(char* buf, int len)
+{
+}
