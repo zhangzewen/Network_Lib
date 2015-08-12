@@ -21,27 +21,25 @@ void HttpServer::start()
 	event_base_loop(base_, 0);
 }
 
-bool HttpServer::makeNewConnection(int fd, struct event_base* base)
+void HttpServer::makeNewConnection(int fd, struct event_base* base)
 {
 	connection* con = new connection(fd, base);
-	if (con->init()) {
-		return true;
-	}
 	con->setCustomizeOnMessageCallBack(boost::bind(&HttpServer::onMessage, this, _1, _2, _3));
-  con->setCustomizeOnProcessCallBack(boost::bind(&HttpServer::processRequest, this, _1));
-	return false;
+	con->init();
 }
 
 
-connection::CONN_STATE HttpServer::onMessage(connection* con, char*buf, int len)
+void HttpServer::onMessage(connection* con, char*buf, int len)
 {
+  assert(NULL != con);
 	HttpRequest request;
 	request.init();
 	request.parser(buf, len);
-	return  connection::CON_READDONE;
 }
 
+#if 0
 connection::CONN_STATE HTTPsERVER::processRequest(connection* con)
 {
   HttpReqest* request  = static_cast<HttpReqeust*>conn->privdata;
 }
+#endif

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <assert.h>
 #include "HttpRequest.h"
 
 
@@ -13,29 +14,42 @@ HttpRequest::~HttpRequest()
 
 static int on_message_begin(http_parser* p)
 {
+  assert(NULL != p);
   return 0;
 }
 
-static int on_url(http_parser*, const char* at, size_t len)
+static int on_url(http_parser* p, const char* at, size_t len)
 {
+  assert(NULL != p);
+  assert(NULL != at);
+  assert(len);
   std::string value(at, len);
   std::cout << value << std::endl;
   return 0;
 }
-static int on_status(http_parser*, const char* at, size_t len)
+static int on_status(http_parser* p, const char* at, size_t len)
 {
+  assert(NULL != p);
+  assert(NULL != at);
+  assert(len);
   std::string value(at, len);
   std::cout << value << std::endl;
   return 0;
 }
-static int on_header_field(http_parser*, const char* at, size_t len)
+static int on_header_field(http_parser* p, const char* at, size_t len)
 {
+  assert(NULL != p);
+  assert(NULL != at);
+  assert(len);
   std::string key(at, len);
   std::cout << key << std::endl;
   return 0;
 }
-static int on_header_value(http_parser*, const char* at, size_t len)
+static int on_header_value(http_parser* p, const char* at, size_t len)
 {
+  assert(NULL != p);
+  assert(NULL != at);
+  assert(len);
   std::string value(at, len);
   std::cout << value << std::endl;
   return 0;
@@ -43,16 +57,21 @@ static int on_header_value(http_parser*, const char* at, size_t len)
 }
 static int on_headers_complete(http_parser* p)
 {
+  assert(NULL != p);
   return 0;
 }
 
 static int on_message_complete(http_parser* p)
 {
+  assert(NULL != p);
   return 0;
 }
 
-static int on_body(http_parser*, const char* at, size_t len)
+static int on_body(http_parser* p, const char* at, size_t len)
 {
+  assert(NULL != p);
+  assert(NULL != at);
+  assert(len);
   std::string value(at, len);
   std::cout << value << std::endl;
   //body_length_ = len;
