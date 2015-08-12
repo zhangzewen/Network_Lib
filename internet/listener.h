@@ -11,7 +11,7 @@ class listener
 public:
   //typedef connection::CONN_STATE (*onMessageCallBack)(connection*, char*, int);
   //typedef bool(*makeNewConnection)(int, struct event_base*);
-  typedef boost::function<bool(int, struct event_base*)> makeNewConnection;
+  typedef boost::function<void (int, struct event_base*)> makeNewConnection;
   listener(const std::string&, int port, struct event_base* base);
   listener(const std::string&, int port);
   ~listener();
@@ -34,7 +34,7 @@ public:
   //onMessageCallBack getOnMessageCallBack() const {
   //	return onMessage_;
   //}
-  bool doMakeConnection(int connfd);
+  void doMakeConnection(int connfd);
 private:
   static void listenCallBack(int fd, short event, void* arg);
   int createSocketAndListen();

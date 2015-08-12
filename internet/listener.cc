@@ -41,12 +41,7 @@ void listener::listenCallBack(int fd, short event, void* arg)
       std::cerr << "Make connection error!" << std::endl;
       return;
     }
-    if (!listen->doMakeConnection(connfd)) {
-      std::cerr << "Make a New Connection Error" << std::endl;
-    } else {
-      std::cerr << "Make a New Connection OK" << std::endl;
-    }
-
+   listen->doMakeConnection(connfd);
   } else {
     std::cerr << "We do not care listener write or error!" << std::endl;
   }
@@ -55,23 +50,17 @@ void listener::listenCallBack(int fd, short event, void* arg)
 /**
  @param
 */
-bool listener::doMakeConnection(int connfd)
+void listener::doMakeConnection(int connfd)
 {
-  //listen->makeConnection(connfd, listen->getEventBase());
   if (makeNewConnectionCallBack_) {
     if (Util::setNonBlock(connfd) < 0) { // can not set nonblocking just return and lost this connection!
       std::cerr << "set NonBlocking Error" << std::endl;
       close(connfd);
-      return false;
     }
-    if (makeNewConnectionCallBack_(connfd, getEventBase())) {
-      return true;
-    }
+    makeNewConnectionCallBack_(connfd, getEventBase());
   } else {
     close(connfd);
-    return false;
   }
-  return false;
 }
 
 int listener::createSocketAndListen()

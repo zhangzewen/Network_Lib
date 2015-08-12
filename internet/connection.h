@@ -23,13 +23,14 @@ public:
     CON_READING,
     CON_WRITTING,
   } CONN_STATE;
-  typedef boost::function<CONN_STATE(connection*, char*, int)> onMessageCallBack;
-  typedef boost::function<CONN_STATE(connection*)> onProcessCallBack;
+  typedef boost::function<void (connection*, char*, int)> onMessageCallBack;
+  typedef boost::function<void (connection*)>onReadTimeoutCallBack;
+  typedef boost::function<void (connection*)>onWriteTimeoutCallBack;
+  typedef boost::function<void (connection*)>onConnectionCloseCallBack;
   connection(int fd, struct event_base* base);
   ~connection();
   void init();
-  CONN_STATE onMessage();
-  CONN_STATE doProcess();
+  void onMessage();
   int closeConnection(); 
   int doCloseConnection();
   void setKeepAlived(bool isKeepAlived);
@@ -46,8 +47,8 @@ public:
   void setCustomizeOnMessageCallBack(const onMessageCallBack& cb) {
     customizeOnMessageCallBack_ = cb;
   }
-  void setCustomizeOnProcessCallBack(const onProcessCallBack& cb) {
-    customizeOnProcessCallBack_ = cb;
+  void setCustomizeOnConnectionCloseCallBack(const onConnectionCloseCallBack& cb) {
+    customizeOnConnectionCloseCallBack_ = cb;
   }
   void startRead();
   void startWrite();
@@ -61,15 +62,14 @@ public:
 private:
   void handleRead();
   void handleWrite();
-  void handleError();
-  void handleTimeOut();
+  void handleError(connection*, short);
   static void eventEmptyCallBack(bufferevent*, void*);
   static void eventReadCallBack(bufferevent*, void*);
   static void eventWriteCallBack(bufferevent*, void*);
   static void eventErrorCallBack(bufferevent*, short, void*);
   static void eventTimeoutCallBack(bufferevent*, void*);
   onMessageCallBack customizeOnMessageCallBack_;
-  onProcessCallBack customizeOnProcessCallBack_;
+  onConnectionCloseCallBack customizeOnConnectionCloseCallBack_;
   bool resetEvBuffer(struct evbuffer*);
   bool reuseBufferEvent(struct bufferevent*);
   short bufferevent_get_enabled(struct bufferevent*);

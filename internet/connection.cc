@@ -32,7 +32,7 @@ void connection::init()
   resetEvBuffer(buf_->input);
   resetEvBuffer(buf_->output);
   bufferevent_base_set(base_, buf_);
-  bufferevent_setcb(buf_, eventReadCallBack, NULL, NULL, this);
+  bufferevent_setcb(buf_, eventReadCallBack, NULL, eventErrorCallBack, this);
   if (conn_state_ == CON_CONNECTING) {
     conn_state_ = CON_CONNECTED;
   } 
@@ -40,43 +40,22 @@ void connection::init()
   startRead();
 }
 
-connection::CONN_STATE connection::onMessage()
+void connection::onMessage()
 {
   // this is ugly now,  there must will be a recv buffer conf
   // if input size is empty, just return reading
   if (!EVBUFFER_LENGTH(buf_->input)) {
-    return CON_READING;
+    conn_state_ = CON_READING;
+    return;
   }
   char buffer[4096] = {0};
   int nread = bufferevent_read(buf_, buffer, 4095);
-  CONN_STATE ret;
   if (customizeOnMessageCallBack_) {
-    ret = customizeOnMessageCallBack_(this, buffer, nread);
+    customizeOnMessageCallBack_(this, buffer, nread);
   }
 
-#if 0
-  if (ret == CON_READDONE) {
-    ret = doProcess();
-  }
-#endif
-  return ret;
+  return;
 }
-
-#if 0
-connection::CONN_STATE connection::doProcess()
-{
-  CONN_STATE ret;
-  if (customizeOnProcessCallBack_) {
-    ret = customizeOnProcessCallBack_(this);
-  }
-  
-  if (ret == CON_PROCESSDONE) {
-    tryWrite();
-  }
-  // when there is no customize process callback just change the states from CON_PROCESSING to CON_PROCESSDONE
-  return CON_PROCESSDONE;
-}
-#endif
 
 // try to write and regist the write event if it's not registed
 int connection::tryWrite()
@@ -111,31 +90,13 @@ void connection::eventWriteCallBack(bufferevent* buf, void* arg)
   conn->handleWrite();
 }
 
-void connection::eventErrorCallBack(bufferevent* buf, short event, void* arg)
+void connection::eventErrorCallBack(bufferevent* buf, short what, void* arg)
 {
-  assert(NULL == buf);
-  assert(0 != event);
+  assert(NULL != buf);
+  assert(0 != what);
   connection* conn = static_cast<connection*>(arg);
-  conn->handleError();
+  conn->handleError(conn, what);
 }
-
-#if 0 
-// for read and write timeout
-void connection::eventReadTimeoutCallBack(bufferevent* buf, void* arg)
-{
-  assert(NULL == buf);
-  connection* conn = static_cast<connection*>(arg);
-  conn->handleTimeOut();
-}
-
-void connection::eventWriteTimeoutCallBack(bufferevent* buf, void* arg)
-{
-  assert(NULL == buf);
-  connection* conn = static_cast<connection*>(arg);
-  conn->handleTimeOut();
-}
-#endif
-
 
 //
 void connection::startRead()
@@ -194,8 +155,7 @@ void connection::handleRead()
     case CON_CONNECTED:
     case CON_READING:
     case CON_IDLE:
-      conn_state_ = onMessage();
-      break;
+      onMessage();
 #if 0
     case CON_READERROR:
       //主动关闭连接
@@ -237,11 +197,23 @@ void connection::handleWrite()
 {
 }
 
-void connection::handleError()
+
+void connection::handleError(connection* conn, short what)
 {
-}
-void connection::handleTimeOut()
-{
+  assert(NULL != conn);
+  assert( 0 != what);
+  if (what & EVBUFFER_ERROR) {
+    // just close connection 
+    closeConnection();
+  }else if (what == (EVBUFFER_READ | EVBUFFER_TIMEOUT)) { //read timeout
+    
+  } else if (what == (EVBUFFER_WRITE | EVBUFFER_TIMEOUT)) { //write time out
+  } else if (what == (EVBUFFER_READ | EVBUFFER_EOF)) {
+    if (customizeOnConnectionCloseCallBack_) {
+      customizeOnConnectionCloseCallBack_(conn);
+    }
+    closeConnection();
+  }
 }
 
 // this function has some errors
