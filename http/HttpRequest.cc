@@ -23,41 +23,46 @@ static int on_url(http_parser* p, const char* at, size_t len)
   assert(NULL != p);
   assert(NULL != at);
   assert(len);
-  std::string value(at, len);
-  std::cout << value << std::endl;
   return 0;
 }
+
 static int on_status(http_parser* p, const char* at, size_t len)
 {
   assert(NULL != p);
   assert(NULL != at);
   assert(len);
-  std::string value(at, len);
-  std::cout << value << std::endl;
   return 0;
 }
+
 static int on_header_field(http_parser* p, const char* at, size_t len)
 {
   assert(NULL != p);
   assert(NULL != at);
   assert(len);
-  std::string key(at, len);
-  std::cout << key << std::endl;
+  HttpRequest* request = static_cast<HttpRequest*>(p->data);
+  std::string tmp(at, len);
+  tmp.push_back(':');
+  request->addHeaderStream(tmp);
   return 0;
 }
+
 static int on_header_value(http_parser* p, const char* at, size_t len)
 {
   assert(NULL != p);
   assert(NULL != at);
   assert(len);
-  std::string value(at, len);
-  std::cout << value << std::endl;
+  HttpRequest* request = static_cast<HttpRequest*>(p->data);
+  std::string tmp(at, len);
+  tmp.push_back(';');
+  request->addHeaderStream(tmp);
   return 0;
-
 }
+
 static int on_headers_complete(http_parser* p)
 {
   assert(NULL != p);
+  HttpRequest* request = static_cast<HttpRequest*>(p->data);
+  request->parserHeaders();
   return 0;
 }
 
@@ -109,4 +114,24 @@ int HttpRequest::parser(char* buf, int len)
     return -1;
   }
   return 0;
+}
+
+void HttpRequest::addHeader(const std::string& key, const std::string& value)
+{
+  http_request_headers_.insert(std::make_pair(key, value));
+}
+
+bool HttpRequest::deleteHeader(const std::string& key)
+{
+  std::multimap<std::string, std::string>::iterator iter = http_request_headers_.find(key);
+  if ( iter != http_request_headers_.end()) {
+    http_request_headers_.erase(iter);
+    return true;
+  }
+  return false;
+}
+
+bool HttpRequest::parserHeaders()
+{
+  return true;
 }
