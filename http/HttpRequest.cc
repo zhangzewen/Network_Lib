@@ -1,6 +1,7 @@
 #include <iostream>
 #include <assert.h>
 #include "HttpRequest.h"
+#include "../util/util.h"
 
 
 HttpRequest::HttpRequest()
@@ -91,7 +92,6 @@ bool HttpRequest::init()
   }
   http_parser_init(parser_, HTTP_REQUEST);
   parser_->data = this;
-
   parserSettings_.on_message_begin = on_message_begin;
   parserSettings_.on_url = on_url;
   parserSettings_.on_status = on_status;
@@ -100,6 +100,7 @@ bool HttpRequest::init()
   parserSettings_.on_headers_complete = on_headers_complete;
   parserSettings_.on_body = on_body;
   parserSettings_.on_message_complete = on_message_complete;
+  conn_->setCustomizeOnMessageCallBack(boost::function(&HttpRequest::onP));
   return true;
 }
 
@@ -133,5 +134,16 @@ bool HttpRequest::deleteHeader(const std::string& key)
 
 bool HttpRequest::parserHeaders()
 {
+  std::vector<std::string> tmp;
+  split(headers_, ";", tmp);
+  for (std::vector<std::string>::const_iterator iter = tmp.begin();
+    iter != tmp.end();
+    ++iter) {
+    std::string::size_type pos = (*iter).find(':');
+    if (pos == std::string::npos) {
+      return false;
+    }
+    http_request_headers_.insert(std::make_pair((*iter).substr(0, pos), (*iter).substr(pos, (*iter).size() - pos)));
+  }
   return true;
 }

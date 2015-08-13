@@ -23,8 +23,9 @@ public:
   }REQUEST_STATE;
 	HttpServer(const std::string&, int port);
 	void start();
-	void makeNewConnection(int fd, struct event_base* base);
+	void makeNewConnection(int, struct event_base*);
 	void onMessage(connection*, char*, int);
+  void onParserRequest(connection* , char* , int);
 private:
 	std::string host_;
 	int port_;

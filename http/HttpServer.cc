@@ -3,6 +3,7 @@
 #include "HttpRequest.h"
 #include <event.h>
 #include <iostream>
+#include <assert.h>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
@@ -32,9 +33,19 @@ void HttpServer::makeNewConnection(int fd, struct event_base* base)
 void HttpServer::onMessage(connection* con, char*buf, int len)
 {
   assert(NULL != con);
-	HttpRequest request;
-	request.init();
-	request.parser(buf, len);
+	HttpRequest *request = new HttpRequest();
+  con->setPrivData(request);
+	request->init();
+	//request->parser(buf, len);
+}
+
+void HttpServer::onParserRequest(connection* conn, char* buf, int len)
+{
+  assert(NULL != conn);
+  assert(NULL != buf);
+  assert(NULL != len);
+  HttpRequest* request = static_cast<HttpRequest*>(conn->getPrivData());
+  request->parser(buf, len);
 }
 
 #if 0
