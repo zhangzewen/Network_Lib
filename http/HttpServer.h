@@ -26,7 +26,10 @@ public:
 	void makeNewConnection(int, struct event_base*);
 	void onMessage(connection*, char*, int);
   void onParserRequest(connection* , char* , int);
+  typedef boost::function<void()> urlHandler; 
+  bool registerUrl(const std::string&, const urlHandler& cb);
 private:
+  std::map<std::string, urlHandler> urlHandleSet_; 
 	std::string host_;
 	int port_;
 	struct event_base* base_;

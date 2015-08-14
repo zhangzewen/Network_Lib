@@ -20,6 +20,13 @@ public:
     headers_.append(elem);
   }
   bool parserHeaders();
+  void* getPrivData() const {
+    return privData_;
+  }
+  void setPrivData(void* data) {
+    privData_ = data;
+  }
+  void http_parser_request(connection* conn, char* buf, int len);
 private:
 	std::multimap<std::string, std::string> http_request_headers_;
   std::string headers_;
@@ -30,5 +37,6 @@ private:
 	connection* conn_;
 	http_parser_settings parserSettings_;
 	http_parser* parser_;
+  void* privData_;
 };
 #endif

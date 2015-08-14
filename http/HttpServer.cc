@@ -32,18 +32,27 @@ void HttpServer::makeNewConnection(int fd, struct event_base* base)
 
 void HttpServer::onMessage(connection* con, char*buf, int len)
 {
-  assert(NULL != con);
+  if (NULL == buf || 0 == len) {
+    return ;
+  }
 	HttpRequest *request = new HttpRequest();
+  if (NULL == request) {
+    //TODO close request
+  }
+  request->setPrivData(this);
   con->setPrivData(request);
-	request->init();
+	if (!request->init()) {
+     // TODO close request
+  }
 	//request->parser(buf, len);
+	return;
 }
 
 void HttpServer::onParserRequest(connection* conn, char* buf, int len)
 {
   assert(NULL != conn);
   assert(NULL != buf);
-  assert(NULL != len);
+  assert(0 != len);
   HttpRequest* request = static_cast<HttpRequest*>(conn->getPrivData());
   request->parser(buf, len);
 }

@@ -1,10 +1,11 @@
 #include <iostream>
 #include <assert.h>
 #include "HttpRequest.h"
+#include "connection.h"
 #include "../util/util.h"
 
 
-HttpRequest::HttpRequest()
+HttpRequest::HttpRequest() : conn_(NULL), parser_(NULL), privData_(NULL)
 {
 }
 
@@ -100,7 +101,7 @@ bool HttpRequest::init()
   parserSettings_.on_headers_complete = on_headers_complete;
   parserSettings_.on_body = on_body;
   parserSettings_.on_message_complete = on_message_complete;
-  conn_->setCustomizeOnMessageCallBack(boost::function(&HttpRequest::onP));
+  conn_->setCustomizeOnMessageCallBack(boost::bind(&HttpRequest::http_parser_request, this, _1, _2, _3));
   return true;
 }
 
@@ -146,4 +147,11 @@ bool HttpRequest::parserHeaders()
     http_request_headers_.insert(std::make_pair((*iter).substr(0, pos), (*iter).substr(pos, (*iter).size() - pos)));
   }
   return true;
+}
+
+void HttpRequest::http_parser_request(connection* conn, char* buf, int len)
+{
+  assert(conn);
+  assert(buf);
+  assert(len);
 }
