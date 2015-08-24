@@ -41,11 +41,11 @@ void HttpServer::onMessage(connection* con, char*buf, int len)
   }
   request->setPrivData(this);
   con->setPrivData(request);
-	if (!request->init()) {
-     // TODO close request
+  request->tieConnection(con);
+	request->init();
+  if (len) {
+    request->http_parser_request(con, buf, len);
   }
-	//request->parser(buf, len);
-	return;
 }
 
 void HttpServer::onParserRequest(connection* conn, char* buf, int len)

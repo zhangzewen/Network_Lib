@@ -5,7 +5,7 @@
 #include "../util/util.h"
 
 
-HttpRequest::HttpRequest() : conn_(NULL), parser_(NULL), privData_(NULL)
+HttpRequest::HttpRequest() : state_(WAIT_REQUEST), conn_(NULL), parser_(NULL), privData_(NULL)
 {
 }
 
@@ -64,7 +64,13 @@ static int on_headers_complete(http_parser* p)
 {
   assert(NULL != p);
   HttpRequest* request = static_cast<HttpRequest*>(p->data);
-  request->parserHeaders();
+  if (!request->parserHeaders()) {
+    return 1;
+  }
+  request->setMethod(http_method_str(static_cast<enum http_method>(p->method)));
+  if (request->getMethod() == "GET") {
+    request->setState(REQUEST_PARSER_DONE);
+  }
   return 0;
 }
 
@@ -85,11 +91,11 @@ static int on_body(http_parser* p, const char* at, size_t len)
   return 0;
 }
 
-bool HttpRequest::init()
+void HttpRequest::init()
 {
   parser_ = new http_parser();
   if (NULL == parser_) {
-    return false;
+    //TODO close connection
   }
   http_parser_init(parser_, HTTP_REQUEST);
   parser_->data = this;
@@ -102,7 +108,6 @@ bool HttpRequest::init()
   parserSettings_.on_body = on_body;
   parserSettings_.on_message_complete = on_message_complete;
   conn_->setCustomizeOnMessageCallBack(boost::bind(&HttpRequest::http_parser_request, this, _1, _2, _3));
-  return true;
 }
 
 int HttpRequest::parser(char* buf, int len)
@@ -113,6 +118,7 @@ int HttpRequest::parser(char* buf, int len)
     //do something
   } else if (nparsed != len) {
     //Handle error. Usually just close the connection.
+    state_ = REQUEST_PARSER_ERROR;
     return -1;
   }
   return 0;
@@ -154,4 +160,18 @@ void HttpRequest::http_parser_request(connection* conn, char* buf, int len)
   assert(conn);
   assert(buf);
   assert(len);
+  if (state_ == WAIT_REQUEST && len > 0) {
+    state_ = REQUEST_PARSERING;
+  } else if (len == 0) {
+    return;
+  }
+  int ret = parser(buf, len);
+  if (ret == -1) { //parser error!
+    //TODO close connection
+  }
+
+  if (state_ == REQUEST_PARSER_DONE) { //parser done,then process
+   
+  }
+  return ;
 }
