@@ -58,7 +58,7 @@ public:
   void setConnState(CONN_STATE state) {
     conn_state_ = state;
   }
-  int doWrite(char* buf, int len);
+  int doWrite(const char* buf, int len);
 private:
   void handleRead();
   void handleWrite();

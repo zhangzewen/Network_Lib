@@ -5,7 +5,7 @@
 #include "../util/util.h"
 
 
-HttpRequest::HttpRequest() : state_(WAIT_REQUEST), conn_(NULL), parser_(NULL), privData_(NULL)
+HttpRequest::HttpRequest() : state_(WAIT_REQUEST), conn_(NULL), parser_(NULL), server_(NULL)
 {
 }
 
@@ -69,7 +69,7 @@ static int on_headers_complete(http_parser* p)
   }
   request->setMethod(http_method_str(static_cast<enum http_method>(p->method)));
   if (request->getMethod() == "GET") {
-    request->setState(REQUEST_PARSER_DONE);
+    request->setState(HttpRequest::REQUEST_PARSER_DONE);
   }
   return 0;
 }
@@ -107,7 +107,7 @@ void HttpRequest::init()
   parserSettings_.on_headers_complete = on_headers_complete;
   parserSettings_.on_body = on_body;
   parserSettings_.on_message_complete = on_message_complete;
-  conn_->setCustomizeOnMessageCallBack(boost::bind(&HttpRequest::http_parser_request, this, _1, _2, _3));
+  conn_->setCustomizeOnMessageCallBack(boost::bind(&HttpRequest::parserRequest, this, _1, _2, _3));
 }
 
 int HttpRequest::parser(char* buf, int len)
@@ -155,7 +155,7 @@ bool HttpRequest::parserHeaders()
   return true;
 }
 
-void HttpRequest::http_parser_request(connection* conn, char* buf, int len)
+void HttpRequest::parserRequest(connection* conn, char* buf, int len)
 {
   assert(conn);
   assert(buf);
@@ -171,7 +171,33 @@ void HttpRequest::http_parser_request(connection* conn, char* buf, int len)
   }
 
   if (state_ == REQUEST_PARSER_DONE) { //parser done,then process
-   
+    httpResponseHeaders_.append("HTTP/1.1 200 OK\r\n");
+    addResponseHeader("Content-lenght", "21"); 
+    addResponseHeader("Server", "HttpServer v0.1"); 
+    addResponseHeader("Content-Type", "text/html; charset=UTF-8"); 
+    addResponseHeader("Date", "Wed, 26 Aug 2015 06:37:03 GMT"); 
+    httpResponseHeaders_.append("<html>zhangjie</html>");
+    conn_->doWrite(httpResponseHeaders_.c_str(), httpResponseHeaders_.size());
+    conn_->tryWrite();
+    
   }
   return ;
+}
+
+void HttpRequest::closeRequest()
+{
+  conn_->closeConnection();   
+}
+
+void HttpRequest::addResponseHeader(const std::string& key, const std::string& value)
+{
+  httpResponseHeaders_.append(key);
+  httpResponseHeaders_.append(": ");
+  httpResponseHeaders_.append(value);
+  httpResponseHeaders_.append("\r\n");
+}
+
+void HttpRequest::addResponseHeaderDone()
+{
+  httpResponseHeaders_.append("\r\n");
 }

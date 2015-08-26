@@ -39,12 +39,12 @@ void HttpServer::onMessage(connection* con, char*buf, int len)
   if (NULL == request) {
     //TODO close request
   }
-  request->setPrivData(this);
+  request->tieServer(this);
   con->setPrivData(request);
   request->tieConnection(con);
 	request->init();
   if (len) {
-    request->http_parser_request(con, buf, len);
+    request->parserRequest(con, buf, len);
   }
 }
 

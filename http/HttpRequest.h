@@ -5,7 +5,11 @@
 #include <string>
 #include "http_parser.h"
 
+//for now, just HTTP GET, HEAD, POST
+// when do crawl, HTTP HEAD can identiry whether the page we  crawled is modified or not
+
 class connection;
+class HttpServer;
 
 class HttpRequest
 {
@@ -26,14 +30,15 @@ public:
   }REQUEST_STATE;
 	void init();
 	int parser(char* buf, int len);
+  bool parserHeaders();
+  void parserRequest(connection* conn, char* buf, int len);
   void addHeader(const std::string& key, const std::string& value);
   bool deleteHeader(const std::string& key);
-  void addHeaderStream(const std::string& elem) { headers_.append(elem);}
-  bool parserHeaders();
-  void* getPrivData() const { return privData_;}
-  void setPrivData(void* data) { privData_ = data;}
-  void http_parser_request(connection* conn, char* buf, int len);
+  void addHeaderStream(const std::string& elem) {headers_.append(elem);}
   void tieConnection(connection* conn) {conn_ = conn;}
+  connection* getConnection() const { return conn_;}
+  void tieServer(HttpServer* server) {server_ = server;} 
+  HttpServer* getHttpServer() const {return server_;}
   void setMethod(const std::string& str) {method_ = str;}
   void setMethod(const char* str) {method_ = str;}
   std::string getMethod() const {return method_;}
@@ -41,6 +46,13 @@ public:
   void setHttpVersion(const char* str) {http_version_ = str;}
   std::string getHttpVersion() const {return http_version_;}
   void setState(REQUEST_STATE state) {state_ = state;}
+  REQUEST_STATE getState() const { return state_;}
+  void setUrl(std::string &url) {url_ = url;}
+  void setUrl(const char* url) { url_ = url;}
+  std::string getUrl() const {return url_;}
+  void closeRequest();
+  void addResponseHeader(const std::string& key, const std::string& value);
+  void addResponseHeaderDone();
 private:
 	std::multimap<std::string, std::string> http_request_headers_;
   REQUEST_STATE state_;
@@ -48,10 +60,14 @@ private:
 	std::string method_;
 	std::string http_version_;
 	std::string http_body_;
+  std::string url_;
+  std::string httpResponseHeaders_;
 	int body_length_;
 	connection* conn_;
 	http_parser_settings parserSettings_;
 	http_parser* parser_;
-  void* privData_;
+  HttpServer* server_;
+  //std::vector<char> request_headers_; //request stream
+  //std::vector<char> response_headers_; //response stream
 };
 #endif

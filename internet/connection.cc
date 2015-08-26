@@ -32,7 +32,7 @@ void connection::init()
   resetEvBuffer(buf_->input);
   resetEvBuffer(buf_->output);
   bufferevent_base_set(base_, buf_);
-  bufferevent_setcb(buf_, eventReadCallBack, NULL, eventErrorCallBack, this);
+  bufferevent_setcb(buf_, eventReadCallBack, eventWriteCallBack, eventErrorCallBack, this);
   if (conn_state_ == CON_CONNECTING) {
     conn_state_ = CON_CONNECTED;
   } 
@@ -343,7 +343,7 @@ void* connection::getPrivData() const {
 }
 
 
-int connection::doWrite(char* buf, int len)
+int connection::doWrite(const char* buf, int len)
 {
   assert(NULL != buf);
   int ret = 0;
