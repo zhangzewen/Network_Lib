@@ -57,6 +57,7 @@ class HttpRequest
   void closeRequest();
   void addResponseHeader(const std::string& key, const std::string& value);
   void addResponseHeaderDone();
+  void sendResponse(connection* conn);
 
  private:
   std::multimap<std::string, std::string> http_request_headers_;

@@ -66,9 +66,9 @@ void connection::onMessage()
 int connection::tryWrite()
 {
   // if output buffer is empty just return -1
-  if (!EVBUFFER_LENGTH(buf_->output)) {
-    return -1;
-  }
+  //if (!EVBUFFER_LENGTH(buf_->output)) {
+   // return -1;
+ // }
   enableWrite();
   return 0;
 }
@@ -201,6 +201,13 @@ void connection::handleRead()
 
 void connection::handleWrite()
 {
+  //if (!EVBUFFER_LENGTH(buf_->output)) {
+   // return;
+  //}
+  
+  if (customizeOnWriteCallBack_) {
+    customizeOnWriteCallBack_(this);
+  }
 }
 
 

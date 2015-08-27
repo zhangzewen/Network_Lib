@@ -35,6 +35,7 @@ class connection
   typedef boost::function<void (connection*)>onReadTimeoutCallBack;
   typedef boost::function<void (connection*)>onWriteTimeoutCallBack;
   typedef boost::function<void (connection*)>onConnectionCloseCallBack;
+  typedef boost::function<void (connection*)>onWriteCallBack;
   connection(int fd, struct event_base* base);
   ~connection();
   void init();
@@ -59,6 +60,9 @@ class connection
     const onConnectionCloseCallBack& cb) {
     customizeOnConnectionCloseCallBack_ = cb;
   }
+  void setCustomizeOnWriteCallBack(const onWriteCallBack& cb) {
+    customizeOnWriteCallBack_ = cb;
+  }
   void startRead();
   void startWrite();
   void readDone();
@@ -80,6 +84,7 @@ class connection
   static void eventTimeoutCallBack(bufferevent* bufev, void* data);
   onMessageCallBack customizeOnMessageCallBack_;
   onConnectionCloseCallBack customizeOnConnectionCloseCallBack_;
+  onWriteCallBack customizeOnWriteCallBack_;
   bool resetEvBuffer(struct evbuffer* buf);
   bool reuseBufferEvent(struct bufferevent* bufev);
   short bufferevent_get_enabled(struct bufferevent* bufev);

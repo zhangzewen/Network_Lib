@@ -72,7 +72,7 @@ static int on_headers_complete(http_parser* p)
     return 1;
   }
   request->setMethod(http_method_str(static_cast<enum http_method>(p->method)));
-  if (request->getMethod() == "GET") {
+  if (request->getMethod() == "HEAD") {
     request->setState(HttpRequest::REQUEST_PARSER_DONE);
   }
   return 0;
@@ -81,6 +81,8 @@ static int on_headers_complete(http_parser* p)
 static int on_message_complete(http_parser* p)
 {
   assert(NULL != p);
+  HttpRequest* request = static_cast<HttpRequest*>(p->data);
+  request->setState(HttpRequest::REQUEST_PARSER_DONE);
   return 0;
 }
 
@@ -166,24 +168,17 @@ void HttpRequest::parserRequest(connection* conn, char* buf, int len)
   assert(conn);
   assert(buf);
   assert(len);
-  if (state_ == WAIT_REQUEST && len > 0) {
-    state_ = REQUEST_PARSERING;
-  } else if (len == 0) {
-    return;
+  if (state_ == WAIT_REQUEST && len > 0) { // request stream begin
+    state_ = REQUEST_PARSERING; //change state to REQUEST_PARSERING
   }
+
   int ret = parser(buf, len);
   if (ret == -1) {  // parser error!
     // close connection
   }
 
   if (state_ == REQUEST_PARSER_DONE) {  // parser done,then process
-    httpResponseHeaders_.append("HTTP/1.1 200 OK\r\n");
-    addResponseHeader("Content-lenght", "21");
-    addResponseHeader("Server", "HttpServer v0.1");
-    addResponseHeader("Content-Type", "text/html; charset=UTF-8");
-    addResponseHeader("Date", "Wed, 26 Aug 2015 06:37:03 GMT");
-    httpResponseHeaders_.append("<html>zhangjie</html>");
-    conn_->doWrite(httpResponseHeaders_.c_str(), httpResponseHeaders_.size());
+    conn_->setCustomizeOnWriteCallBack(boost::bind(&HttpRequest::sendResponse, this, _1));
     conn_->tryWrite();
   }
   return;
@@ -206,3 +201,18 @@ void HttpRequest::addResponseHeaderDone()
 {
   httpResponseHeaders_.append("\r\n");
 }
+
+void HttpRequest::sendResponse(connection* conn)
+{
+  HttpRequest *request = static_cast<HttpRequest*>(conn->getPrivData());
+  assert(request == this);
+  httpResponseHeaders_.append("HTTP/1.1 200 OK\r\n");
+  addResponseHeader("Content-lenght", "21");
+  addResponseHeader("Server", "HttpServer v0.1");
+  addResponseHeader("Content-Type", "text/html; charset=UTF-8");
+  addResponseHeader("Date", "Wed, 26 Aug 2015 06:37:03 GMT");
+  addResponseHeaderDone();
+  httpResponseHeaders_.append("<html>zhangjie</html>");
+  conn_->doWrite(httpResponseHeaders_.c_str(), httpResponseHeaders_.size());
+}
+
