@@ -1,5 +1,5 @@
-#ifndef UTIL_EXCEPTION_H
-#define UTIL_EXCEPTION_H
+#ifndef UTIL_EXCEPTION_H_
+#define UTIL_EXCEPTION_H_
 
 #include <exception>
 #include <string>
@@ -22,4 +22,4 @@ private:
 	std::string stack_;
 };
 
-#endif
+#endif  // UTIL_EXCEPTION_H_

@@ -1,3 +1,5 @@
+// Copyright [2015] <Zhang Zewen>
+
 #ifndef INTERNET_CONNECTION_H_
 #define INTERNET_CONNECTION_H_
 
@@ -13,13 +15,19 @@ class listener;
 
 class connection
 {
-public:
+ public:
   typedef enum {
+    // when construct CLASS connection, the state initialized to CON_CONNECTING
     CON_CONNECTING,
+    // when connection buffer, events constructed and inited done,
+    // state change to CON_CONNECTED, and ready to wait the data comming,
+    // and zhe following state is CON_IDLE
     CON_CONNECTED,
     CON_DISCONNECTING,
     CON_DISCONNECTED,
-    CON_IDLE,//  After connected, this state is between registed Read Event  and a read event fired
+    // After connected, this state is between registed Read Event
+    // and a read event fired state, which means is waiting data coming
+    CON_IDLE,
     CON_READING,
     CON_WRITTING,
   } CONN_STATE;
@@ -31,10 +39,10 @@ public:
   ~connection();
   void init();
   void onMessage();
-  int closeConnection(); 
+  int closeConnection();
   int doCloseConnection();
   void setKeepAlived(bool isKeepAlived);
-  void setListener(listener*);
+  void setListener(listener* listener);
   bool isKeepAlived();
   bool reuseConnection();
   void enableRead();
@@ -42,12 +50,13 @@ public:
   void disableRead();
   void disableWrite();
   void disableReadWrite();
-  void setPrivData(void *);
+  void setPrivData(void * data);
   void* getPrivData() const;
   void setCustomizeOnMessageCallBack(const onMessageCallBack& cb) {
     customizeOnMessageCallBack_ = cb;
   }
-  void setCustomizeOnConnectionCloseCallBack(const onConnectionCloseCallBack& cb) {
+  void setCustomizeOnConnectionCloseCallBack(
+    const onConnectionCloseCallBack& cb) {
     customizeOnConnectionCloseCallBack_ = cb;
   }
   void startRead();
@@ -59,20 +68,21 @@ public:
     conn_state_ = state;
   }
   int doWrite(const char* buf, int len);
-private:
+
+ private:
   void handleRead();
   void handleWrite();
   void handleError(connection*, short);
-  static void eventEmptyCallBack(bufferevent*, void*);
-  static void eventReadCallBack(bufferevent*, void*);
-  static void eventWriteCallBack(bufferevent*, void*);
-  static void eventErrorCallBack(bufferevent*, short, void*);
-  static void eventTimeoutCallBack(bufferevent*, void*);
+  static void eventEmptyCallBack(bufferevent* bufev, void* data);
+  static void eventReadCallBack(bufferevent* bufev, void* data);
+  static void eventWriteCallBack(bufferevent* bufev, void* data);
+  static void eventErrorCallBack(bufferevent* bufev, short what, void* data);
+  static void eventTimeoutCallBack(bufferevent* bufev, void* data);
   onMessageCallBack customizeOnMessageCallBack_;
   onConnectionCloseCallBack customizeOnConnectionCloseCallBack_;
-  bool resetEvBuffer(struct evbuffer*);
-  bool reuseBufferEvent(struct bufferevent*);
-  short bufferevent_get_enabled(struct bufferevent*);
+  bool resetEvBuffer(struct evbuffer* buf);
+  bool reuseBufferEvent(struct bufferevent* bufev);
+  short bufferevent_get_enabled(struct bufferevent* bufev);
   int connfd_;
   CONN_STATE conn_state_;
   bufferevent* buf_;
@@ -81,4 +91,4 @@ private:
   listener* listener_;
   void* privdata_;
 };
-#endif //INTERNET_CONNECTION_H_
+#endif  // INTERNET_CONNECTION_H_

@@ -1,22 +1,22 @@
-#include "listener.h"
-#include "util.h"
-#include "connection.h"
+// Copyright [2015] <Zhang Zewen>
+
+#include <stdlib.h>
+#include <unistd.h>
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <event.h>
-#include <stdlib.h>
-#include <iostream>
-#include <unistd.h>
 #include <arpa/inet.h>
+#include <iostream>
+#include <event.h>
+#include "listener.h"
+#include "connection.h"
+#include "util.h"
 
-//constructor
-listener::listener(const std::string& host, int port, struct event_base* base) : host_(host),
-  port_(port), base_(base)
+listener::listener(const std::string& host, int port,
+  struct event_base* base) : host_(host), port_(port), base_(base)
 {
 }
 
-//constructor
 listener::listener(const std::string& host, int port) : host_(host),
   port_(port), base_(NULL)
 {
@@ -33,7 +33,7 @@ void listener::listenCallBack(int fd, short event, void* arg)
   assert(NULL != arg);
   listener* listen = static_cast<listener*>(arg);
   if (event & EV_READ) {
-    //struct event* ev = static_cast<struct event*> (arg);
+    // struct event* ev = static_cast<struct event*> (arg);
     struct sockaddr_in cliaddr;
     socklen_t len;
     int connfd = 0;
@@ -41,7 +41,7 @@ void listener::listenCallBack(int fd, short event, void* arg)
       std::cerr << "Make connection error!" << std::endl;
       return;
     }
-   listen->doMakeConnection(connfd);
+    listen->doMakeConnection(connfd);
   } else {
     std::cerr << "We do not care listener write or error!" << std::endl;
   }
@@ -53,7 +53,8 @@ void listener::listenCallBack(int fd, short event, void* arg)
 void listener::doMakeConnection(int connfd)
 {
   if (makeNewConnectionCallBack_) {
-    if (Util::setNonBlock(connfd) < 0) { // can not set nonblocking just return and lost this connection!
+    // can not set nonblocking just return and lost this connection!
+    if (Util::setNonBlock(connfd) < 0) {
       std::cerr << "set NonBlocking Error" << std::endl;
       close(connfd);
     }
@@ -73,7 +74,7 @@ int listener::createSocketAndListen()
     return -1;
   }
   srvaddr.sin_family = AF_INET;
-  //srvaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+  // srvaddr.sin_addr.s_addr = htonl(INADDR_ANY);
   inet_aton(host_.c_str(), &(srvaddr.sin_addr));
   srvaddr.sin_port = htons(port_);
   len = sizeof(srvaddr);
@@ -98,7 +99,7 @@ int listener::createSocketAndListen()
 void listener::start()
 {
   if (createSocketAndListen() < 0) {
-    return ;
+    return;
   }
   ev_  = (struct event*)malloc(sizeof(struct event));
   event_set(ev_, listenfd_, EV_READ |EV_PERSIST, listenCallBack, this);

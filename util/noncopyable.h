@@ -1,5 +1,5 @@
-#ifndef UTIL_NONCOPYABLE_H
-#define UTIL_NONCOPYABLE_H
+#ifndef UTIL_NONCOPYABLE_H_
+#define UTIL_NONCOPYABLE_H_
 
 class noncopyable
 {
@@ -11,4 +11,4 @@ private:
 	noncopyable& operator=(const noncopyable&);
 
 };
-#endif // UTIL_NONCOPYABLE_H
+#endif  // UTIL_NONCOPYABLE_H_
