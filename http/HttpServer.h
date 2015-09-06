@@ -5,9 +5,13 @@
 
 #include <string>
 #include <map>
-#include "connection.h"
+#include <boost/function.hpp>
+//#include "connection.h"
+
 class listener;
 class event_base;
+class connection;
+class HttpRequest;
 
 class HttpServer
 {

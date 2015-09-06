@@ -10,7 +10,7 @@ INCLUDE=-I$(PWD)
 
 
 all: $(OBJECTS)
-	ar rcs $(LIB_NAME) $(OBJECTS)
+#	ar rcs $(LIB_NAME) $(OBJECTS)
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@ $(LDFLAGS) 

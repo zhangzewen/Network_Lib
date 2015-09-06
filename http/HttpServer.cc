@@ -38,7 +38,7 @@ void HttpServer::makeNewConnection(int fd, struct event_base* base)
   connection* con = new connection(fd, base);
   if (NULL == con) {
     // just close fd
-    LOG(ERROR) << "malloc connection error!"
+    LOG(ERROR) << "malloc connection error!";
     close(fd);
     return;
   }
