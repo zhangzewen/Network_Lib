@@ -15,6 +15,7 @@
 #include <glog/logging.h>
 #include "listener.h"
 #include "connection.h"
+#include "util.h"
 
 connection::connection(int fd, struct event_base* base) : connfd_(fd),
   conn_state_(CON_CONNECTING), buf_(NULL), base_(base),
@@ -468,14 +469,16 @@ int connection::doWrite(const char* buf, int len)
 
 int connection::setRemoteAddr(struct sockaddr_in* remoteAddr, socklen_t len)
 {
-  char remote[128] = {0};
-  char* ret = NULL;
-  ret = inet_ntop(AF_INET, &(remoteAddr->sin_addr), remote, len);
-  if (NULL == ret) {
-    LOG(ERROR) << "get remote address error: " << strerror(errno);
-    return -1;
-  }
-  remote_addr_ = remote;
-  remote_addr_.append(std::to_string(remoteAddr->sin_port));
+  assert(remoteAddr);
+  assert(len);
+  //  char remote[256] = {0};
+  //  char* ret = NULL;
+  //  ret = inet_ntop(AF_INET, (const void*)(&(remoteAddr->sin_addr)), const_cast<char*>(remote), len);
+  //  if (NULL == ret) {
+  //    LOG(ERROR) << "get remote address error: " << strerror(errno);
+  //    return -1;
+  //  }
+  //  remote_addr_ = remote;
+  //  remote_addr_.append(to_string(remoteAddr->sin_port));
   return 0;
 }

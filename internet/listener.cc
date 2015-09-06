@@ -56,7 +56,7 @@ void listener::doMakeConnection(int connfd)
 {
   if (makeNewConnectionCallBack_) {
     // can not set nonblocking just return and lost this connection!
-    if (Util::setNonBlock(connfd) < 0) {
+    if (setNonBlock(connfd) < 0) {
       LOG(ERROR) << "set NonBlocking Error";
       close(connfd);
     }
@@ -87,7 +87,7 @@ int listener::createSocketAndListen()
     LOG(ERROR) << "socket bind error!";
     return -1;
   }
-  if (Util::setNonBlock(listenfd_) < 0) {
+  if (setNonBlock(listenfd_) < 0) {
     return -1;
   }
   int ret = listen(listenfd_, 100);
@@ -95,7 +95,7 @@ int listener::createSocketAndListen()
     LOG(ERROR) << "listen error";
     return -1;
   }
-  if (Util::setNonBlock(listenfd_) < 0) {
+  if (setNonBlock(listenfd_) < 0) {
     return -1;
   }
   return 0;
