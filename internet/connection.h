@@ -72,6 +72,10 @@ class connection
     conn_state_ = state;
   }
   int doWrite(const char* buf, int len);
+  int setRemoteAddr(struct sockaddr_in* remoteAddr, socklen_t len);
+  std::string getRemoteAddr() const {
+    return remote_addr_;
+  }
 
  private:
   void handleRead();
@@ -94,6 +98,7 @@ class connection
   event_base* base_;
   bool keep_alived_;
   listener* listener_;
+  std::string remote_addr_;
   void* privdata_;
 };
 #endif  // INTERNET_CONNECTION_H_

@@ -9,18 +9,5 @@ namespace Util
 
   int setNonBlock(int fd);
 
-  class StringTokenizer
-  {
-    public:
-      typedef std::vector<std::string>::const_iterator TokenizerIter;
-      StringTokenizer(const std::string& str, const std::string& token);
-      ~StringTokenizer();
-      int countElements();
-      std::string elementAt(int);
-      std::string getNextElement();
-    private:
-      std::vector<std::string> strs_;
-      TokenizerIter current_;
-  };
 }
 #endif //INTERNET_UTIL_H

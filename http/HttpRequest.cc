@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <iostream>
+#include <glog/logging.h>
 
 #include "HttpRequest.h"
 #include "connection.h"
@@ -18,12 +19,19 @@ HttpRequest::~HttpRequest()
   delete parser_;
 }
 
+
+/**
+  @param
+*/
 static int on_message_begin(http_parser* p)
 {
   assert(NULL != p);
   return 0;
 }
 
+/**
+  @param
+*/
 static int on_url(http_parser* p, const char* at, size_t len)
 {
   assert(NULL != p);
@@ -32,6 +40,9 @@ static int on_url(http_parser* p, const char* at, size_t len)
   return 0;
 }
 
+/**
+  @param
+*/
 static int on_status(http_parser* p, const char* at, size_t len)
 {
   assert(NULL != p);
@@ -40,6 +51,9 @@ static int on_status(http_parser* p, const char* at, size_t len)
   return 0;
 }
 
+/**
+  @param
+*/
 static int on_header_field(http_parser* p, const char* at, size_t len)
 {
   assert(NULL != p);
@@ -52,6 +66,9 @@ static int on_header_field(http_parser* p, const char* at, size_t len)
   return 0;
 }
 
+/**
+  @param
+*/
 static int on_header_value(http_parser* p, const char* at, size_t len)
 {
   assert(NULL != p);
@@ -64,6 +81,9 @@ static int on_header_value(http_parser* p, const char* at, size_t len)
   return 0;
 }
 
+/**
+  @param
+*/
 static int on_headers_complete(http_parser* p)
 {
   assert(NULL != p);
@@ -78,6 +98,9 @@ static int on_headers_complete(http_parser* p)
   return 0;
 }
 
+/**
+  @param
+*/
 static int on_message_complete(http_parser* p)
 {
   assert(NULL != p);
@@ -86,6 +109,9 @@ static int on_message_complete(http_parser* p)
   return 0;
 }
 
+/**
+  @param
+*/
 static int on_body(http_parser* p, const char* at, size_t len)
 {
   assert(NULL != p);
@@ -97,6 +123,9 @@ static int on_body(http_parser* p, const char* at, size_t len)
   return 0;
 }
 
+/**
+  @param
+*/
 void HttpRequest::init()
 {
   parser_ = new http_parser();
@@ -117,6 +146,21 @@ void HttpRequest::init()
     boost::bind(&HttpRequest::parserRequest, this, _1, _2, _3));
 }
 
+/**
+  do the parser header and body work
+  use third_party lib: http-parser
+  
+  should know that: return 0 not mean the parser job is all done
+  maybe the buf is not a complete request format stream, there should be
+  more stream will be parsed ,return and wait the read event fired, more data
+  will be parsering
+
+  @param buf byte-order stream which will be parser
+  @param len the lenght of the buf
+  @return 0 if successful, -1 if error happend when parsering
+  
+  @see HttpRequest::parserRequest
+*/
 int HttpRequest::parser(char* buf, int len)
 {
   int nparsed = 0;
@@ -131,11 +175,17 @@ int HttpRequest::parser(char* buf, int len)
   return 0;
 }
 
+/**
+  @param
+*/
 void HttpRequest::addHeader(const std::string& key, const std::string& value)
 {
   http_request_headers_.insert(std::make_pair(key, value));
 }
 
+/**
+  @param
+*/
 bool HttpRequest::deleteHeader(const std::string& key)
 {
   std::multimap<std::string, std::string>::iterator iter = http_request_headers_.find(key);
@@ -146,6 +196,9 @@ bool HttpRequest::deleteHeader(const std::string& key)
   return false;
 }
 
+/**
+  @param
+*/
 bool HttpRequest::parserHeaders()
 {
   std::vector<std::string> tmp;
@@ -163,11 +216,21 @@ bool HttpRequest::parserHeaders()
   return true;
 }
 
+/**
+  parser http request header and body
+  this function maybe fired many times ,because the recv buff may not 
+  receive all the data from one http request, there may be some reasons:
+  such as network problem, the length of receive buffer
+  
+  @param conn current connection
+  @param buf http request data
+  @param len the length of http request data
+  
+  @see HttpRequest::parser
+*/
 void HttpRequest::parserRequest(connection* conn, char* buf, int len)
 {
-  assert(conn);
-  assert(buf);
-  assert(len);
+  assert(NULL != conn);
   if (state_ == WAIT_REQUEST && len > 0) { // request stream begin
     state_ = REQUEST_PARSERING; //change state to REQUEST_PARSERING
   }
@@ -184,11 +247,17 @@ void HttpRequest::parserRequest(connection* conn, char* buf, int len)
   return;
 }
 
+/**
+  @param
+*/
 void HttpRequest::closeRequest()
 {
   conn_->closeConnection();
 }
 
+/**
+  @param
+*/
 void HttpRequest::addResponseHeader(const std::string& key, const std::string& value)
 {
   httpResponseHeaders_.append(key);
@@ -197,11 +266,17 @@ void HttpRequest::addResponseHeader(const std::string& key, const std::string& v
   httpResponseHeaders_.append("\r\n");
 }
 
+/**
+  @param
+*/
 void HttpRequest::addResponseHeaderDone()
 {
   httpResponseHeaders_.append("\r\n");
 }
 
+/**
+  @param
+*/
 void HttpRequest::sendResponse(connection* conn)
 {
   HttpRequest *request = static_cast<HttpRequest*>(conn->getPrivData());

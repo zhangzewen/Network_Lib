@@ -5,9 +5,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <string.h>
 #include <strings.h>
 #include <iostream>
 #include <event.h>
+#include <glog/logging.h>
 #include "listener.h"
 #include "connection.h"
 
@@ -22,6 +27,9 @@ connection::~connection()
 }
 
 // just do some init work, and begin to register callback handle
+/**
+  @param
+*/
 void connection::init()
 {
   if (NULL == buf_) {
@@ -45,6 +53,9 @@ void connection::init()
   startRead();
 }
 
+/**
+  @param
+*/
 void connection::onMessage()
 {
   // this is ugly now,  there must will be a recv buffer conf
@@ -63,6 +74,9 @@ void connection::onMessage()
 }
 
 // try to write and regist the write event if it's not registed
+/**
+  @param
+*/
 int connection::tryWrite()
 {
   // if output buffer is empty just return -1
@@ -73,6 +87,9 @@ int connection::tryWrite()
   return 0;
 }
 
+/**
+  @param
+*/
 void connection::eventReadCallBack(bufferevent* buf, void* arg)
 {
   assert(NULL != buf);
@@ -82,6 +99,9 @@ void connection::eventReadCallBack(bufferevent* buf, void* arg)
   conn->handleRead();  // handle read
 }
 
+/**
+  @param
+*/
 void connection::eventEmptyCallBack(bufferevent* buf, void* arg)
 {
   // just doing nothing
@@ -89,6 +109,9 @@ void connection::eventEmptyCallBack(bufferevent* buf, void* arg)
   assert(NULL == arg);
 }
 
+/**
+  @param
+*/
 void connection::eventWriteCallBack(bufferevent* buf, void* arg)
 {
   assert(NULL != buf);
@@ -96,6 +119,9 @@ void connection::eventWriteCallBack(bufferevent* buf, void* arg)
   conn->handleWrite();
 }
 
+/**
+  @param
+*/
 void connection::eventErrorCallBack(bufferevent* buf, short what, void* arg)
 {
   assert(NULL != buf);
@@ -104,6 +130,9 @@ void connection::eventErrorCallBack(bufferevent* buf, short what, void* arg)
   conn->handleError(conn, what);
 }
 
+/**
+  @param
+*/
 void connection::startRead()
 {
   // assert(buf_->input);
@@ -115,10 +144,16 @@ void connection::startRead()
   }
 }
 
+/**
+  @param
+*/
 void connection::readDone()
 {
 }
 
+/**
+  @param
+*/
 void connection::startWrite()
 {
   if (!EVBUFFER_LENGTH(buf_->output)) {
@@ -140,6 +175,9 @@ void connection::startWrite()
   return;
 }
 
+/**
+  @param
+*/
 void connection::writeDone()
 {
   if (!isKeepAlived()) {
@@ -154,6 +192,9 @@ void connection::writeDone()
 
 
 
+/**
+  @param
+*/
 void connection::handleRead()
 {
   switch (conn_state_) {
@@ -199,6 +240,9 @@ void connection::handleRead()
   }
 }
 
+/**
+  @param
+*/
 void connection::handleWrite()
 {
   //if (!EVBUFFER_LENGTH(buf_->output)) {
@@ -211,6 +255,9 @@ void connection::handleWrite()
 }
 
 
+/**
+  @param
+*/
 void connection::handleError(connection* conn, short what)
 {
   assert(NULL != conn);
@@ -229,6 +276,9 @@ void connection::handleError(connection* conn, short what)
 }
 
 // this function has some errors
+/**
+  @param
+*/
 int connection::closeConnection()  // 主动关闭连接
 {
   // if the connection is already closed ,just doing nothing
@@ -251,6 +301,9 @@ int connection::closeConnection()  // 主动关闭连接
   return 0;
 }
 
+/**
+  @param
+*/
 int connection::doCloseConnection()
 {
   // step 1. delete read and write event
@@ -264,6 +317,9 @@ int connection::doCloseConnection()
   return 0;
 }
 
+/**
+  @param
+*/
 bool connection::reuseConnection()
 {
   keep_alived_ = false;
@@ -273,21 +329,33 @@ bool connection::reuseConnection()
   return true;
 }
 
+/**
+  @param
+*/
 void connection::setKeepAlived(bool isKeepAlived)
 {
   keep_alived_ = isKeepAlived;
 }
 
+/**
+  @param
+*/
 bool connection::isKeepAlived()
 {
   return keep_alived_;
 }
 
+/**
+  @param
+*/
 void connection::setListener(listener* listen)
 {
   listener_ = listen;
 }
 
+/**
+  @param
+*/
 bool connection::resetEvBuffer(struct evbuffer* buf)
 {
   if (NULL == buf) {
@@ -301,6 +369,9 @@ bool connection::resetEvBuffer(struct evbuffer* buf)
   return true;
 }
 
+/**
+  @param
+*/
 bool connection::reuseBufferEvent(struct bufferevent* bufev)
 {
   event_del(&bufev->ev_read);
@@ -310,11 +381,17 @@ bool connection::reuseBufferEvent(struct bufferevent* bufev)
   return true;
 }
 
+/**
+  @param
+*/
 short connection::bufferevent_get_enabled(struct bufferevent* bufev)
 {
   return bufev->enabled;
 }
 
+/**
+  @param
+*/
 void connection::enableRead() {
   int event = bufferevent_get_enabled(buf_);
   if (event & EV_READ)
@@ -322,6 +399,9 @@ void connection::enableRead() {
   bufferevent_enable(buf_, EV_READ);
 }
 
+/**
+  @param
+*/
 void connection::enableWrite() {
   int event = bufferevent_get_enabled(buf_);
   if (event & EV_WRITE)
@@ -329,37 +409,73 @@ void connection::enableWrite() {
   bufferevent_enable(buf_, EV_WRITE);
 }
 
+/**
+  @param
+*/
 void connection::disableRead() {
   int event = bufferevent_get_enabled(buf_);
   if (event & EV_READ)
     bufferevent_disable(buf_, EV_READ);
 }
 
+/**
+  @param
+*/
 void connection::disableWrite() {
   int event = bufferevent_get_enabled(buf_);
   if (event & EV_WRITE)
     bufferevent_disable(buf_, EV_WRITE);
 }
 
+/**
+  @param
+*/
 void connection::disableReadWrite() {
   int old = bufferevent_get_enabled(buf_);
   if (old)
     bufferevent_disable(buf_, old);
 }
 
+/**
+  @param
+*/
 void connection::setPrivData(void* data) {
   privdata_ = data;
 }
 
+/**
+  @param
+*/
 void* connection::getPrivData() const {
   return privdata_;
 }
 
 
+/**
+  @param
+*/
 int connection::doWrite(const char* buf, int len)
 {
   assert(NULL != buf);
   int ret = 0;
   ret = bufferevent_write(buf_, buf, len);
   return ret;
+}
+
+
+/**
+*/
+
+int connection::setRemoteAddr(struct sockaddr_in* remoteAddr, socklen_t len)
+{
+  char remote[128] = {0};
+  char* ret = NULL;
+  ret = inet_ntop(AF_INET, &(remoteAddr->sin_addr), remote, len);
+  if (NULL == ret) {
+    LOG(ERROR) << "get remote address error: " << strerror(errno);
+    return -1;
+  }
+  remote_addr_ = remote;
+  remote_addr_.append(std::to_string(remoteAddr->sin_port));
+  return 0;
 }
