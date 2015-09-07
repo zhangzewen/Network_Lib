@@ -262,17 +262,6 @@ void HttpRequest::closeRequest()
   conn_->closeConnection();
 }
 
-//  /**
-//    @param
-//  */
-//  void HttpRequest::addResponseHeader(const std::string& key, const std::string& value)
-//  {
-//    httpResponseHeaders_.append(key);
-//    httpResponseHeaders_.append(": ");
-//    httpResponseHeaders_.append(value);
-//    httpResponseHeaders_.append("\r\n");
-//  }
-
 /**
   @param
 */
@@ -286,16 +275,6 @@ void HttpRequest::addResponseHeaderDone()
 */
 void HttpRequest::sendResponse(connection* conn)
 {
-  //  HttpRequest *request = static_cast<HttpRequest*>(conn->getPrivData());
-  //  assert(request == this);
-  //  httpResponseHeaders_.append("HTTP/1.1 200 OK\r\n");
-  //  addResponseHeader("Content-lenght", "21");
-  //  addResponseHeader("Server", "HttpServer v0.1");
-  //  addResponseHeader("Content-Type", "text/html; charset=UTF-8");
-  //  addResponseHeader("Date", "Wed, 26 Aug 2015 06:37:03 GMT");
-  //  addResponseHeaderDone();
-  //  httpResponseHeaders_.append("<html>zhangjie</html>");
-  //  conn_->doWrite(httpResponseHeaders_.c_str(), httpResponseHeaders_.size());
 }
 
 void HttpRequest::addResponseHeader(const std::string& key, const std::string& value)

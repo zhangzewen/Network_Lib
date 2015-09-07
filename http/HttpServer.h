@@ -16,7 +16,7 @@ class HttpRequest;
 class HttpServer
 {
  public:
-  typedef boost::function<void()> urlHandler;
+  typedef boost::function<void(const std::string&, void*)> urlHandler;
   HttpServer(const std::string& host, int port);
   void start();
   void makeNewConnection(int, struct event_base*);
