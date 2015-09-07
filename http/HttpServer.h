@@ -16,14 +16,15 @@ class HttpRequest;
 class HttpServer
 {
  public:
+  typedef boost::function<void()> urlHandler;
   HttpServer(const std::string& host, int port);
   void start();
   void makeNewConnection(int, struct event_base*);
   void onMessage(connection* con, char* buf, int len);
   void onParserRequest(connection* con, char* buf, int len);
-  typedef boost::function<void()> urlHandler;
   bool registerUrl(const std::string&, const urlHandler& cb);
   void processRequest(HttpRequest* request);
+  bool isVailUrl(const std::string& url);
  private:
   std::map<std::string, urlHandler> urlHandleSet_;
   std::string host_;

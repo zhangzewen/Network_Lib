@@ -6,11 +6,11 @@
 
 #include "HttpRequest.h"
 #include "connection.h"
-#include "../util/util.h"
+#include "util.h"
 
 
 HttpRequest::HttpRequest() : state_(WAIT_REQUEST), conn_(NULL),
-  parser_(NULL), server_(NULL)
+  parser_(NULL), server_(NULL), isKeepAlived_(false)
 {
 }
 
@@ -91,10 +91,17 @@ static int on_headers_complete(http_parser* p)
   if (!request->parserHeaders()) {
     return 1;
   }
+  //  get Reuqest Method
   request->setMethod(http_method_str(static_cast<enum http_method>(p->method)));
-  if (request->getMethod() == "HEAD") {
-    request->setState(HttpRequest::REQUEST_PARSER_DONE);
+  //  if this Request is keepalived
+  if (http_should_keep_alive(p)) {
+    request->setKeepAlived(true);
+  } else {
+    request->setKeepAlived(false);
   }
+  //  if (request->getMethod() == "HEAD") {
+  //    request->setState(HttpRequest::REQUEST_PARSER_DONE);
+  //  }
   return 0;
 }
 
@@ -255,16 +262,16 @@ void HttpRequest::closeRequest()
   conn_->closeConnection();
 }
 
-/**
-  @param
-*/
-void HttpRequest::addResponseHeader(const std::string& key, const std::string& value)
-{
-  httpResponseHeaders_.append(key);
-  httpResponseHeaders_.append(": ");
-  httpResponseHeaders_.append(value);
-  httpResponseHeaders_.append("\r\n");
-}
+//  /**
+//    @param
+//  */
+//  void HttpRequest::addResponseHeader(const std::string& key, const std::string& value)
+//  {
+//    httpResponseHeaders_.append(key);
+//    httpResponseHeaders_.append(": ");
+//    httpResponseHeaders_.append(value);
+//    httpResponseHeaders_.append("\r\n");
+//  }
 
 /**
   @param
@@ -279,15 +286,24 @@ void HttpRequest::addResponseHeaderDone()
 */
 void HttpRequest::sendResponse(connection* conn)
 {
-  HttpRequest *request = static_cast<HttpRequest*>(conn->getPrivData());
-  assert(request == this);
-  httpResponseHeaders_.append("HTTP/1.1 200 OK\r\n");
-  addResponseHeader("Content-lenght", "21");
-  addResponseHeader("Server", "HttpServer v0.1");
-  addResponseHeader("Content-Type", "text/html; charset=UTF-8");
-  addResponseHeader("Date", "Wed, 26 Aug 2015 06:37:03 GMT");
-  addResponseHeaderDone();
-  httpResponseHeaders_.append("<html>zhangjie</html>");
-  conn_->doWrite(httpResponseHeaders_.c_str(), httpResponseHeaders_.size());
+  //  HttpRequest *request = static_cast<HttpRequest*>(conn->getPrivData());
+  //  assert(request == this);
+  //  httpResponseHeaders_.append("HTTP/1.1 200 OK\r\n");
+  //  addResponseHeader("Content-lenght", "21");
+  //  addResponseHeader("Server", "HttpServer v0.1");
+  //  addResponseHeader("Content-Type", "text/html; charset=UTF-8");
+  //  addResponseHeader("Date", "Wed, 26 Aug 2015 06:37:03 GMT");
+  //  addResponseHeaderDone();
+  //  httpResponseHeaders_.append("<html>zhangjie</html>");
+  //  conn_->doWrite(httpResponseHeaders_.c_str(), httpResponseHeaders_.size());
+}
+
+void HttpRequest::addResponseHeader(const std::string& key, const std::string& value)
+{
+  if (key.empty() || value.empty()) {
+    LOG(ERROR) << "HttpRequest::addResponseHeader get wrong header format";
+    return;
+  }
+  http_response_headers_.insert(make_pair(key, value));
 }
 

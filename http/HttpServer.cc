@@ -92,6 +92,21 @@ void HttpServer::onParserRequest(connection* conn, char* buf, int len)
 void HttpServer::processRequest(HttpRequest* request)
 {
   assert(NULL != request);
+  //  fire callback function according to the request url
+  if (!isVailUrl(request->getUrl()) {
+    // can not find a path in server according to the url
+    // just return basis response
+  }
+
+  request->addResponseHeader("Server", "httpServer V0.1");
+  request->addResponseHeader("Date", "Wed, 26 Aug 2015 06:37:03 GMT");
+  request->addResponseHeader("Content-Type", "text/html; charset=UTF-8");
+  if (request->isKeepAlived()) {
+    request->addResponseHeader("Connection", "close");
+  } else {
+    request->addResponseHeader("Connection", "keep-alive");
+  }
+  request->addResponseHeader("Content-lenght", "3");
 }
 
 #if 0
@@ -100,3 +115,14 @@ connection::CONN_STATE HTTPsERVER::processRequest(connection* con)
   HttpReqest* request  = static_cast<HttpReqeust*>conn->privdata;
 }
 #endif
+
+
+bool HttpServer::isVailUrl(const std::string& url)
+{
+  typedef std::map<std::string, urlHandler>::const_iterator UrlIter;
+  UrlIter iter = urlHandleSet_.find(url);
+  if (iter == urlHandleSet_.end()) {
+    return false;
+  }
+  return true;
+}

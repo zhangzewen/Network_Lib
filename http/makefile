@@ -6,7 +6,7 @@ EXTENSION=cc
 OBJS=$(patsubst %.$(EXTENSION), %.o,$(wildcard *.$(EXTENSION)))
 
 INCLUDES=-I../internet/ -I./third_party/http-parser/ -I/usr/local/libevent1414/include -I/usr/local/include/hiredis/ -I../util/ 
-LDFLAGS=-L../internet -lNet -L/usr/local/libevent1414/lib -levent -lhiredis -lboost_atomic -lboost_chrono -lboost_context -lboost_locale -lboost_regex -lboost_serialization -lglog -lgtest -L./third_party/http-parser/ -lhttp_parser
+LDFLAGS=-L/usr/local/libevent1414/lib -levent -lhiredis -lboost_atomic -lboost_chrono -lboost_context -lboost_locale -lboost_regex -lboost_serialization -lglog -lgtest -L./third_party/http-parser/ -lhttp_parser
 #LDFLAGS=-L../internet -lNet -L/usr/local/libevent1414/lib -levent -lhiredis -lboost_atomic -lboost_chrono -lboost_context -lboost_locale -lboost_regex -lboost_serialization -L./third_party/http-parser/ -lhttp_parser -Wl,-Bdynamic
 
 
@@ -25,8 +25,8 @@ all: $(OBJS) httpServer
 %.o : %.cc
 	g++ $(CFLAGS) $(INCLUDES) -c $< $(LDFLAGS) -o $@
 
-httpServer: $(OBJS) $(UTIL_OBJS)
-	g++ $(OBJS) $(INTERNET_OBJS) $(LDFLAGS) -o httpServer
+httpServer: $(OBJS) $(UTIL_OBJS) $(INTERNET_OBJS)
+	g++ $(OBJS) $(INTERNET_OBJS) $(UTIL_OBJS) $(LDFLAGS) -o httpServer
 
 clean:
 	rm -rf *.o 

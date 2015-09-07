@@ -58,6 +58,12 @@ class HttpRequest
   void addResponseHeader(const std::string& key, const std::string& value);
   void addResponseHeaderDone();
   void sendResponse(connection* conn);
+  void setKeepAlived(bool isKeepAlived) {
+    isKeepAlived_ = isKeepAlived; 
+  }
+  bool isKeepAlived() const {
+    return isKeepAlived_;
+  }
 
  private:
   std::multimap<std::string, std::string> http_request_headers_;
@@ -73,7 +79,9 @@ class HttpRequest
   http_parser_settings parserSettings_;
   http_parser* parser_;
   HttpServer* server_;
+  bool isKeepAlived_;
   // std::vector<char> request_headers_; //request stream
   // std::vector<char> response_headers_; //response stream
+  std::multimap<std::string, std::string> http_response_headers_;
 };
 #endif  // HTTP_HTTPREQUEST_H_

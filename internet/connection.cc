@@ -27,9 +27,9 @@ connection::~connection()
 {
 }
 
-// just do some init work, and begin to register callback handle
 /**
-  @param
+  do some init work, such as init recv and send buffer, add read,write
+  error event callback function and so on. when it done, enable read event
 */
 void connection::init()
 {
@@ -55,7 +55,8 @@ void connection::init()
 }
 
 /**
-  @param
+  wrapper function, get data from recv buffer and call customize callback
+  function
 */
 void connection::onMessage()
 {
@@ -74,9 +75,8 @@ void connection::onMessage()
   return;
 }
 
-// try to write and regist the write event if it's not registed
 /**
-  @param
+  try to write and regist the write event if it's not registed
 */
 int connection::tryWrite()
 {
@@ -89,7 +89,7 @@ int connection::tryWrite()
 }
 
 /**
-  @param
+  static method that will be registed to bufferevent_setcb()
 */
 void connection::eventReadCallBack(bufferevent* buf, void* arg)
 {
@@ -465,20 +465,22 @@ int connection::doWrite(const char* buf, int len)
 
 
 /**
+  when accept done and create connection successful, we get the remote ip and port
+  
+  @param remoteAddr a type of struct sockaddr_in pointer point to addr which  from the 2th parameter of accpet system call
 */
-
 int connection::setRemoteAddr(struct sockaddr_in* remoteAddr, socklen_t len)
 {
   assert(remoteAddr);
   assert(len);
-  //  char remote[256] = {0};
+  //  char remoteaddr[256] = {0};
   //  char* ret = NULL;
-  //  ret = inet_ntop(AF_INET, (const void*)(&(remoteAddr->sin_addr)), const_cast<char*>(remote), len);
+  //  ret = inet_ntop(AF_INET, (const void*)(&(remoteAddr->sin_addr)), remoteaddr, len);
   //  if (NULL == ret) {
   //    LOG(ERROR) << "get remote address error: " << strerror(errno);
   //    return -1;
   //  }
-  //  remote_addr_ = remote;
+  //  remote_addr_ = remoteaddr;
   //  remote_addr_.append(to_string(remoteAddr->sin_port));
   return 0;
 }
