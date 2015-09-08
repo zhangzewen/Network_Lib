@@ -238,6 +238,9 @@ bool HttpRequest::parserHeaders()
 void HttpRequest::parserRequest(connection* conn, char* buf, int len)
 {
   assert(NULL != conn);
+  assert(NULL != buff);
+  assert(0 != len);
+
   if (state_ == WAIT_REQUEST && len > 0) { // request stream begin
     state_ = REQUEST_PARSERING; //change state to REQUEST_PARSERING
   }
@@ -248,8 +251,13 @@ void HttpRequest::parserRequest(connection* conn, char* buf, int len)
   }
 
   if (state_ == REQUEST_PARSER_DONE) {  // parser done,then process
-    conn_->setCustomizeOnWriteCallBack(boost::bind(&HttpRequest::sendResponse, this, _1));
-    conn_->tryWrite();
+    //conn_->setCustomizeOnWriteCallBack(boost::bind(&HttpRequest::sendResponse, this, _1));
+    //conn_->tryWrite();
+    HttpServer* server = getHttpServer();
+    if (NULL == server) {
+      //  do some close work
+    }
+    server->processRequest(this);
   }
   return;
 }

@@ -43,7 +43,7 @@ void HttpServer::makeNewConnection(int fd, struct event_base* base)
     return;
   }
   con->setCustomizeOnMessageCallBack(
-      boost::bind(&HttpServer::onMessage, this, _1, _2, _3));
+      boost::bind(&HttpServer::createHttpRequest, this, _1, _2, _3));
   con->init();
 }
 
@@ -51,14 +51,16 @@ void HttpServer::makeNewConnection(int fd, struct event_base* base)
 /**
   @param
 */
-void HttpServer::onMessage(connection* con, char*buf, int len)
+void HttpServer::createHttpRequest(connection* con, char*buf, int len)
 {
   if (NULL == buf || 0 == len) {
     return;
   }
+
   HttpRequest *request = new HttpRequest();
   if (NULL == request) {
-    // close request
+    //  do some close work
+    con->closeConnection(); 
   }
   request->tieServer(this);
   con->setPrivData(request);
@@ -69,17 +71,20 @@ void HttpServer::onMessage(connection* con, char*buf, int len)
   }
 }
 
-/**
-  @param
-*/
-void HttpServer::onParserRequest(connection* conn, char* buf, int len)
-{
-  assert(NULL != conn);
-  assert(NULL != buf);
-  assert(0 != len);
-  HttpRequest* request = static_cast<HttpRequest*>(conn->getPrivData());
-  request->parser(buf, len);
-}
+//  /**
+//    this function is the first step of process a http request: parse request, 
+//    using a third_party lib to parser the http request, this is a Finite-state
+//    machine ,when we done parser, we will step next to process request
+//    @param 
+//  */
+//  void HttpServer::parserRequest(connection* conn, char* buf, int len)
+//  {
+//    assert(NULL != conn);
+//    assert(NULL != buf);
+//    assert(0 != len);
+//    HttpRequest* request = static_cast<HttpRequest*>(conn->getPrivData());
+//    request->parser(buf, len);
+//  }
 
 
 /**
@@ -89,9 +94,11 @@ void HttpServer::onParserRequest(connection* conn, char* buf, int len)
   @request request that will be processed and answered
   return null
 */
-void HttpServer::processRequest(HttpRequest* request)
+void HttpServer::processHttpRequest(HttpRequest* request)
 {
   // product http response and register writeCallBack function
+  assert(request);
+  sendHttpResponse(request, 200, "OK");
 }
 
 #if 0
@@ -111,3 +118,12 @@ bool HttpServer::isVailUrl(const std::string& url)
   }
   return true;
 }
+
+void HttpServer::sendHttpResponse(HttpRequest* request, int stateCode, const char* content)
+{
+  assert(request);
+  assert(stateCode);
+  assert(content);
+}
+
+

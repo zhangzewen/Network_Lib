@@ -20,10 +20,10 @@ class HttpServer
   HttpServer(const std::string& host, int port);
   void start();
   void makeNewConnection(int, struct event_base*);
-  void onMessage(connection* con, char* buf, int len);
-  void onParserRequest(connection* con, char* buf, int len);
   bool registerUrl(const std::string&, const urlHandler& cb);
-  void processRequest(HttpRequest* request);
+  void createHttpRequest(connection* con, char* buf, int len);
+  void processHttpRequest(HttpRequest* request);
+  void sendHttpResponse(HttpRequest* request, int stateCode, const char* content);
   bool isVailUrl(const std::string& url);
  private:
   std::map<std::string, urlHandler> urlHandleSet_;
