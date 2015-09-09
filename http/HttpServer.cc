@@ -71,21 +71,6 @@ void HttpServer::createHttpRequest(connection* con, char*buf, int len)
   }
 }
 
-//  /**
-//    this function is the first step of process a http request: parse request, 
-//    using a third_party lib to parser the http request, this is a Finite-state
-//    machine ,when we done parser, we will step next to process request
-//    @param 
-//  */
-//  void HttpServer::parserRequest(connection* conn, char* buf, int len)
-//  {
-//    assert(NULL != conn);
-//    assert(NULL != buf);
-//    assert(0 != len);
-//    HttpRequest* request = static_cast<HttpRequest*>(conn->getPrivData());
-//    request->parser(buf, len);
-//  }
-
 
 /**
   when the parser job has already done and no error happend
@@ -98,16 +83,12 @@ void HttpServer::processHttpRequest(HttpRequest* request)
 {
   // product http response and register writeCallBack function
   assert(request);
+  if (isVailUrl(request->getUrl())) {
+    defaultResponse(HttpRequest* request);
+    return ;
+  }
   sendHttpResponse(request, 200, "OK");
 }
-
-#if 0
-connection::CONN_STATE HTTPsERVER::processRequest(connection* con)
-{
-  HttpReqest* request  = static_cast<HttpReqeust*>conn->privdata;
-}
-#endif
-
 
 bool HttpServer::isVailUrl(const std::string& url)
 {
@@ -126,4 +107,4 @@ void HttpServer::sendHttpResponse(HttpRequest* request, int stateCode, const cha
   assert(content);
 }
 
-
+void HttpServer::defaultResponse();

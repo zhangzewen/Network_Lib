@@ -25,6 +25,7 @@ class HttpServer
   void processHttpRequest(HttpRequest* request);
   void sendHttpResponse(HttpRequest* request, int stateCode, const char* content);
   bool isVailUrl(const std::string& url);
+  void defaultResponse();
  private:
   std::map<std::string, urlHandler> urlHandleSet_;
   std::string host_;

@@ -64,6 +64,7 @@ class HttpRequest
   bool isKeepAlived() const {
     return isKeepAlived_;
   }
+  void productResponseReply();
 
  private:
   std::multimap<std::string, std::string> http_request_headers_;
@@ -81,7 +82,7 @@ class HttpRequest
   HttpServer* server_;
   bool isKeepAlived_;
   // std::vector<char> request_headers_; //request stream
-  // std::vector<char> response_headers_; //response stream
+  std::vector<char> response_reply_; //response stream
   std::multimap<std::string, std::string> http_response_headers_;
 };
 #endif  // HTTP_HTTPREQUEST_H_
