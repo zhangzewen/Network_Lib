@@ -9,6 +9,7 @@
 #include "HttpRequest.h"
 #include "HttpServer.h"
 #include "listener.h"
+#include "util.h"
 
 HttpServer::HttpServer(const std::string& host, int port) : host_(host),
   port_(port), base_(event_base_new()),
@@ -83,10 +84,13 @@ void HttpServer::processHttpRequest(HttpRequest* request)
 {
   // product http response and register writeCallBack function
   assert(request);
-  if (isVailUrl(request->getUrl())) {
-    defaultResponse(HttpRequest* request);
-    return ;
-  }
+  //if (isVailUrl(request->getUrl())) {
+   // return ;
+  //}
+  request->addResponseHeader("Server", "httpServer V0.1");
+  request->addResponseHeader("Connection", "close");
+  request->addResponseHeader("Date", "Thu, 10 Sep 2015 03:25:05 GMT");
+  request->addResponseHeader("Content-Type", "text/html; charset=UTF-8");
   sendHttpResponse(request, 200, "OK");
 }
 
@@ -105,6 +109,11 @@ void HttpServer::sendHttpResponse(HttpRequest* request, int stateCode, const cha
   assert(request);
   assert(stateCode);
   assert(content);
+  connection* conn = request->getConnection();
+  if (NULL == conn) {
+    //do closeing work
+  }
+  request->productResponseReply(stateCode, content);
+  conn->setCustomizeOnWriteCallBack(boost::bind(&HttpRequest::doReply, request, _1));
+  conn->tryWrite();
 }
-
-void HttpServer::defaultResponse();

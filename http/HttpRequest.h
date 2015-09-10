@@ -15,6 +15,8 @@
 class connection;
 class HttpServer;
 
+struct baseBuffer;
+
 class HttpRequest
 {
  public:
@@ -64,7 +66,8 @@ class HttpRequest
   bool isKeepAlived() const {
     return isKeepAlived_;
   }
-  void productResponseReply();
+  void productResponseReply(int stateCode, const char* content);
+  void doReply(connection* conn);
 
  private:
   std::multimap<std::string, std::string> http_request_headers_;
@@ -82,7 +85,7 @@ class HttpRequest
   HttpServer* server_;
   bool isKeepAlived_;
   // std::vector<char> request_headers_; //request stream
-  std::vector<char> response_reply_; //response stream
   std::multimap<std::string, std::string> http_response_headers_;
+  struct baseBuffer* response_reply_;
 };
 #endif  // HTTP_HTTPREQUEST_H_

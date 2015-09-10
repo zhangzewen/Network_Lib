@@ -183,10 +183,13 @@ void connection::writeDone()
 {
   if (!isKeepAlived()) {
     // just free connection
+    LOG(INFO) << "keepalived: " << isKeepAlived() << ", just release the connection";
     closeConnection();
+    return;
   }
   // this connnection is keepalived,just reset buffers and enable read ,
   // wait reading
+  LOG(INFO) << " connection keepalived, wait for another connection";
   init();
   // startRead();
 }

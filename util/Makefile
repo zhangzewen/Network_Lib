@@ -1,19 +1,16 @@
 OBJECTS=$(patsubst %.cc, %.o, $(wildcard *.cc))
 CC=g++
-CFLAGS+=-g3 -W -Werror -Wall
-LDFLAGS+= -pthread
-LIBNAME=util
-LIB_NAME=lib$(LIBNAME).a
+CFLAGS := -g3 -W -Werror -Wall -O0
+LDFLAGS := -pthread
 PWD=$(shell pwd)
 INCLUDE=-I$(PWD)
 
 
 
 all: $(OBJECTS)
-#	ar rcs $(LIB_NAME) $(OBJECTS)
 
-%.o: %.c
-	$(CC) -c $(CFLAGS) $< -o $@ $(LDFLAGS) 
+%.o: %.cc
+	$(CC) $(CFLAGS) -c $< $(LDFLAGS) -o $@
 
 clean:
 	rm -fr *.o

@@ -33,19 +33,23 @@ void listener::listenCallBack(int fd, short event, void* arg)
   assert(fd > 0);
   assert(fd & EV_READ);
   assert(NULL != arg);
+
   listener* listen = static_cast<listener*>(arg);
   if (event & EV_READ) {
-    // struct event* ev = static_cast<struct event*> (arg);
-    struct sockaddr_in cliaddr;
-    socklen_t len;
-    int connfd = 0;
-    if ((connfd = accept(fd, (struct sockaddr*)&cliaddr, &len)) < 0) {
-      LOG(ERROR) << "Make connection error!";
-      return;
-    }
-    listen->doMakeConnection(connfd);
-  } else {
-    LOG(ERROR) << "We do not care listener write or error!";
+    do {
+      struct sockaddr_in cliaddr;
+      socklen_t len;
+      int connfd = 0;
+      if ((connfd = accept(fd, (struct sockaddr*)&cliaddr, &len)) < 0) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+          LOG(ERROR) << "accept() not ready";
+          return;
+        }
+        LOG(ERROR) << "accept error!";
+        return;
+      }
+      listen->doMakeConnection(connfd);
+    }while(true);
   }
 }
 
@@ -79,7 +83,6 @@ int listener::createSocketAndListen()
     return -1;
   }
   srvaddr.sin_family = AF_INET;
-  // srvaddr.sin_addr.s_addr = htonl(INADDR_ANY);
   inet_aton(host_.c_str(), &(srvaddr.sin_addr));
   srvaddr.sin_port = htons(port_);
   len = sizeof(srvaddr);

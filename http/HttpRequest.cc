@@ -5,12 +5,15 @@
 #include <glog/logging.h>
 
 #include "HttpRequest.h"
+#include "HttpServer.h"
 #include "connection.h"
 #include "util.h"
+#include "baseBuffer.h"
 
 
 HttpRequest::HttpRequest() : state_(WAIT_REQUEST), conn_(NULL),
-  parser_(NULL), server_(NULL), isKeepAlived_(false)
+  parser_(NULL), server_(NULL), isKeepAlived_(false),
+  response_reply_(new struct baseBuffer)
 {
 }
 
@@ -88,17 +91,22 @@ static int on_headers_complete(http_parser* p)
 {
   assert(NULL != p);
   HttpRequest* request = static_cast<HttpRequest*>(p->data);
+  connection* conn = request->getConnection();
   if (!request->parserHeaders()) {
     return 1;
   }
   //  get Reuqest Method
   request->setMethod(http_method_str(static_cast<enum http_method>(p->method)));
   //  if this Request is keepalived
+  LOG(INFO) << "http_should_keep_aliv(p): " << http_should_keep_alive(p);
   if (http_should_keep_alive(p)) {
     request->setKeepAlived(true);
+    conn->setKeepAlived(true);
   } else {
     request->setKeepAlived(false);
+    conn->setKeepAlived(false);
   }
+  LOG(INFO) <<"should keepalive : " << request->isKeepAlived();
   //  if (request->getMethod() == "HEAD") {
   //    request->setState(HttpRequest::REQUEST_PARSER_DONE);
   //  }
@@ -171,6 +179,7 @@ void HttpRequest::init()
 int HttpRequest::parser(char* buf, int len)
 {
   int nparsed = 0;
+  LOG(INFO) << "buf: " << buf;
   nparsed = http_parser_execute(parser_, &parserSettings_, buf, len);
   if (parser_->upgrade) {
     // do something
@@ -238,7 +247,7 @@ bool HttpRequest::parserHeaders()
 void HttpRequest::parserRequest(connection* conn, char* buf, int len)
 {
   assert(NULL != conn);
-  assert(NULL != buff);
+  assert(NULL != buf);
   assert(0 != len);
 
   if (state_ == WAIT_REQUEST && len > 0) { // request stream begin
@@ -257,7 +266,7 @@ void HttpRequest::parserRequest(connection* conn, char* buf, int len)
     if (NULL == server) {
       //  do some close work
     }
-    server->processRequest(this);
+    server->processHttpRequest(this);
   }
   return;
 }
@@ -283,6 +292,7 @@ void HttpRequest::addResponseHeaderDone()
 */
 void HttpRequest::sendResponse(connection* conn)
 {
+  assert(NULL != conn);
 }
 
 void HttpRequest::addResponseHeader(const std::string& key, const std::string& value)
@@ -294,3 +304,34 @@ void HttpRequest::addResponseHeader(const std::string& key, const std::string& v
   http_response_headers_.insert(make_pair(key, value));
 }
 
+void HttpRequest::productResponseReply(int stateCode, const char* content)
+{
+  response_reply_->addBuffer("HTTP/1.1 ", strlen("HTTP/1.1 "));
+  std::string codeStr = to_string(stateCode) + " ";
+  response_reply_->addBuffer(codeStr.c_str(), codeStr.size());
+  response_reply_->addBuffer(content, strlen(content));
+  response_reply_->addBuffer("\r\n", strlen("\r\n"));
+  for (std::multimap<std::string, std::string>::const_iterator iter = http_response_headers_.begin();
+    iter != http_response_headers_.end();
+    ++iter) {
+    response_reply_->addBuffer((iter->first).c_str(), (iter->first).size());
+    response_reply_->addBuffer(": ", strlen(": "));
+    response_reply_->addBuffer((iter->second).c_str(), (iter->second).size());
+    response_reply_->addBuffer("\r\n", strlen("\r\n"));
+  }
+  response_reply_->addBuffer("\r\n", strlen("\r\n"));
+}
+
+void HttpRequest::doReply(connection* conn)
+{
+  assert(NULL != conn);
+  if (response_reply_->empty()) {
+    // keepalived or just close
+    conn->writeDone();
+    return;
+  }
+  if (conn->doWrite(response_reply_->pos_, 100) == -1) {
+    //do closeing work
+  }
+  response_reply_->drain(100);
+}

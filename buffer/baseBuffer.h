@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-class baseBuffer
+struct baseBuffer
 {
  public:
   baseBuffer();
@@ -16,9 +16,13 @@ class baseBuffer
   void align();
   int expand(size_t len);
   int addBuffer(const char* buf, size_t len);
-  int writeBuffer(char * buf, size_t len);
+  bool empty() const {
+    return off_ == 0;
+  }
+  int size() const {
+    return off_;
+  }
 
- private:
   static const int BUFFER_MAX_READ_ = 1024;
   char *pos_;
   char *start_;

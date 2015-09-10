@@ -67,7 +67,6 @@ int baseBuffer::expand(size_t dataLen)
     totalLen_ = length;
     end_ = start_ + length;
   }
-
   return 0;
 }
 
@@ -182,7 +181,7 @@ int baseBuffer::WriteN(int fd, size_t len)
 int baseBuffer::Read(int fd, size_t len)
 {
   int nread = 0;
-  if (len < 0 || len > BUFFER_MAX_READ_) {
+  if (len <= 0 || len > BUFFER_MAX_READ_) {
     len = BUFFER_MAX_READ_;
   }
 
@@ -240,10 +239,18 @@ int baseBuffer::ReadN(int fd, size_t len)
 
 int baseBuffer::addBuffer(const char* buf, size_t len)
 {
+  if (NULL == buf || 0 == len) {
+    return -1;
+  }
+  
+  if (expand(len) == -1) {
+    return -1;
+  }
+  
+  memcpy(last_, buf, len);
+  off_ += len;
+  last_ = pos_ + off_;
+
   return 0;
 }
 
-int baseBuffer::writeBuffer(char * buf, size_t len)
-{
-  return 0;
-}
