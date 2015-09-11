@@ -16,6 +16,7 @@
 #include "listener.h"
 #include "connection.h"
 #include "util.h"
+#include "internal-define.h"
 
 connection::connection(int fd, struct event_base* base) : connfd_(fd),
   conn_state_(CON_CONNECTING), buf_(NULL), base_(base),
@@ -279,11 +280,13 @@ void connection::handleError(connection* conn, short what)
   }
 }
 
-// this function has some errors
 /**
-  @param
+  close connection gently
+  first, shutdown write
+  second, wait for a read event fired until timeout
+  third, if read return 0. TCP close done, do the close work
 */
-int connection::closeConnection()  // 主动关闭连接
+void connection::closeConnection()  // 主动关闭连接
 {
   // if the connection is already closed ,just doing nothing
   if (conn_state_ == CON_DISCONNECTED) {
@@ -292,7 +295,7 @@ int connection::closeConnection()  // 主动关闭连接
   conn_state_ = CON_DISCONNECTING;  // step 1. shut down Write ,send FIN
   // bufferevent_disable(buf_, EV_WRITE);
   // bufferevent_disable(buf_, EV_READ);
-  bufferevent_free(buf_);
+  //bufferevent_free(buf_);
 #if 0
   shutdown(connfd_, SHUT_WR);
   // step 2. 如果buffer中还有数据没有发送完，发送完数据，并重新设置超时时间
@@ -301,8 +304,14 @@ int connection::closeConnection()  // 主动关闭连接
     bufferevent_enable(buf_, EV_WRITE);
   }
 #endif
+  shutdown(connfd_, SHUT_WR);
+  
   close(connfd_);
   return 0;
+}
+
+void connection::forceCloseConnection()
+{
 }
 
 /**

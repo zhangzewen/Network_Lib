@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <glog/logging.h>
+#include "internal-define.h"
 
 
 baseBuffer::baseBuffer() : pos_(NULL), start_(NULL), end_(NULL), last_(NULL),
@@ -186,16 +187,16 @@ int baseBuffer::Read(int fd, size_t len)
   }
 
   if (expand(len) == -1) {
-    return -1;
+    return NET_ERROR;
   }
 
   nread = read(fd, last_, len);
 
   if (nread < 0) {
     if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
-      return -2;
+      return NET_AGAIN;
     }
-    return -1;
+    return NET_ERROR;
   }
 
   if (nread == 0) {
@@ -223,12 +224,12 @@ int baseBuffer::ReadN(int fd, size_t len)
  
   nleft = len;
   while (nleft > 0) {
-    if ( (nread = Read(fd, nleft)) == -2) { //  not readable or interrupt
+    if ( (nread = Read(fd, nleft)) == NET_AGAIN) { //  not readable or interrupt
       //  should not block
       break;
     } else if (nread == 0) { // get eof of file or FIN of socket
       break;
-    } else if (nread == -1) {
+    } else if (nread == NET_ERROR) {
       //  i feel bad for this
       break;
     }

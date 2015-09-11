@@ -7,6 +7,7 @@
 #include <string>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+
 struct http_parser;
 struct bufferevent;
 struct http_parser_settings;
@@ -40,7 +41,7 @@ class connection
   ~connection();
   void init();
   void onMessage();
-  int closeConnection();
+  void closeConnection();
   int doCloseConnection();
   void setKeepAlived(bool isKeepAlived);
   void setListener(listener* listener);
