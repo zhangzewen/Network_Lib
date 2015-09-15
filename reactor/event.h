@@ -9,7 +9,7 @@ class event
   event();
   ~event();
   typedef boost::function<void(event*)> handler;
-  int getFd() const (
+  int getFd() const {
     return fd_;
   }
   void setFd(int fd) {
@@ -53,7 +53,7 @@ class event
   void setEventHandler(const handler& cb) {
     handler_ = cb;
   }
-  
+
  private:
   int fd_;
   bool ready_;

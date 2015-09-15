@@ -82,10 +82,6 @@ void connection::onMessage()
 */
 int connection::tryWrite()
 {
-  // if output buffer is empty just return -1
-  //if (!EVBUFFER_LENGTH(buf_->output)) {
-   // return -1;
- // }
   enableWrite();
   return 0;
 }
@@ -493,6 +489,8 @@ int connection::setRemoteAddr(struct sockaddr_in* remoteAddr, socklen_t len)
 
 void connection::lingeringClose(connection* conn, char* buf, int len)
 {
+  assert(conn);
+  assert(buf);
   if (len == 0) {
     doCloseConnection();
   }
