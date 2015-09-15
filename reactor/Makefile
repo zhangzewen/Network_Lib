@@ -1,6 +1,6 @@
 OBJECTS=$(patsubst %.cc, %.o, $(wildcard *.cc))
 CC=g++
-CFLAGS := -g3 -W -Werror -Wall -O0 -I./poll/
+CFLAGS := -g3 -W -Werror -Wall -O0
 LDFLAGS := -pthread -lboost_atomic -lboost_chrono -lboost_context -lboost_locale -lboost_regex -lboost_serialization
 PWD=$(shell pwd)
 INCLUDE=-I$(PWD)

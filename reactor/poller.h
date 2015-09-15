@@ -5,10 +5,7 @@ class dispatcher;
 class poller
 {
 public:
-  virtual void poll(dispatcher* disp, void* arg){
-    assert(disp);
-    assert(arg);
-  } 
+  virtual void poll(dispatcher* disp, void* arg);
 protected:
   poller() {}
 };

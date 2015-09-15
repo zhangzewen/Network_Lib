@@ -1,4 +1,8 @@
+#include <assert.h>
+#include <sys/epoll.h>
 #include "epoll.h"
+#include "event.h"
+#include "dispatcher.h"
 
 Epoll::Epoll()
 {
@@ -19,11 +23,11 @@ void Epoll::poll(dispatcher* disp, void* arg) {
 
     if ((revents & EPOLLIN) && ev->isActive()) { //  readable
       ev->setReady(true);
-      disp->registEvent(ev);
+      disp->registActiveEvent(ev);
     }
     if ((revents & EPOLLOUT) && ev->isActive()) { //  writeable
       ev->setReady(true);
-      disp->registEvent(ev);
+      disp->registActiveEvent(ev);
     }
   }
 }
