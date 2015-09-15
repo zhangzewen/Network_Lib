@@ -77,6 +77,8 @@ class connection
   std::string getRemoteAddr() const {
     return remote_addr_;
   }
+  void lingeringClose(connection* conn, char* buf, int len);
+  void forceCloseConnection();
 
  private:
   void handleRead();

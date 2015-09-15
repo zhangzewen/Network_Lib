@@ -63,10 +63,11 @@ void connection::onMessage()
 {
   // this is ugly now,  there must will be a recv buffer conf
   // if input size is empty, just return reading
-  if (!EVBUFFER_LENGTH(buf_->input)) {
-    conn_state_ = CON_READING;
-    return;
-  }
+  //
+  //  if (!EVBUFFER_LENGTH(buf_->input)) {
+  //    conn_state_ = CON_READING;
+  //    return;
+  //  }
   char buffer[4096] = {0};
   int nread = bufferevent_read(buf_, buffer, 4095);
   if (customizeOnMessageCallBack_) {
@@ -272,7 +273,7 @@ void connection::handleError(connection* conn, short what)
     closeConnection();
   } else if (what == (EVBUFFER_READ | EVBUFFER_TIMEOUT)) {  // read timeout
   } else if (what == (EVBUFFER_WRITE | EVBUFFER_TIMEOUT)) {  // write time out
-  } else if (what == (EVBUFFER_READ | EVBUFFER_EOF)) {
+  } else if (what == (EVBUFFER_READ | EVBUFFER_EOF)) {  //  recv remote FIN
     if (customizeOnConnectionCloseCallBack_) {
       customizeOnConnectionCloseCallBack_(conn);
     }
@@ -283,33 +284,26 @@ void connection::handleError(connection* conn, short what)
 /**
   close connection gently
   first, shutdown write
-  second, wait for a read event fired until timeout
+  second, wait for a read event fired until timeout, TODO SO_LINGER
   third, if read return 0. TCP close done, do the close work
 */
 void connection::closeConnection()  // 主动关闭连接
 {
-  // if the connection is already closed ,just doing nothing
   if (conn_state_ == CON_DISCONNECTED) {
-    return 0;
+    return;
   }
-  conn_state_ = CON_DISCONNECTING;  // step 1. shut down Write ,send FIN
-  // bufferevent_disable(buf_, EV_WRITE);
-  // bufferevent_disable(buf_, EV_READ);
-  //bufferevent_free(buf_);
-#if 0
+  conn_state_ = CON_DISCONNECTING;
   shutdown(connfd_, SHUT_WR);
-  // step 2. 如果buffer中还有数据没有发送完，发送完数据，并重新设置超时时间
-  if (buf_->output->off) {
-    bufferevent_setcb(buf_, NULL, eventWriteCallBack, NULL, this);
-    bufferevent_enable(buf_, EV_WRITE);
-  }
-#endif
-  shutdown(connfd_, SHUT_WR);
-  
-  close(connfd_);
-  return 0;
+  setCustomizeOnMessageCallBack(
+      boost::bind(&connection::lingeringClose, this, _1, _2, _3)); 
+  enableRead();
 }
 
+/**
+  force close connection,where there is a deadly error happened
+  do not check where remote server/client send FIN
+  just release connection and call close()
+*/
 void connection::forceCloseConnection()
 {
 }
@@ -495,4 +489,11 @@ int connection::setRemoteAddr(struct sockaddr_in* remoteAddr, socklen_t len)
   //  remote_addr_ = remoteaddr;
   //  remote_addr_.append(to_string(remoteAddr->sin_port));
   return 0;
+}
+
+void connection::lingeringClose(connection* conn, char* buf, int len)
+{
+  if (len == 0) {
+    doCloseConnection();
+  }
 }
