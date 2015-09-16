@@ -53,6 +53,13 @@ class event
   void setEventHandler(const handler& cb) {
     handler_ = cb;
   }
+  int getRegistEvents() const {
+    return registEvents_;
+  }
+  
+  void setRegistEvents(int events) {
+    registEvents_ = events;
+  }
 
  private:
   int fd_;
@@ -60,6 +67,7 @@ class event
   bool active_;
   bool timeout_;
   bool timerSet_;
+  int registEvents_;
   void* privData_;
   handler handler_; 
 };

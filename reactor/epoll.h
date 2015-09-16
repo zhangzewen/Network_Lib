@@ -3,6 +3,7 @@
 
 #include "poller.h"
 class dispatcher;
+class event;
 
 class Epoll : public poller
 {
@@ -10,6 +11,8 @@ class Epoll : public poller
   Epoll();
   ~Epoll(); 
   void poll(dispatcher* disp, void* arg);
+  int addEvent(event* ev, int what, int flag);
+  int delEvent(event* ev, int what, int flag);
  private:
   int ep_;
 };
