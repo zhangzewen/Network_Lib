@@ -1,3 +1,4 @@
+// Copyright [2015] <Zhang Zewen>
 #ifndef REACTOR_EVENT_H_
 #define REACTOR_EVENT_H_
 
@@ -56,7 +57,7 @@ class event
   int getRegistEvents() const {
     return registEvents_;
   }
-  
+
   void setRegistEvents(int events) {
     registEvents_ = events;
   }
@@ -69,6 +70,6 @@ class event
   bool timerSet_;
   int registEvents_;
   void* privData_;
-  handler handler_; 
+  handler handler_;
 };
 #endif  //  REACTOR_EVENT_H_

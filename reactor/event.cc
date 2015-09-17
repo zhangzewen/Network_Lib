@@ -1,7 +1,8 @@
+// Copyright [2015] <Zhang Zewen>
 #include "event.h"
 
 event::event() : fd_(-1), ready_(false), active_(false), timeout_(false),
-  timerSet_(false), privData_(NULL)
+  timerSet_(false), registEvents_(0x0), privData_(NULL)
 {
 }
 

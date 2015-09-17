@@ -1,3 +1,4 @@
+// Copyright [2015] <Zhang Zewen>
 #ifndef REACTOR_POLL_EPOLL_H_
 #define REACTOR_POLL_EPOLL_H_
 
@@ -9,10 +10,12 @@ class Epoll : public poller
 {
  public:
   Epoll();
-  ~Epoll(); 
-  void poll(dispatcher* disp, void* arg);
+  ~Epoll();
+  bool init();
   int addEvent(event* ev, int what, int flag);
   int delEvent(event* ev, int what, int flag);
+  void poll(dispatcher* disp, void* arg);
+
  private:
   int ep_;
 };

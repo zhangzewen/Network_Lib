@@ -1,9 +1,30 @@
-#ifndef REACTOR_POLL_SELECT_H_
-#define REACTOR_POLL_SELECT_H_
+// Copyright [2015] <Zhang Zewen>
+#ifndef REACTOR_SELECT_H_
+#define REACTOR_SELECT_H_
 
-class select
+#include <sys/select.h>
+#include <map>
+#include "poller.h"
+class dispatcher;
+class event;
+
+class Select
 {
-public:
-private:
-}
-#endif  //  REACTOR_POLL_SELECT_H_
+ public:
+  Select();
+  ~Select();
+  bool init();
+  int addEvent(event* ev, int what, int flag);
+  int delEvent(event* ev, int what, int flag);
+  void poll(dispatcher* disp, void* arg);
+
+ private:
+  int maxFd_;
+  fd_set readSet_;
+  fd_set writeSet_;
+  std::map<int, event*> readEventMap_;
+  std::map<int, event*> writeEventMap_;
+};
+
+
+#endif  //  REACTOR_SELECT_H_

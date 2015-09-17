@@ -1,3 +1,4 @@
+// Copyright [2015] <Zhang Zewen>
 #ifndef REACTOR_DISPATCHER_H_
 #define REACTOR_DISPATCHER_H_
 
@@ -7,9 +8,9 @@
 
 class dispatcher
 {
-public:
+ public:
   dispatcher();
-  dispatcher(poller* poller);
+  explicit dispatcher(poller* poller);
   ~dispatcher();
   void setPoller(poller* poller) {
     poller_ = poller;
@@ -22,8 +23,9 @@ public:
   void processActiveEvents();
   void registActiveEvent(event* ev);
   void loop();
-private:
-  poller* poller_; 
+
+ private:
+  poller* poller_;
   std::list<event*> activeEventList_;
 };
 #endif  //  REACTOR_DISPATCHER_H_

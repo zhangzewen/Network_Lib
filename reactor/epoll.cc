@@ -1,17 +1,29 @@
+// Copyright [2015] <Zhang Zewen>
+#include "epoll.h"
+
 #include <assert.h>
 #include <sys/epoll.h>
+
 #include <glog/logging.h>
-#include "epoll.h"
+
 #include "event.h"
 #include "dispatcher.h"
 #include "internal-define.h"
 
-Epoll::Epoll()
+Epoll::Epoll() : ep_(-1)
 {
 }
 
 Epoll::~Epoll()
 {
+}
+
+bool Epoll::init() {
+  if ((ep_ = epoll_create(1024)) < 0) {
+    LOG(ERROR) << "epoll_create error";
+    return false;
+  }
+  return true;
 }
 
 void Epoll::poll(dispatcher* disp, void* arg) {
@@ -23,7 +35,7 @@ void Epoll::poll(dispatcher* disp, void* arg) {
     LOG(ERROR) << "epoll_wait error!";
     return;
   }
-  
+
   if (nevents == 0) {
     LOG(INFO) << "no event happend";
     return;
@@ -37,11 +49,11 @@ void Epoll::poll(dispatcher* disp, void* arg) {
       LOG(ERROR) << "epoll_wait error at fd: " << ev->getFd() << " ,ev: " << ev;
     }
 
-    if ((revents & EPOLLIN) && ev->isActive()) { //  readable
+    if ((revents & EPOLLIN) && ev->isActive()) {  //  readable
       ev->setReady(true);
       disp->registActiveEvent(ev);
     }
-    if ((revents & EPOLLOUT) && ev->isActive()) { //  writeable
+    if ((revents & EPOLLOUT) && ev->isActive()) {  //  writeable
       ev->setReady(true);
       disp->registActiveEvent(ev);
     }
@@ -57,11 +69,11 @@ int Epoll::addEvent(event* ev, int what, int flag)
   int op = 0;
   struct epoll_event ee;
   int revents = ev->getRegistEvents();
-  
+
   if (what & EV_READ) {
     revents |= EPOLLIN;
   }
-  
+
   if (what & EV_WRITE) {
     revents |= EPOLLOUT;
   }
@@ -86,11 +98,11 @@ int Epoll::delEvent(event* ev, int what, int flag)
 {
   assert(NULL != ev);
   assert(flag);
-  
+
   int op = 0;
   struct epoll_event ee;
   int revents = ev->getRegistEvents();
-  
+
   if (what & EV_READ) {
     if (revents & EPOLLIN) {
       revents &= ~EPOLLIN;

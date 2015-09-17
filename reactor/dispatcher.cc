@@ -1,7 +1,9 @@
-#include <sys/epoll.h>
-#include <list>
+// Copyright [2015] <Zhang Zewen>
 #include "dispatcher.h"
+
+#include <sys/epoll.h>
 #include <assert.h>
+#include <list>
 #include <glog/logging.h>
 
 #include "event.h"
@@ -22,7 +24,7 @@ bool dispatcher::addEvent(event* ev, short what, int flag)
 {
   assert(ev);
   assert(what);
-  assert(flag); 
+  assert(flag);
   return true;
 }
 
@@ -54,14 +56,13 @@ void dispatcher::loop()
   //  }
   //
   //  count time
-  
   poller_->poll(this, NULL);
   processActiveEvents();
 }
 
 void dispatcher::processActiveEvents()
 {
-  while(activeEventList_.empty()) {
+  while (activeEventList_.empty()) {
     event* ev = activeEventList_.back();
     ev->handleEvent();
     activeEventList_.pop_back();
