@@ -8,69 +8,75 @@
 
 #include "event.h"
 
-dispatcher::dispatcher()
+Dispatcher::Dispatcher()
 {
 }
 
-dispatcher::dispatcher(poller* poller) : poller_(poller)
+Dispatcher::Dispatcher(Poller* poller) : poller_(poller)
 {
 }
 
-dispatcher::~dispatcher()
+Dispatcher::~Dispatcher()
 {
 }
 
-bool dispatcher::addEvent(event* ev, short what, int flag)
+bool Dispatcher::addEvent(Event* ev, short what, int flag)
 {
   assert(ev);
   assert(what);
   assert(flag);
+  if (!poller_->addEvent(ev, what, flag)) {
+    return false;
+  }
   return true;
 }
 
-bool dispatcher::delEvent(event* ev, short what, int flag)
+bool Dispatcher::delEvent(Event* ev, short what, int flag)
 {
   assert(ev);
   assert(what);
   assert(flag); 
+  if (!poller_->delEvent(ev, what, flag)) {
+    return false;
+  }
   return true;
 }
 
-void dispatcher::loop()
+void Dispatcher::loop()
 {
-  //  struct epoll_event firedEvents[1024] = {0, {0}};
-  //  while(1) {
-  //    int nfds = epoll_wait(epollfd_, firedEvents, 1024, -1);
-  //    if (nfds == -1) {
-  //      LOG(ERR) << "epoll_wait error!";
-  //      return;
-  //    }   
-  //    for (int i = 0; i < nfds; ++i) {
-  //      int activefd = events_[i].data.fd;
-  //      if (channels_.find(activefd) == channels_.end()) {
-  //        continue;
-  //      }   
-  //      std::shared_ptr<Channel> channel = channels_[activefd];
-  //      channel->handleEvent(events_[i].events);
-  //    }   
-  //  }
-  //
-  //  count time
   poller_->poll(this, NULL);
   processActiveEvents();
 }
 
-void dispatcher::processActiveEvents()
+/**
+  process the active events 
+*/
+void Dispatcher::processActiveEvents()
 {
   while (activeEventList_.empty()) {
-    event* ev = activeEventList_.back();
+    Event* ev = activeEventList_.back();
     ev->handleEvent();
     activeEventList_.pop_back();
   }
 }
 
-void dispatcher::registActiveEvent(event* ev)
+/**
+  in every loop, wher an event fired ,put it into
+  the active event list, will be itered and call the 
+  callback function binded the event 
+*/
+void Dispatcher::registActiveEvent(Event* ev)
 {
   assert(NULL != ev);
   activeEventList_.push_front(ev);
+  return;
+}
+
+bool Dispatcher::eventAddTimer(Event* ev, struct timeval* timeout)
+{
+  return true;
+}
+bool Dispatcher::eventDelTimer(Event* ev, struct timeval* timeout)
+{
+  return true;
 }

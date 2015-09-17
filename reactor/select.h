@@ -5,25 +5,25 @@
 #include <sys/select.h>
 #include <map>
 #include "poller.h"
-class dispatcher;
-class event;
+class Dispatcher;
+class Event;
 
-class Select
+class Select : public Poller
 {
  public:
   Select();
   ~Select();
   bool init();
-  int addEvent(event* ev, int what, int flag);
-  int delEvent(event* ev, int what, int flag);
-  void poll(dispatcher* disp, void* arg);
+  int addEvent(Event* ev, int what, int flag);
+  int delEvent(Event* ev, int what, int flag);
+  void poll(Dispatcher* disp, struct timeval* timeout);
 
  private:
   int maxFd_;
   fd_set readSet_;
   fd_set writeSet_;
-  std::map<int, event*> readEventMap_;
-  std::map<int, event*> writeEventMap_;
+  std::map<int, Event*> readEventMap_;
+  std::map<int, Event*> writeEventMap_;
 };
 
 

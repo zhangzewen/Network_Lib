@@ -24,8 +24,11 @@ bool Select::init()
   return true;
 }
 
-void Select::poll(dispatcher* disp, void* arg)
+void Select::poll(Dispatcher* disp, struct timeval* timeout)
 {
+  assert(disp);
+  assert(timeout);
+
   fd_set currentReadSet;
   fd_set currentWriteSet;
 
@@ -41,30 +44,32 @@ void Select::poll(dispatcher* disp, void* arg)
   }
 
   //  iterator fired read event
-  for (std::map<int, event*>::const_iterator iter = readEventMap_.begin();
+  for (std::map<int, Event*>::const_iterator iter = readEventMap_.begin();
     iter != readEventMap_.end();
     ++iter) {
     if (FD_ISSET(iter->first, &currentReadSet)) {
-      event* ev = iter->second;
+      Event* ev = iter->second;
       ev->setReady(true);
       disp->registActiveEvent(ev);
     }
   }
 
   //  iterator fired write event
-  for (std::map<int, event*>::const_iterator iter = writeEventMap_.begin();
+  for (std::map<int, Event*>::const_iterator iter = writeEventMap_.begin();
     iter != writeEventMap_.end();
     ++iter) {
     if (FD_ISSET(iter->first, &currentWriteSet)) {
-      event* ev = iter->second;
+      Event* ev = iter->second;
       ev->setReady(true);
       disp->registActiveEvent(ev);
     }
   }
 }
 
-int Select::addEvent(event* ev, int what, int flag)
+int Select::addEvent(Event* ev, int what, int flag)
 {
+  assert(flag);
+
   if (what & EV_READ) {
     FD_SET(ev->getFd(), &readSet_);
     readEventMap_[ev->getFd()] = ev;
@@ -79,18 +84,20 @@ int Select::addEvent(event* ev, int what, int flag)
   return 0;
 }
 
-int Select::delEvent(event* ev, int what, int flag)
+int Select::delEvent(Event* ev, int what, int flag)
 {
+  assert(flag);
+
   if (what & EV_READ) {
     FD_CLR(ev->getFd(), &readSet_);
-    std::map<int, event*>::iterator iter = readEventMap_.find(ev->getFd());
+    std::map<int, Event*>::iterator iter = readEventMap_.find(ev->getFd());
     if (iter != readEventMap_.end()) {
       readEventMap_.erase(iter);
     }
   }
   if (what & EV_WRITE) {
     FD_CLR(ev->getFd(), &writeSet_);
-    std::map<int, event*>::iterator iter = writeEventMap_.find(ev->getFd());
+    std::map<int, Event*>::iterator iter = writeEventMap_.find(ev->getFd());
     if (iter != writeEventMap_.end()) {
       writeEventMap_.erase(iter);
     }

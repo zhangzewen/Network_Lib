@@ -3,18 +3,18 @@
 #define REACTOR_POLL_EPOLL_H_
 
 #include "poller.h"
-class dispatcher;
-class event;
+class Dispatcher;
+class Event;
 
-class Epoll : public poller
+class Epoll : public Poller
 {
  public:
   Epoll();
   ~Epoll();
   bool init();
-  int addEvent(event* ev, int what, int flag);
-  int delEvent(event* ev, int what, int flag);
-  void poll(dispatcher* disp, void* arg);
+  int addEvent(Event* ev, int what, int flag);
+  int delEvent(Event* ev, int what, int flag);
+  void poll(Dispatcher* disp, struct timeval* timeout);
 
  private:
   int ep_;

@@ -4,12 +4,12 @@
 
 #include <boost/function.hpp>
 
-class event
+class Event
 {
  public:
-  event();
-  ~event();
-  typedef boost::function<void(event*)> handler;
+  Event();
+  ~Event();
+  typedef boost::function<void(Event*)> handler;
   int getFd() const {
     return fd_;
   }
@@ -58,7 +58,7 @@ class event
     return registEvents_;
   }
 
-  void setRegistEvents(int events) {
+  void updateRegistEvents(int events) {
     registEvents_ = events;
   }
 

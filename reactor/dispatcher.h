@@ -6,26 +6,28 @@
 #include "event.h"
 #include "poller.h"
 
-class dispatcher
+class Dispatcher
 {
  public:
-  dispatcher();
-  explicit dispatcher(poller* poller);
-  ~dispatcher();
-  void setPoller(poller* poller) {
+  Dispatcher();
+  explicit Dispatcher(Poller* poller);
+  ~Dispatcher();
+  void setPoller(Poller* poller) {
     poller_ = poller;
   }
-  const poller* getPoller() const {
+  const Poller* getPoller() const {
     return poller_;
   }
-  bool addEvent(event* ev, short what, int flag);
-  bool delEvent(event* ev, short what, int flag);
+  bool addEvent(Event* ev, short what, int flag);
+  bool delEvent(Event* ev, short what, int flag);
+  bool eventAddTimer(Event* ev, struct timeval* timeout);
+  bool eventDelTimer(Event* ev, struct timeval* timeout);
   void processActiveEvents();
-  void registActiveEvent(event* ev);
+  void registActiveEvent(Event* ev);
   void loop();
 
  private:
-  poller* poller_;
-  std::list<event*> activeEventList_;
+  Poller* poller_;
+  std::list<Event*> activeEventList_;
 };
 #endif  //  REACTOR_DISPATCHER_H_
