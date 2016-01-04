@@ -10,20 +10,20 @@ class Event;
 
 class Select : public Poller
 {
- public:
-  Select();
-  ~Select();
-  bool init();
-  int addEvent(Event* ev, int what, int flag);
-  int delEvent(Event* ev, int what, int flag);
-  void poll(Dispatcher* disp, struct timeval* timeout);
+public:
+    Select();
+    ~Select();
+    bool init();
+    int addEvent(Event* ev, int what, int flag);
+    int delEvent(Event* ev, int what, int flag);
+    void poll(Dispatcher* disp, struct timeval* timeout);
 
- private:
-  int maxFd_;
-  fd_set readSet_;
-  fd_set writeSet_;
-  std::map<int, Event*> readEventMap_;
-  std::map<int, Event*> writeEventMap_;
+private:
+    int maxFd_;
+    fd_set readSet_;
+    fd_set writeSet_;
+    std::map<int, Event*> readEventMap_;
+    std::map<int, Event*> writeEventMap_;
 };
 
 

@@ -2,16 +2,16 @@
 #include "event.h"
 
 Event::Event() : fd_(-1), ready_(false), active_(false), timeout_(false),
-  timerSet_(false), registEvents_(0x0), privData_(NULL)
+    timerSet_(false), registEvents_(0x0), privData_(NULL)
 {
 }
 
 Event::~Event()
 {
-  fd_ = -1;
-  privData_ = NULL;
-  ready_ = false;
-  active_ = false;
-  timeout_ = false;
-  timerSet_ = false;
+    fd_ = -1;
+    privData_ = NULL;
+    ready_ = false;
+    active_ = false;
+    timeout_ = false;
+    timerSet_ = false;
 }

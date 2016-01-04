@@ -6,11 +6,13 @@ class Event;
 class Poller
 {
 public:
-  virtual void poll(Dispatcher* disp, struct timeval* timeout);
-  virtual int addEvent(Event*, int what, int flag);
-  virtual int delEvent(Event*, int what, int flag);
+    virtual void poll(Dispatcher* disp, struct timeval* timeout);
+    virtual int addEvent(Event*, int what, int flag);
+    virtual int delEvent(Event*, int what, int flag);
+    virtual int addEvent(Event* ev);
+    virtual int delEvent(Event* ev);
 protected:
-  Poller() {}
-  ~Poller(){}
+    Poller() {}
+    ~Poller(){}
 };
 #endif  // REACTOR_POLL_POLLER_H_

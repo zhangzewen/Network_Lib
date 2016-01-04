@@ -8,26 +8,26 @@
 
 class Dispatcher
 {
- public:
-  Dispatcher();
-  explicit Dispatcher(Poller* poller);
-  ~Dispatcher();
-  void setPoller(Poller* poller) {
-    poller_ = poller;
-  }
-  const Poller* getPoller() const {
-    return poller_;
-  }
-  bool addEvent(Event* ev, short what, int flag);
-  bool delEvent(Event* ev, short what, int flag);
-  bool eventAddTimer(Event* ev, struct timeval* timeout);
-  bool eventDelTimer(Event* ev, struct timeval* timeout);
-  void processActiveEvents();
-  void registActiveEvent(Event* ev);
-  void loop();
+public:
+    Dispatcher();
+    explicit Dispatcher(Poller* poller);
+    ~Dispatcher();
+    void setPoller(Poller* poller) {
+        poller_ = poller;
+    }
+    const Poller* getPoller() const {
+        return poller_;
+    }
+    bool addEvent(Event* ev, short what, int flag);
+    bool delEvent(Event* ev, short what, int flag);
+    bool eventAddTimer(Event* ev, struct timeval* timeout);
+    bool eventDelTimer(Event* ev, struct timeval* timeout);
+    void processActiveEvents();
+    void registActiveEvent(Event* ev);
+    void loop();
 
- private:
-  Poller* poller_;
-  std::list<Event*> activeEventList_;
+private:
+    Poller* poller_;
+    std::list<Event*> activeEventList_;
 };
 #endif  //  REACTOR_DISPATCHER_H_

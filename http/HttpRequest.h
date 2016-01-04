@@ -61,13 +61,15 @@ class HttpRequest
   void addResponseHeaderDone();
   void sendResponse(connection* conn);
   void setKeepAlived(bool isKeepAlived) {
-    isKeepAlived_ = isKeepAlived; 
+    isKeepAlived_ = isKeepAlived;
   }
   bool isKeepAlived() const {
     return isKeepAlived_;
   }
   void productResponseReply(int stateCode, const char* content);
   void doReply(connection* conn);
+  void headersDictToRaw(); // http header dict to raw
+  void rawToHeadersDict(); // raw to http header dict
 
  private:
   std::multimap<std::string, std::string> http_request_headers_;
@@ -87,5 +89,6 @@ class HttpRequest
   // std::vector<char> request_headers_; //request stream
   std::multimap<std::string, std::string> http_response_headers_;
   struct baseBuffer* response_reply_;
+  std::multimap<std::string, std::string> headerDict_;
 };
 #endif  // HTTP_HTTPREQUEST_H_
