@@ -3,6 +3,7 @@
 #define REACTOR_POLL_EPOLL_H_
 
 #include "poller.h"
+#include <map>
 class Dispatcher;
 class Event;
 
@@ -15,8 +16,12 @@ public:
     int addEvent(Event* ev);
     int delEvent(Event* ev);
     void poll(Dispatcher* disp, struct timeval* timeout);
-
 private:
-    int ep_;
+    Event* getEventByFd(int fd, const std::map<int, Event*>& events);
+    Event* getReadEventByFd(int fd);
+    Event* getWriteEventByFd(int fd);
+    int epf_;
+    std::map<int, Event*> readEvents_;
+    std::map<int, Event*> writeEvents_;
 };
 #endif  //  REACTOR_POLL_EPOLL_H_

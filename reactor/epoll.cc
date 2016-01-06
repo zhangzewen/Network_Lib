@@ -12,7 +12,7 @@
 #include "dispatcher.h"
 #include "internal-define.h"
 
-Epoll::Epoll() : ep_(-1)
+Epoll::Epoll() : epf_(-1)
 {
 }
 
@@ -21,7 +21,7 @@ Epoll::~Epoll()
 }
 
 bool Epoll::init() {
-    if ((ep_ = epoll_create(1024)) < 0) {
+    if ((epf_ = epoll_create(1024)) < 0) {
         LOG(ERROR) << "epoll_create error";
         return false;
     }
@@ -33,7 +33,7 @@ void Epoll::poll(Dispatcher* disp, struct timeval* timeout) {
     assert(timeout);
 
     struct epoll_event firedEvents[1024] = {0, {0}};
-    int nevents = epoll_wait(ep_, firedEvents, 1024, -1);
+    int nevents = epoll_wait(epf_, firedEvents, 1024, -1);
     if (nevents < 0) {
         LOG(ERROR) << "epoll_wait error!";
         return;
@@ -69,65 +69,91 @@ void Epoll::poll(Dispatcher* disp, struct timeval* timeout) {
     }
 }
 
-
-int Epoll::addEvent(Event* ev, int what, int flag)
+int Epoll::addEvent(Event* ev)
 {
     assert(NULL != ev);
-    assert(flag);
 
     int op = 0;
     struct epoll_event ee;
     int revents = ev->getRegistEvents();
+    int events = 0;
+    int fd = ev->getFd();
+    Event* write = getWriteEventByFd(fd);
+    Event* read = getReadEventByFd(fd);
 
-    if (what & EV_READ) {
-        revents |= EPOLLIN;
+    if (revents & REACTOR_EV_READ) {
+        events |= EPOLLIN;
     }
 
-    if (what & EV_WRITE) {
-        revents |= EPOLLOUT;
+    if (revents & REACTOR_EV_WRITE) {
+        events |= EPOLLOUT;
     }
 
-    if (ev->isActive()) {
+    op = EPOLL_CTL_ADD;
+
+    if ((revents & REACTOR_EV_READ)
+        && read && read->isActive()) {
         op = EPOLL_CTL_MOD;
-    } else {
-        op = EPOLL_CTL_ADD;
+    }
+    if ((revents & REACTOR_EV_WRITE)
+        && write && write->isActive()) {
+        op = EPOLL_CTL_MOD;
     }
 
-    ee.events = revents;
+    ee.events = events;
     ee.data.ptr = static_cast<void*>(ev);
     if (epoll_ctl(ep_, op, ev->getFd(), &ee) == -1) {
         LOG(ERROR) << "epoll_ctl: op = " << op << " ev: " << ev << " Error";
         return -1;
     }
-    ev->updateRegistEvents(revents);
+    if (revents & REACTOR_EV_READ) {
+        readEvents_[fd] = ev;
+    }
+    if (revents & REACTOR_EV_WRITE) {
+        writeEvents_[fd] = ev;
+    }
     ev->setActive(true);
     return 0;
 }
 
-int Epoll::delEvent(Event* ev, int what, int flag)
+int Epoll::delEvent(Event* ev)
 {
     assert(NULL != ev);
-    assert(flag);
 
     int op = 0;
     struct epoll_event ee;
     int revents = ev->getRegistEvents();
+    int events = 0;
+    Event* ev = NULL;
 
     if (!ev->isActive()) {
         LOG(ERROR) << "Delete ev: " << ev << "ev active: " << ev->isActive();
         return 0;
     }
 
-    if (what & EV_READ) {
-        if (revents & EPOLLIN) {
-            revents &= ~EPOLLIN;
+    if (revents & REACTOR_EV_READ) {
+        events |= EPOLLIN;
+    }
+
+    if (revents & REACTOR_EV_WRITE) {
+        events |= EPOLLOUT;
+    }
+
+    op = EPOLL_CTL_DEL;
+
+    if ((events & (EPOLLIN|EPOLLOUT)) != (EPOLLIN|EPOLLOUT)) {
+        if ((events & EPOLLIN) && write != NULL && write->isActive()) {
+            needwritedelete = 0;
+            events = EPOLLOUT;
+            op = EPOLL_CTL_MOD;
+        } else if ((events & EPOLLOUT) && read != NULL && read->isActive()) {
+            needreaddelete = 0;
+            events = EPOLLIN;
+            op = EPOLL_CTL_MOD;
         }
     }
-    if (what & EV_WRITE) {
-        if (revents & EPOLLOUT) {
-            revents &= ~EPOLLOUT;
-        }
-    }
+
+
     if (ev->isActive()) {
         ee.events = revents;
         ee.data.ptr = static_cast<void*>(ev);
@@ -142,9 +168,31 @@ int Epoll::delEvent(Event* ev, int what, int flag)
         LOG(ERROR) << "epoll_ctl: op = " << op << " ev: " << ev << " Error: " << strerror(errno);
         return -1;
     }
-    ev->updateRegistEvents(revents);
     if (op == EPOLL_CTL_DEL) {
         ev->setActive(false);
     }
     return 0;
+}
+
+
+Event* Epoll::getEventByFd(int fd, const std::map<int, Event*>& events)
+{
+    if ( fd <= 0) {
+        return NULL;
+    }
+    std::map<int, Event*>::const_iterator iter = events.find(fd);
+    if (iter != events.end()){
+        return iter->second;
+    }
+    return NULL;
+}
+
+Event* Epoll::getReadEventByFd(int fd)
+{
+    return getEventByFd(fd, readEvents_);
+}
+
+Event* Epoll::getWriteEventByFd(int fd)
+{
+    return getEventByFd(fd, writeEvents_);
 }

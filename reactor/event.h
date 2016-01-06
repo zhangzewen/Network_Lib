@@ -3,13 +3,14 @@
 #define REACTOR_EVENT_H_
 
 #include "reactor.h"
+#include <sys/time.h>
 #include <boost/function.hpp>
 
 class Event
 {
 public:
     Event() : fd_(-1), ready_(false), active_(false), timeout_(false),
-        registEvents_(0), revents_(0), privDate_(NULL) {
+        registEvents_(0), privData_(NULL) {
     }
     ~Event();
     typedef boost::function<void(Event*)> handler;
@@ -82,8 +83,8 @@ private:
     // whether event for reading or writing is timeout
     bool timeout_;
     int registEvents_;
-    int revents_;
     void* privData_;
     handler handler_;
+    struct timeval timer_;
 };
 #endif  //  REACTOR_EVENT_H_
