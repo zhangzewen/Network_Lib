@@ -18,8 +18,10 @@ public:
     const Poller* getPoller() const {
         return poller_;
     }
-    bool addEvent(Event* ev, short what, int flag);
-    bool delEvent(Event* ev, short what, int flag);
+    bool addReadEvent(int fd, const Event::handler& readEventHandler);
+    bool addWriteEvent(int fd, const Event::handler& readEventHandler);
+    bool addEvent(Event* ev);
+    bool delEvent(Event* ev);
     bool eventAddTimer(Event* ev, struct timeval* timeout);
     bool eventDelTimer(Event* ev, struct timeval* timeout);
     void processActiveEvents();

@@ -4,6 +4,7 @@
 
 #include "poller.h"
 #include <map>
+#include <memory>
 class Dispatcher;
 class Event;
 
@@ -15,13 +16,17 @@ public:
     bool init();
     int addEvent(Event* ev);
     int delEvent(Event* ev);
+    int addReadEvent(Event* ev);
+    int addWriteEvent(Event* ev);
+    int delReadEvent(Event* ev);
+    int delWriteEvent(Event* ev);
     void poll(Dispatcher* disp, struct timeval* timeout);
 private:
     Event* getEventByFd(int fd, const std::map<int, Event*>& events);
     Event* getReadEventByFd(int fd);
     Event* getWriteEventByFd(int fd);
     int epf_;
-    std::map<int, Event*> readEvents_;
-    std::map<int, Event*> writeEvents_;
+    std::map<int, std::shared_ptr<Event>* > readEvents_;
+    std::map<int, std::shared_ptr<Event>* > writeEvents_;
 };
 #endif  //  REACTOR_POLL_EPOLL_H_

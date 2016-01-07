@@ -8,5 +8,4 @@ Event::~Event()
     ready_ = false;
     active_ = false;
     timeout_ = false;
-    timerSet_ = false;
 }

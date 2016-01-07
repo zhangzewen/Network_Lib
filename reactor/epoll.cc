@@ -102,7 +102,7 @@ int Epoll::addEvent(Event* ev)
 
     ee.events = events;
     ee.data.ptr = static_cast<void*>(ev);
-    if (epoll_ctl(ep_, op, ev->getFd(), &ee) == -1) {
+    if (epoll_ctl(epf_, op, ev->getFd(), &ee) == -1) {
         LOG(ERROR) << "epoll_ctl: op = " << op << " ev: " << ev << " Error";
         return -1;
     }
@@ -119,13 +119,17 @@ int Epoll::addEvent(Event* ev)
 int Epoll::delEvent(Event* ev)
 {
     assert(NULL != ev);
-
     int op = 0;
     struct epoll_event ee;
     int revents = ev->getRegistEvents();
+    int fd = ev->getFd();
     int events = 0;
-    Event* ev = NULL;
+    int needreaddelete = 0;
+    int needwritedelete = 0;
 
+    Event* e = NULL;
+    Event* write = getWriteEventByFd(fd);
+    Event* read = getReadEventByFd(fd);
     if (!ev->isActive()) {
         LOG(ERROR) << "Delete ev: " << ev << "ev active: " << ev->isActive();
         return 0;
@@ -134,29 +138,30 @@ int Epoll::delEvent(Event* ev)
     if (revents & REACTOR_EV_READ) {
         events |= EPOLLIN;
     }
-
     if (revents & REACTOR_EV_WRITE) {
         events |= EPOLLOUT;
     }
 
-    op = EPOLL_CTL_DEL;
-
     if ((events & (EPOLLIN|EPOLLOUT)) != (EPOLLIN|EPOLLOUT)) {
-        if ((events & EPOLLIN) && write != NULL && write->isActive()) {
-            needwritedelete = 0;
-            events = EPOLLOUT;
-            op = EPOLL_CTL_MOD;
-        } else if ((events & EPOLLOUT) && read != NULL && read->isActive()) {
-            needreaddelete = 0;
+        if (events & EPOLLIN) {
+            e = write;
+            needwritedelete = 1;
             events = EPOLLIN;
-            op = EPOLL_CTL_MOD;
+        } else if (events & EPOLLOUT) {
+            e = read;
+            needreaddelete = 1;
+            events = EPOLLOUT;
+        } else {
+            readEvents_[fd] = NULL;
+            readEvents_.erase(fd);
+            writeEvents_[fd] = NULL;
+            writeEvents_.erase(fd);
         }
     }
 
-
-    if (ev->isActive()) {
-        ee.events = revents;
-        ee.data.ptr = static_cast<void*>(ev);
+    if (e && e->isActive()) {
+        ee.events = events;
+        ee.data.ptr = static_cast<void*>(e);
         op = EPOLL_CTL_MOD;
     } else {
         ee.events = 0;
@@ -164,13 +169,34 @@ int Epoll::delEvent(Event* ev)
         op = EPOLL_CTL_DEL;
     }
 
-    if (epoll_ctl(ep_, op, ev->getFd(), &ee) == -1) {
+    if (epoll_ctl(epf_, op, ev->getFd(), &ee) == -1) {
         LOG(ERROR) << "epoll_ctl: op = " << op << " ev: " << ev << " Error: " << strerror(errno);
         return -1;
     }
+
+    if (needwritedelete) {
+        writeEvents_[fd] = NULL;
+        writeEvents_.erase(fd);
+        write->setActive(false);
+    }
+    if (needreaddelete) {
+        readEvents_[fd] = NULL;
+        readEvents_.erase(fd);
+        read->setActive(false);
+    }
+
+    if (revents & REACTOR_EV_READ) {
+        readEvents_[fd] = ev;
+    }
+
+    if (revents & REACTOR_EV_WRITE) {
+        writeEvents_[fd] = ev;
+    }
+
     if (op == EPOLL_CTL_DEL) {
         ev->setActive(false);
     }
+
     return 0;
 }
 
@@ -195,4 +221,28 @@ Event* Epoll::getReadEventByFd(int fd)
 Event* Epoll::getWriteEventByFd(int fd)
 {
     return getEventByFd(fd, writeEvents_);
+}
+
+int Epoll::addReadEvent(Event* ev)
+{
+    ev->enableReadEvent();
+    return addEvent(ev);
+}
+
+int Epoll::addWriteEvent(Event* ev)
+{
+    ev->enableWriteEvent();
+    return addEvent(ev);
+}
+
+int Epoll::delReadEvent(Event* ev)
+{
+    ev->disableReadEvent();
+    return delEvent(ev);
+}
+
+int Epoll::delWriteEvent(Event* ev)
+{
+    ev->disableWriteEvent();
+    return delEvent(ev);
 }

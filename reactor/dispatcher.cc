@@ -19,23 +19,41 @@ Dispatcher::~Dispatcher()
 {
 }
 
-bool Dispatcher::addEvent(Event* ev, short what, int flag)
+bool Dispatcher::addEvent(Event* ev)
 {
     assert(ev);
-    assert(what);
-    assert(flag);
-    if (!poller_->addEvent(ev, what, flag)) {
+    if (0 != poller_->addEvent(ev)) {
         return false;
     }
     return true;
 }
 
-bool Dispatcher::delEvent(Event* ev, short what, int flag)
+bool Dispatcher::delEvent(Event* ev)
 {
     assert(ev);
-    assert(what);
-    assert(flag);
-    if (!poller_->delEvent(ev, what, flag)) {
+    if (0 != poller_->delEvent(ev)) {
+        return false;
+    }
+    return true;
+}
+
+bool Dispatcher::addReadEvent(int fd, const Event::handler& readEventHandler)
+{
+    Event* ev = new Event();
+    ev->setFd(fd);
+    ev->setEventHandler(readEventHandler);
+    if (0 != poller_->addReadEvent(ev)) {
+        return false;
+    }
+    return true;
+}
+
+bool Dispatcher::addWriteEvent(int fd, const Event::handler& readEventHandler)
+{
+    Event* ev = new Event();
+    ev->setFd(fd);
+    ev->setEventHandler(readEventHandler);
+    if (0 != poller_->addWriteEvent(ev)) {
         return false;
     }
     return true;

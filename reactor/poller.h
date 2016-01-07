@@ -7,10 +7,12 @@ class Poller
 {
 public:
     virtual void poll(Dispatcher* disp, struct timeval* timeout);
-    virtual int addEvent(Event*, int what, int flag);
-    virtual int delEvent(Event*, int what, int flag);
     virtual int addEvent(Event* ev);
     virtual int delEvent(Event* ev);
+    virtual int addReadEvent(Event* ev);
+    virtual int addWriteEvent(Event* ev);
+    virtual int delReadEvent(Event* ev);
+    virtual int delWriteEvent(Event* ev);
 protected:
     Poller() {}
     ~Poller(){}
