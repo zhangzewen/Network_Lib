@@ -71,7 +71,7 @@ void Dispatcher::loop()
 void Dispatcher::processActiveEvents()
 {
     while (activeEventList_.empty()) {
-        Event* ev = activeEventList_.back();
+        std::shared_ptr<Event> ev = activeEventList_.back();
         ev->handleEvent();
         activeEventList_.pop_back();
     }
@@ -82,7 +82,7 @@ void Dispatcher::processActiveEvents()
   the active event list, will be itered and call the
   callback function binded the event
   */
-void Dispatcher::registActiveEvent(Event* ev)
+void Dispatcher::addActiveEvent(Event* ev)
 {
     assert(NULL != ev);
     activeEventList_.push_front(ev);

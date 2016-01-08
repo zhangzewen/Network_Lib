@@ -1,5 +1,5 @@
-main : Server.o Channel.o main.o Acceptor.o TcpTransport.o Dispatcher.o
-	g++ -std=c++11    Server.o Channel.o main.o Acceptor.o TcpTransport.o Dispatcher.o -g -o main
+server : Server.o Channel.o main.o Acceptor.o TcpTransport.o Dispatcher.o
+	g++ -std=c++11    Server.o Channel.o main.o Acceptor.o TcpTransport.o Dispatcher.o -g -o server 
 
 Server.o : Server.cc Server.h Channel.h EventCallBack.h Acceptor.h
 	g++ -std=c++11 -W -Werror -c Server.cc -g -o Server.o

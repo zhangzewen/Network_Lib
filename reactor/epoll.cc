@@ -60,16 +60,16 @@ void Epoll::poll(Dispatcher* disp, struct timeval* timeout) {
 
         if ((revents & EPOLLIN) && ev->isActive()) {  //  readable
             ev->setReady(true);
-            disp->registActiveEvent(ev);
+            disp->addActiveEvent(ev);
         }
         if ((revents & EPOLLOUT) && ev->isActive()) {  //  writeable
             ev->setReady(true);
-            disp->registActiveEvent(ev);
+            disp->addActiveEvent(ev);
         }
     }
 }
 
-int Epoll::addEvent(Event* ev)
+int Epoll::addEvent(std::shared_ptr<Event>& ev)
 {
     assert(NULL != ev);
 
@@ -101,7 +101,7 @@ int Epoll::addEvent(Event* ev)
     }
 
     ee.events = events;
-    ee.data.ptr = static_cast<void*>(ev);
+    ee.data.ptr = static_cast<void*>(ev.get());
     if (epoll_ctl(epf_, op, ev->getFd(), &ee) == -1) {
         LOG(ERROR) << "epoll_ctl: op = " << op << " ev: " << ev << " Error";
         return -1;
@@ -116,7 +116,7 @@ int Epoll::addEvent(Event* ev)
     return 0;
 }
 
-int Epoll::delEvent(Event* ev)
+int Epoll::delEvent(std::shared_ptr<Event>& ev)
 {
     assert(NULL != ev);
     int op = 0;
@@ -201,14 +201,14 @@ int Epoll::delEvent(Event* ev)
 }
 
 
-Event* Epoll::getEventByFd(int fd, const std::map<int, Event*>& events)
+Event* Epoll::getEventByFd(int fd, const std::map<int, std::shared_ptr<Event> >& events)
 {
     if ( fd <= 0) {
         return NULL;
     }
-    std::map<int, Event*>::const_iterator iter = events.find(fd);
+    std::map<int, std::shared_ptr<Event> >::const_iterator iter = events.find(fd);
     if (iter != events.end()){
-        return iter->second;
+        return (iter->second).get();
     }
     return NULL;
 }
@@ -223,25 +223,25 @@ Event* Epoll::getWriteEventByFd(int fd)
     return getEventByFd(fd, writeEvents_);
 }
 
-int Epoll::addReadEvent(Event* ev)
+int Epoll::addReadEvent(std::shared_ptr<Event>& ev)
 {
     ev->enableReadEvent();
     return addEvent(ev);
 }
 
-int Epoll::addWriteEvent(Event* ev)
+int Epoll::addWriteEvent(std::shared_ptr<Event>& ev)
 {
     ev->enableWriteEvent();
     return addEvent(ev);
 }
 
-int Epoll::delReadEvent(Event* ev)
+int Epoll::delReadEvent(std::shared_ptr<Event>& ev)
 {
     ev->disableReadEvent();
     return delEvent(ev);
 }
 
-int Epoll::delWriteEvent(Event* ev)
+int Epoll::delWriteEvent(std::shared_ptr<Event>& ev)
 {
     ev->disableWriteEvent();
     return delEvent(ev);

@@ -2,9 +2,11 @@
 #ifndef REACTOR_DISPATCHER_H_
 #define REACTOR_DISPATCHER_H_
 
-#include <list>
 #include "event.h"
 #include "poller.h"
+
+#include <list>
+#include <memory>
 
 class Dispatcher
 {
@@ -25,11 +27,11 @@ public:
     bool eventAddTimer(Event* ev, struct timeval* timeout);
     bool eventDelTimer(Event* ev, struct timeval* timeout);
     void processActiveEvents();
-    void registActiveEvent(Event* ev);
+    void addActiveEvent(Event* ev);
     void loop();
 
 private:
     Poller* poller_;
-    std::list<Event*> activeEventList_;
+    std::list<std::shared_ptr<Event> > activeEventList_;
 };
 #endif  //  REACTOR_DISPATCHER_H_
