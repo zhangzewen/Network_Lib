@@ -10,6 +10,8 @@
 #include <sys/epoll.h>
 #include <sys/fcntl.h>
 
+#define return_ok "YES, it's work\r\n\r\n"
+
 int createSocketAndListen(bool nonBlocking)
 {
 	struct sockaddr_in srvaddr;
@@ -28,7 +30,7 @@ int createSocketAndListen(bool nonBlocking)
 		fprintf(stderr, "socket bind error!\n");
 		exit(-1);
 	}
-	int ret = listen(listenfd, 100);
+	listen(listenfd, 100);
 	if (listenfd < 0) {
 		fprintf(stderr, "listen error\n");
 		exit(-1);
@@ -58,7 +60,7 @@ void ServerRead(Event *ev)
 {
 	int nread = 0;
 	char buff[1024] = {0};
-	nread = read(ev->fd_, buff, sizeof(buff) - 1);
+	nread = read(ev->getFd(), buff, sizeof(buff) - 1);
 
 	write(ev->getFd() ,return_ok, sizeof(return_ok));
 	close(ev->getFd());
@@ -71,12 +73,12 @@ void ServerListening(Event* ev)
 {
 	int cfd;
 	struct sockaddr_in addr;
-	struct event *cli_ev;
+	Event *cli_ev;
 	socklen_t addrlen = sizeof(addr);
 
-	cli_ev = calloc(1, sizeof(struct event));
+	cli_ev = new Event();
 
-	cfd = accept(ev->fd_ ,(struct sockaddr *)&addr, &addrlen);
+	cfd = accept(ev->getFd() ,(struct sockaddr *)&addr, &addrlen);
 
 	if(cfd == -1) {
 		fprintf(stderr, "accept(): can not accept client connection");
@@ -97,7 +99,7 @@ int main(int argc, char *argv[])
 
     Dispatcher* dis = new Dispatcher();
 
-	listen_fd = createSocketAndListen(true)
+	listen_fd = createSocketAndListen(true);
 	if(listen_fd < 0) {
 		fprintf(stderr, "create socket error!");
 		exit(1);
