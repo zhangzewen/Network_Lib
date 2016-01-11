@@ -2,8 +2,7 @@
 #ifndef REACTOR_DISPATCHER_H_
 #define REACTOR_DISPATCHER_H_
 
-#include "event.h"
-#include "poller.h"
+#include "reactor.h"
 
 #include <list>
 #include <memory>
@@ -20,8 +19,8 @@ public:
     const Poller* getPoller() const {
         return poller_;
     }
-    bool addReadEvent(int fd, const Event::handler& readEventHandler);
-    bool addWriteEvent(int fd, const Event::handler& readEventHandler);
+    bool addReadEvent(int fd, const eventHandler& readEventHandler);
+    bool addWriteEvent(int fd, const eventHandler& writeEventHandler);
     bool addEvent(Event* ev);
     bool delEvent(Event* ev);
     bool eventAddTimer(Event* ev, struct timeval* timeout);

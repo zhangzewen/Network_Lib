@@ -5,7 +5,6 @@
 
 #include <assert.h>
 #include <list>
-#include "event.h"
 
 Dispatcher::Dispatcher()
 {
@@ -37,7 +36,7 @@ bool Dispatcher::delEvent(Event* ev)
     return true;
 }
 
-bool Dispatcher::addReadEvent(int fd, const Event::handler& readEventHandler)
+bool Dispatcher::addReadEvent(int fd, const eventHandler& readEventHandler)
 {
     Event* ev = new Event();
     ev->setFd(fd);
@@ -48,7 +47,7 @@ bool Dispatcher::addReadEvent(int fd, const Event::handler& readEventHandler)
     return true;
 }
 
-bool Dispatcher::addWriteEvent(int fd, const Event::handler& readEventHandler)
+bool Dispatcher::addWriteEvent(int fd, const eventHandler& readEventHandler)
 {
     Event* ev = new Event();
     ev->setFd(fd);
@@ -85,7 +84,8 @@ void Dispatcher::processActiveEvents()
 void Dispatcher::addActiveEvent(Event* ev)
 {
     assert(NULL != ev);
-    activeEventList_.push_front(ev);
+    std::shared_ptr<Event> p(ev);
+    activeEventList_.push_front(p);
     return;
 }
 

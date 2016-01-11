@@ -22,9 +22,9 @@ public:
     int delWriteEvent(std::shared_ptr<Event>& ev);
     void poll(Dispatcher* disp, struct timeval* timeout);
 private:
-    Event* getEventByFd(int fd, const std::map<int, std::shared_ptr<Event> >& events);
-    Event* getReadEventByFd(int fd);
-    Event* getWriteEventByFd(int fd);
+    std::shared_ptr<Event> getEventByFd(int fd, const std::map<int, std::shared_ptr<Event> >& events);
+    std::shared_ptr<Event> getReadEventByFd(int fd);
+    std::shared_ptr<Event> getWriteEventByFd(int fd);
     int epf_;
     std::map<int, std::shared_ptr<Event> > readEvents_;
     std::map<int, std::shared_ptr<Event> > writeEvents_;

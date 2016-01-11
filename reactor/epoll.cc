@@ -78,8 +78,8 @@ int Epoll::addEvent(std::shared_ptr<Event>& ev)
     int revents = ev->getRegistEvents();
     int events = 0;
     int fd = ev->getFd();
-    Event* write = getWriteEventByFd(fd);
-    Event* read = getReadEventByFd(fd);
+    std::shared_ptr<Event> write = getWriteEventByFd(fd);
+    std::shared_ptr<Event> read = getReadEventByFd(fd);
 
     if (revents & REACTOR_EV_READ) {
         events |= EPOLLIN;
@@ -127,9 +127,9 @@ int Epoll::delEvent(std::shared_ptr<Event>& ev)
     int needreaddelete = 0;
     int needwritedelete = 0;
 
-    Event* e = NULL;
-    Event* write = getWriteEventByFd(fd);
-    Event* read = getReadEventByFd(fd);
+    std::shared_ptr<Event> e;
+    std::shared_ptr<Event> write = getWriteEventByFd(fd);
+    std::shared_ptr<Event> read = getReadEventByFd(fd);
     if (!ev->isActive()) {
         LOG(ERROR) << "Delete ev: " << ev << "ev active: " << ev->isActive();
         return 0;
@@ -161,7 +161,7 @@ int Epoll::delEvent(std::shared_ptr<Event>& ev)
 
     if (e && e->isActive()) {
         ee.events = events;
-        ee.data.ptr = static_cast<void*>(e);
+        ee.data.ptr = static_cast<void*>(e.get());
         op = EPOLL_CTL_MOD;
     } else {
         ee.events = 0;
@@ -201,24 +201,24 @@ int Epoll::delEvent(std::shared_ptr<Event>& ev)
 }
 
 
-Event* Epoll::getEventByFd(int fd, const std::map<int, std::shared_ptr<Event> >& events)
+std::shared_ptr<Event> Epoll::getEventByFd(int fd, const std::map<int, std::shared_ptr<Event> >& events)
 {
     if ( fd <= 0) {
         return NULL;
     }
     std::map<int, std::shared_ptr<Event> >::const_iterator iter = events.find(fd);
     if (iter != events.end()){
-        return (iter->second).get();
+        return iter->second;
     }
     return NULL;
 }
 
-Event* Epoll::getReadEventByFd(int fd)
+std::shared_ptr<Event> Epoll::getReadEventByFd(int fd)
 {
     return getEventByFd(fd, readEvents_);
 }
 
-Event* Epoll::getWriteEventByFd(int fd)
+std::shared_ptr<Event> Epoll::getWriteEventByFd(int fd)
 {
     return getEventByFd(fd, writeEvents_);
 }

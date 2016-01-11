@@ -13,7 +13,7 @@ public:
         registEvents_(0), privData_(NULL) {
     }
     ~Event();
-    typedef boost::function<void(Event*)> handler;
+    // typedef boost::function<void(Event*)> handler;
     // fd
     int getFd() const { return fd_; }
     void setFd(int fd) { fd_ = fd; }
@@ -42,7 +42,7 @@ public:
         }
     }
 
-    void setEventHandler(const handler& cb) {
+    void setEventHandler(const eventHandler& cb) {
         handler_ = cb;
     }
 
@@ -84,7 +84,7 @@ private:
     bool timeout_;
     int registEvents_;
     void* privData_;
-    handler handler_;
+    eventHandler handler_;
     struct timeval timer_;
 };
 #endif  //  REACTOR_EVENT_H_
