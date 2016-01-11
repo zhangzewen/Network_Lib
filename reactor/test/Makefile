@@ -16,3 +16,4 @@ socket.o: socket.cc
 clean:
 	rm -fr *.o
 	rm -fr *.a
+	rm -fr socket
