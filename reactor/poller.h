@@ -6,13 +6,26 @@ class Event;
 class Poller
 {
 public:
-    virtual void poll(Dispatcher* disp, struct timeval* timeout);
-    virtual int addEvent(Event* ev);
-    virtual int delEvent(Event* ev);
-    virtual int addReadEvent(Event* ev);
-    virtual int addWriteEvent(Event* ev);
-    virtual int delReadEvent(Event* ev);
-    virtual int delWriteEvent(Event* ev);
+    virtual void poll(Dispatcher* disp, struct timeval* timeout){
+    }
+    virtual int addEvent(Event* ev){
+        return 0;
+    }
+    virtual int delEvent(Event* ev) {
+        return 0;
+    }
+    virtual int addReadEvent(Event* ev) {
+        return 0;
+    }
+    virtual int addWriteEvent(Event* ev) {
+        return 0;
+    }
+    virtual int delReadEvent(Event* ev) {
+        return 0;
+    }
+    virtual int delWriteEvent(Event* ev) {
+        return 0;
+    }
 protected:
     Poller() {}
     ~Poller(){}

@@ -10,7 +10,6 @@
 
 #include "event.h"
 #include "dispatcher.h"
-#include "internal-define.h"
 
 Epoll::Epoll() : epf_(-1)
 {
@@ -30,7 +29,7 @@ bool Epoll::init() {
 
 void Epoll::poll(Dispatcher* disp, struct timeval* timeout) {
     assert(disp);
-    assert(timeout);
+    assert(timeout == NULL);
 
     struct epoll_event firedEvents[1024] = {0, {0}};
     int nevents = epoll_wait(epf_, firedEvents, 1024, -1);

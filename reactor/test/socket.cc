@@ -56,27 +56,31 @@ int SetNoblock(int fd)
 	return 0;
 }
 
-void ServerRead(Event *ev)
-{
-	int nread = 0;
-	char buff[1024] = {0};
-	nread = read(ev->getFd(), buff, sizeof(buff) - 1);
+// void ServerRead(Event *ev)
+// {
+// #if 0
+// 	int nread = 0;
+// 	char buff[1024] = {0};
+// 	nread = read(ev->getFd(), buff, sizeof(buff) - 1);
+//
+// 	write(ev->getFd() ,return_ok, sizeof(return_ok));
+// 	close(ev->getFd());
+// #endif
+// }
+//
+// void ServerAccept(Event* ev)
+// {
+//
+// }
 
-	write(ev->getFd() ,return_ok, sizeof(return_ok));
-	close(ev->getFd());
-}
-
-void ServerAccept(Event* ev)
-{
-}
 void ServerListening(Event* ev)
 {
 	int cfd;
 	struct sockaddr_in addr;
-	Event *cli_ev;
+	//Event *cli_ev;
 	socklen_t addrlen = sizeof(addr);
 
-	cli_ev = new Event();
+	//cli_ev = new Event();
 
 	cfd = accept(ev->getFd() ,(struct sockaddr *)&addr, &addrlen);
 
@@ -91,11 +95,11 @@ void ServerListening(Event* ev)
 	}
 }
 
-int main(int argc, char *argv[])
+int main()
 {
 	int listen_fd;
-	int i = 0;
-	int err = 0;
+	//int i = 0;
+	//int err = 0;
 
     Dispatcher* dis = new Dispatcher();
 
@@ -104,7 +108,11 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "create socket error!");
 		exit(1);
 	}
-
+    Epoll* poller = new Epoll();
+    poller->init();
+    dis->setPoller(poller);
+    dis->addReadEvent(listen_fd, ServerListening);
+    dis->loop();
 	return 0;
 }
 
