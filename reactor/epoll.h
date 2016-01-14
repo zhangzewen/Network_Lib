@@ -14,13 +14,13 @@ public:
     Epoll();
     ~Epoll();
     bool init();
-    int addEvent(std::shared_ptr<Event>& ev);
-    int delEvent(std::shared_ptr<Event>& ev);
-    int addReadEvent(std::shared_ptr<Event>& ev);
-    int addWriteEvent(std::shared_ptr<Event>& ev);
-    int delReadEvent(std::shared_ptr<Event>& ev);
-    int delWriteEvent(std::shared_ptr<Event>& ev);
-    void poll(Dispatcher* disp, struct timeval* timeout);
+    virtual int addEvent(std::shared_ptr<Event>& ev);
+    virtual int delEvent(std::shared_ptr<Event>& ev);
+    virtual int addReadEvent(std::shared_ptr<Event>& ev);
+    virtual int addWriteEvent(std::shared_ptr<Event>& ev);
+    virtual int delReadEvent(std::shared_ptr<Event>& ev);
+    virtual int delWriteEvent(std::shared_ptr<Event>& ev);
+    virtual void poll(Dispatcher* disp, struct timeval* timeout);
 private:
     std::shared_ptr<Event> getEventByFd(int fd, const std::map<int, std::shared_ptr<Event> >& events);
     std::shared_ptr<Event> getReadEventByFd(int fd);

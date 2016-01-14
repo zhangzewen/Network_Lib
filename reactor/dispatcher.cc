@@ -18,7 +18,7 @@ Dispatcher::~Dispatcher()
 {
 }
 
-bool Dispatcher::addEvent(Event* ev)
+bool Dispatcher::addEvent(std::shared_ptr<Event> ev)
 {
     assert(ev);
     if (0 != poller_->addEvent(ev)) {
@@ -27,7 +27,7 @@ bool Dispatcher::addEvent(Event* ev)
     return true;
 }
 
-bool Dispatcher::delEvent(Event* ev)
+bool Dispatcher::delEvent(std::shared_ptr<Event> ev)
 {
     assert(ev);
     if (0 != poller_->delEvent(ev)) {
@@ -38,7 +38,7 @@ bool Dispatcher::delEvent(Event* ev)
 
 bool Dispatcher::addReadEvent(int fd, const eventHandler& readEventHandler)
 {
-    Event* ev = new Event();
+    std::shared_ptr<Event> ev(new Event());
     ev->setFd(fd);
     ev->setEventHandler(readEventHandler);
     if (0 != poller_->addReadEvent(ev)) {
@@ -49,7 +49,7 @@ bool Dispatcher::addReadEvent(int fd, const eventHandler& readEventHandler)
 
 bool Dispatcher::addWriteEvent(int fd, const eventHandler& readEventHandler)
 {
-    Event* ev = new Event();
+    std::shared_ptr<Event> ev(new Event());
     ev->setFd(fd);
     ev->setEventHandler(readEventHandler);
     if (0 != poller_->addWriteEvent(ev)) {
@@ -69,7 +69,7 @@ void Dispatcher::loop()
   */
 void Dispatcher::processActiveEvents()
 {
-    while (activeEventList_.empty()) {
+    while (!activeEventList_.empty()) {
         std::shared_ptr<Event> ev = activeEventList_.back();
         ev->handleEvent();
         activeEventList_.pop_back();

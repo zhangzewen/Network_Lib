@@ -93,6 +93,7 @@ void ServerListening(Event* ev)
 		close(cfd);
 		return;
 	}
+    std::cout << "we arrived here!" << std::endl;
 }
 
 int main()
@@ -101,14 +102,14 @@ int main()
 	//int i = 0;
 	//int err = 0;
 
-    Dispatcher* dis = new Dispatcher();
+    std::shared_ptr<Dispatcher> dis(new Dispatcher());
 
 	listen_fd = createSocketAndListen(true);
 	if(listen_fd < 0) {
 		fprintf(stderr, "create socket error!");
 		exit(1);
 	}
-    Epoll* poller = new Epoll();
+    std::shared_ptr<Epoll> poller (new Epoll());
     poller->init();
     dis->setPoller(poller);
     dis->addReadEvent(listen_fd, ServerListening);

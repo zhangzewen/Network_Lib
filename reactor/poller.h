@@ -1,6 +1,7 @@
 #ifndef REACTOR_POLL_POLLER_H_
 #define REACTOR_POLL_POLLER_H_
 
+#include <memory>
 class Dispatcher;
 class Event;
 class Poller
@@ -8,26 +9,26 @@ class Poller
 public:
     virtual void poll(Dispatcher* disp, struct timeval* timeout){
     }
-    virtual int addEvent(Event* ev){
+    virtual int addEvent(std::shared_ptr<Event>& ev){
         return 0;
     }
-    virtual int delEvent(Event* ev) {
+    virtual int delEvent(std::shared_ptr<Event>& ev) {
         return 0;
     }
-    virtual int addReadEvent(Event* ev) {
+    virtual int addReadEvent(std::shared_ptr<Event>& ev) {
         return 0;
     }
-    virtual int addWriteEvent(Event* ev) {
+    virtual int addWriteEvent(std::shared_ptr<Event>& ev) {
         return 0;
     }
-    virtual int delReadEvent(Event* ev) {
+    virtual int delReadEvent(std::shared_ptr<Event>& ev) {
         return 0;
     }
-    virtual int delWriteEvent(Event* ev) {
+    virtual int delWriteEvent(std::shared_ptr<Event>& ev) {
         return 0;
     }
+    ~Poller(){}
 protected:
     Poller() {}
-    ~Poller(){}
 };
 #endif  // REACTOR_POLL_POLLER_H_

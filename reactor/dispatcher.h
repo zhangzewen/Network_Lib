@@ -13,16 +13,16 @@ public:
     Dispatcher();
     explicit Dispatcher(Poller* poller);
     ~Dispatcher();
-    void setPoller(Poller* poller) {
+    void setPoller(const std::shared_ptr<Poller>&  poller) {
         poller_ = poller;
     }
     const Poller* getPoller() const {
-        return poller_;
+        return poller_.get();
     }
     bool addReadEvent(int fd, const eventHandler& readEventHandler);
     bool addWriteEvent(int fd, const eventHandler& writeEventHandler);
-    bool addEvent(Event* ev);
-    bool delEvent(Event* ev);
+    bool addEvent(std::shared_ptr<Event> ev);
+    bool delEvent(std::shared_ptr<Event> ev);
     bool eventAddTimer(Event* ev, struct timeval* timeout);
     bool eventDelTimer(Event* ev, struct timeval* timeout);
     void processActiveEvents();
@@ -30,7 +30,7 @@ public:
     void loop();
 
 private:
-    Poller* poller_;
+    std::shared_ptr<Poller> poller_;
     std::list<std::shared_ptr<Event> > activeEventList_;
 };
 #endif  //  REACTOR_DISPATCHER_H_
