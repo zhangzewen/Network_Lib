@@ -26,7 +26,7 @@ public:
     bool eventAddTimer(Event* ev, struct timeval* timeout);
     bool eventDelTimer(Event* ev, struct timeval* timeout);
     void processActiveEvents();
-    void addActiveEvent(Event* ev);
+    void addActiveEvent(std::shared_ptr<Event>& ev);
     void loop();
 
 private:

@@ -45,7 +45,9 @@ void Epoll::poll(Dispatcher* disp, struct timeval* timeout) {
 
     for (int i = 0; i < nevents; i++) {
         int revents = firedEvents[i].events;
-        Event* ev = static_cast<Event*>(firedEvents[i].data.ptr);
+        //Event* ev = static_cast<Event*>(firedEvents[i].data.ptr);
+        int fd = firedEvents[i].data.fd;
+        std::shared_ptr<Event> ev;
         if (NULL == ev) {
             LOG(ERROR) << "when loop the fired events set, the fd: "
                 << firedEvents[i].data.fd << "related event is NULL!";
@@ -57,11 +59,15 @@ void Epoll::poll(Dispatcher* disp, struct timeval* timeout) {
             continue;
         }
 
-        if ((revents & EPOLLIN) && ev->isActive()) {  //  readable
+        if ((revents & EPOLLIN)
+            && (ev = readEvents_[fd])
+            && ev->isActive()) {  //  readable
             ev->setReady(true);
             disp->addActiveEvent(ev);
         }
-        if ((revents & EPOLLOUT) && ev->isActive()) {  //  writeable
+        if ((revents & EPOLLOUT)
+            && (ev = writeEvents_[fd])
+            && ev->isActive()) {  //  writeable
             ev->setReady(true);
             disp->addActiveEvent(ev);
         }

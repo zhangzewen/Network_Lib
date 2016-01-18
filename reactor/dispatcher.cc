@@ -81,11 +81,10 @@ void Dispatcher::processActiveEvents()
   the active event list, will be itered and call the
   callback function binded the event
   */
-void Dispatcher::addActiveEvent(Event* ev)
+void Dispatcher::addActiveEvent(std::shared_ptr<Event>& ev)
 {
     assert(NULL != ev);
-    std::shared_ptr<Event> p(ev);
-    activeEventList_.push_front(p);
+    activeEventList_.push_front(ev);
     return;
 }
 
