@@ -18,10 +18,16 @@ Dispatcher::~Dispatcher()
 {
 }
 
-bool Dispatcher::addEvent(std::shared_ptr<Event>& ev)
+bool Dispatcher::addEvent(std::shared_ptr<Event>& ev, int timeout)
 {
     assert(ev);
-    if (0 != poller_->addEvent(ev)) {
+
+    if (timeout > 0) {
+        Timer time;
+        time.init(timeout);
+        timeout_.insert(time, ev);
+    }
+    if (0 != poller_->addWriteEvent(ev)) {
         return false;
     }
     return true;
@@ -51,6 +57,22 @@ bool Dispatcher::delEvent(std::shared_ptr<Event>& ev)
     return true;
 }
 
+bool Dispatcher::disableReadEvent(std::shared_ptr<Event>& ev)
+{
+    ev->disableReadEvent();
+    return delEvent();
+}
+
+bool Dispatcher::disableWriteEvent(std::shared_ptr<Event>& ev)
+{
+    ev->disableWriteEvent();
+    return delEvent();
+}
+
+bool Dispatcher::disableTiemoutEvent(std::shared_ptr<Event>& ev)
+{
+}
+
 bool Dispatcher::addReadEvent(int fd, const eventHandler& readEventHandler, int timeout)
 {
     std::shared_ptr<Event> ev(new Event());
@@ -69,11 +91,16 @@ bool Dispatcher::addReadEvent(int fd, const eventHandler& readEventHandler, int 
     return true;
 }
 
-bool Dispatcher::addWriteEvent(int fd, const eventHandler& readEventHandler)
+bool Dispatcher::addWriteEvent(int fd, const eventHandler& readEventHandler, int timeout)
 {
     std::shared_ptr<Event> ev(new Event());
     ev->setFd(fd);
     ev->setEventHandler(readEventHandler);
+    if (timeout > 0) {
+        Timer time;
+        time.init(timeout);
+        timeout_.insert(time, ev);
+    }
     if (0 != poller_->addWriteEvent(ev)) {
         return false;
     }

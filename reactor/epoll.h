@@ -28,5 +28,6 @@ private:
     int epf_;
     std::map<int, std::shared_ptr<Event> > readEvents_;
     std::map<int, std::shared_ptr<Event> > writeEvents_;
+    std::map<int, std::shared_ptr<Event> > timeoutEvents_;
 };
 #endif  //  REACTOR_POLL_EPOLL_H_

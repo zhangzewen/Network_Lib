@@ -21,10 +21,13 @@ public:
     }
     bool addReadEvent(int fd, const eventHandler& readEventHandler, int timeout = 0);
     bool addWriteEvent(int fd, const eventHandler& writeEventHandler);
-    bool addEvent(std::shared_ptr<Event>& ev);
+    bool addEvent(std::shared_ptr<Event>& ev, int timeout);
     bool delEvent(std::shared_ptr<Event>& ev);
     bool delReadEvent(std::shared_ptr<Event>& ev);
     bool delWriteEvent(std::shared_ptr<Event>& ev);
+    bool disableReadEvent(std::shared_ptr<Event>& ev);
+    bool disableWriteEvent(std::shared_ptr<Event>& ev);
+    bool disableTiemoutEvent(std::shared_ptr<Event>& ev);
     bool eventAddTimer(Event* ev, struct timeval* timeout);
     bool eventDelTimer(Event* ev, struct timeval* timeout);
     void processActiveEvents();
