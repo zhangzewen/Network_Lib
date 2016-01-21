@@ -19,7 +19,7 @@ public:
     const Poller* getPoller() const {
         return poller_.get();
     }
-    bool addReadEvent(int fd, const eventHandler& readEventHandler);
+    bool addReadEvent(int fd, const eventHandler& readEventHandler, int timeout = 0);
     bool addWriteEvent(int fd, const eventHandler& writeEventHandler);
     bool addEvent(std::shared_ptr<Event>& ev);
     bool delEvent(std::shared_ptr<Event>& ev);
@@ -34,6 +34,6 @@ public:
 private:
     std::shared_ptr<Poller> poller_;
     std::list<std::shared_ptr<Event> > activeEventList_;
-    RBTree<Timer*, Event*> timeout_;
+    RBTree<Timer, std::shared_ptr<Event> > timeout_;
 };
 #endif  //  REACTOR_DISPATCHER_H_

@@ -10,6 +10,13 @@
 class Timer
 {
 public:
+    Timer (){}
+    ~Timer(){}
+    void init(int timeout) {
+        now();
+        this->time_.tv_sec += timeout;
+    }
+
     Timer& operator+(const Timer& time) {
         this->time_.tv_sec = this->time_.tv_sec + time.time_.tv_sec;
         this->time_.tv_usec = this->time_.tv_usec + time.time_.tv_usec;
@@ -21,7 +28,7 @@ public:
         return *this;
     }
 
-    Timer& operator-(const Timer& time) {
+    Timer& operator -(const Timer& time) {
         this->time_.tv_sec = this->time_.tv_sec - time.time_.tv_sec;
         this->time_.tv_usec = this->time_.tv_usec - time.time_.tv_usec;
 
@@ -32,7 +39,7 @@ public:
         return *this;
     }
 
-    bool operator<(const Timer& time) {
+    bool operator <(const Timer& time) const {
         if (this->time_.tv_sec > time.time_.tv_sec) {
             return true;
         }
@@ -42,7 +49,7 @@ public:
         return true;
     }
 
-    bool operator>(const Timer& time) {
+    bool operator >(const Timer& time) {
         if (this->time_.tv_sec < time.time_.tv_sec) {
             return true;
         }
@@ -52,7 +59,7 @@ public:
         return true;
     }
 
-    bool operator==(const Timer& time) {
+    bool operator ==(const Timer& time) {
         return (this->time_.tv_sec == time.time_.tv_sec
             && this->time_.tv_usec == time.time_.tv_usec);
     }

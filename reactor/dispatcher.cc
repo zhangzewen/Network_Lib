@@ -51,12 +51,18 @@ bool Dispatcher::delEvent(std::shared_ptr<Event>& ev)
     return true;
 }
 
-bool Dispatcher::addReadEvent(int fd, const eventHandler& readEventHandler)
+bool Dispatcher::addReadEvent(int fd, const eventHandler& readEventHandler, int timeout)
 {
     std::shared_ptr<Event> ev(new Event());
     ev->setFd(fd);
     ev->setDispatcher(shared_from_this());
     ev->setEventHandler(readEventHandler);
+    if (timeout > 0) {  // now we set timeout
+        Timer time;
+        time.init(timeout);
+        timeout_.insert(time, ev);
+    }
+
     if (0 != poller_->addReadEvent(ev)) {
         return false;
     }
@@ -110,6 +116,7 @@ bool Dispatcher::eventAddTimer(Event* ev, struct timeval* timeout)
     assert(ev == NULL);
     return true;
 }
+
 bool Dispatcher::eventDelTimer(Event* ev, struct timeval* timeout)
 {
     assert(NULL == timeout);

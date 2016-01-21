@@ -93,7 +93,7 @@ private:
     int registEvents_;
     void* privData_;
     eventHandler handler_;
-    struct timeval timer_;
+    Timer timer_;
     std::shared_ptr<Dispatcher> dispatcher_;
 };
 #endif  //  REACTOR_EVENT_H_
