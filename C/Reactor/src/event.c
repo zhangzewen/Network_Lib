@@ -40,7 +40,7 @@ static int timeout_next(struct event_base *base, struct timeval **tv_p)
 	struct event *ev;
 	struct timeval *tv = *tv_p;
 	rbtree_node_t *tmp;
-	
+
 	if ((tmp = base->timeout.min(base->timeout.root)) == NULL) {
 		*tv_p = NULL;
 		return 0;
@@ -72,11 +72,11 @@ static int gettime(struct event_base *base, struct timeval *tp)
 struct event_base *event_base_new(void)
 {
 	struct event_base *base;
-	
+
 	if ((base = calloc(1, sizeof(struct event_base))) == NULL) {
 		fprintf(stderr, "%s: calloc\n", __func__);
 	}
-	
+
 	gettime(base, &base->event_tv);
 	rbtree_init(&base->timeout);
 	INIT_LIST_HEAD(&base->eventqueue);
@@ -98,7 +98,7 @@ static void event_process_active(struct event_base *base)
 	struct event *ev;
 	struct event *tmp;
 	short ncalls;
-	
+
 
 	if(list_empty(&base->activequeue)) {
 		return;
@@ -147,7 +147,7 @@ void timeout_process(struct event_base *base)
 	struct timeval now;
 	struct event *ev;
 	struct rbtree_node_st *tmp;
-	
+
 
 	if (base->timeout.empty(base->timeout.root)) {
 		return ;
@@ -262,7 +262,7 @@ int event_add(struct event *ev, const struct timeval *tv)
 		event_queue_insert(base, ev, EVLIST_TIMEOUT);
 		ev->timeout_set = 1;
 	}
-	
+
 	return res;
 }
 

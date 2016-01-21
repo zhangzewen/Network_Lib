@@ -24,6 +24,7 @@ public:
     bool addEvent(std::shared_ptr<Event>& ev);
     bool delEvent(std::shared_ptr<Event>& ev);
     bool delReadEvent(std::shared_ptr<Event>& ev);
+    bool delWriteEvent(std::shared_ptr<Event>& ev);
     bool eventAddTimer(Event* ev, struct timeval* timeout);
     bool eventDelTimer(Event* ev, struct timeval* timeout);
     void processActiveEvents();
@@ -33,6 +34,6 @@ public:
 private:
     std::shared_ptr<Poller> poller_;
     std::list<std::shared_ptr<Event> > activeEventList_;
-    RBTree<Timer, Event*> timeout_;
+    RBTree<Timer*, Event*> timeout_;
 };
 #endif  //  REACTOR_DISPATCHER_H_

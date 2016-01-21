@@ -35,6 +35,13 @@ bool Dispatcher::delReadEvent(std::shared_ptr<Event>& ev)
 
 }
 
+bool Dispatcher::delWriteEvent(std::shared_ptr<Event>& ev)
+{
+    ev->disableWriteEvent();
+    return delEvent(ev);
+
+}
+
 bool Dispatcher::delEvent(std::shared_ptr<Event>& ev)
 {
     assert(ev);
