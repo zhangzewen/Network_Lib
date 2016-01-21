@@ -192,6 +192,7 @@ bool RBTree<KEY, VALUE, Compare>::insertFixup(typename RBTree::Node* node)
         }
     }
     root_->color = RBTree::BLACK;
+    return true;
 }
 
 template<typename KEY, typename VALUE, typename Compare>

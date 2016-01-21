@@ -12,99 +12,89 @@
 
 #define return_ok "YES, it's work\r\n\r\n"
 
-int createSocketAndListen(bool nonBlocking)
+using namespace std::placeholders;
+
+class Echo
 {
-	struct sockaddr_in srvaddr;
-	int listenfd;
-	socklen_t len = sizeof(srvaddr);
-	listenfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (listenfd < 0) {
-		fprintf(stderr, "socket error!\n");
-		exit(-1);
-	}
-	srvaddr.sin_family = AF_INET;
-	srvaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	srvaddr.sin_port = htons(8080);
-	len = sizeof(srvaddr);
-	if (bind(listenfd, (struct sockaddr*)&srvaddr, len) < 0) {
-		fprintf(stderr, "socket bind error!\n");
-		exit(-1);
-	}
-	listen(listenfd, 100);
-	if (listenfd < 0) {
-		fprintf(stderr, "listen error\n");
-		exit(-1);
-	}
-	if (nonBlocking) {
-		fcntl(listenfd, F_SETFL, O_NONBLOCK);
-	}
-	return listenfd;
-}
+public:
+    int createSocketAndListen(bool nonBlocking)
+    {
+        struct sockaddr_in srvaddr;
+        int listenfd;
+        socklen_t len = sizeof(srvaddr);
+        listenfd = socket(AF_INET, SOCK_STREAM, 0);
+        if (listenfd < 0) {
+            fprintf(stderr, "socket error!\n");
+            exit(-1);
+        }
+        srvaddr.sin_family = AF_INET;
+        srvaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+        srvaddr.sin_port = htons(8080);
+        len = sizeof(srvaddr);
+        if (bind(listenfd, (struct sockaddr*)&srvaddr, len) < 0) {
+            fprintf(stderr, "socket bind error!\n");
+            exit(-1);
+        }
+        listen(listenfd, 100);
+        if (listenfd < 0) {
+            fprintf(stderr, "listen error\n");
+            exit(-1);
+        }
+        if (nonBlocking) {
+            fcntl(listenfd, F_SETFL, O_NONBLOCK);
+        }
+        return listenfd;
+    }
 
-int SetNoblock(int fd)
-{
-	int flags;
+    int SetNoblock(int fd)
+    {
+        int flags;
 
-	if((flags = fcntl(fd, F_GETFL)) == -1) {
-		return -1;
-	}
+        if((flags = fcntl(fd, F_GETFL)) == -1) {
+            return -1;
+        }
 
-	if((fcntl(fd, F_SETFL, flags | O_NONBLOCK)) == -1) {
-		return -1;
-	}
+        if((fcntl(fd, F_SETFL, flags | O_NONBLOCK)) == -1) {
+            return -1;
+        }
 
-	return 0;
-}
+        return 0;
+    }
 
-// void ServerRead(Event *ev)
-// {
-// #if 0
-// 	int nread = 0;
-// 	char buff[1024] = {0};
-// 	nread = read(ev->getFd(), buff, sizeof(buff) - 1);
-//
-// 	write(ev->getFd() ,return_ok, sizeof(return_ok));
-// 	close(ev->getFd());
-// #endif
-// }
-//
-// void ServerAccept(Event* ev)
-// {
-//
-// }
+    void ServerListening(std::shared_ptr<Event> ev)
+    {
+        int cfd;
+        std::shared_ptr<Dispatcher> disp = ev->getDispatcher();
+        struct sockaddr_in addr;
+        socklen_t addrlen = sizeof(addr);
 
-void ServerListening(Event* ev)
-{
-	int cfd;
-	struct sockaddr_in addr;
-	//Event *cli_ev;
-	socklen_t addrlen = sizeof(addr);
+        cfd = accept(ev->getFd() ,(struct sockaddr *)&addr, &addrlen);
 
-	//cli_ev = new Event();
+        if(cfd == -1) {
+            fprintf(stderr, "accept(): can not accept client connection");
+            return;
+        }
 
-	cfd = accept(ev->getFd() ,(struct sockaddr *)&addr, &addrlen);
-
-	if(cfd == -1) {
-		fprintf(stderr, "accept(): can not accept client connection");
-		return;
-	}
-
-	if(SetNoblock(cfd) == -1) {
-		close(cfd);
-		return;
-	}
-    std::cout << "we arrived here!" << std::endl;
-}
+        if(SetNoblock(cfd) == -1) {
+            close(cfd);
+            return;
+        }
+        write(cfd, return_ok, strlen(return_ok));
+        close(cfd);
+        disp->delReadEvent(ev);
+    }
+};
 
 int main()
 {
 	int listen_fd;
 	//int i = 0;
 	//int err = 0;
+	Echo echoServer;
 
     std::shared_ptr<Dispatcher> dis(new Dispatcher());
 
-	listen_fd = createSocketAndListen(true);
+	listen_fd = echoServer.createSocketAndListen(true);
 	if(listen_fd < 0) {
 		fprintf(stderr, "create socket error!");
 		exit(1);
@@ -112,7 +102,7 @@ int main()
     std::shared_ptr<Epoll> poller (new Epoll());
     poller->init();
     dis->setPoller(poller);
-    dis->addReadEvent(listen_fd, ServerListening);
+    dis->addReadEvent(listen_fd, std::bind(&Echo::ServerListening, &echoServer, _1));
     dis->loop();
 	return 0;
 }

@@ -4,9 +4,8 @@
 
 #include "reactor.h"
 #include <sys/time.h>
-#include <boost/function.hpp>
 
-class Event
+class Event : public std::enable_shared_from_this<Event>
 {
 public:
     Event() : fd_(-1), ready_(false), active_(false), timeout_(false),
@@ -38,7 +37,7 @@ public:
 
     void handleEvent() {
         if (handler_) {
-            handler_(this);
+            handler_(shared_from_this());
         }
     }
 
@@ -74,6 +73,15 @@ public:
         registEvents_ &= ~REACTOR_EV_WRITE;
     }
 
+
+    void setDispatcher(const std::shared_ptr<Dispatcher>& disp) {
+        dispatcher_ = disp;
+    }
+
+    std::shared_ptr<Dispatcher> getDispatcher() const {
+        return dispatcher_;
+    }
+
 private:
     int fd_;
     // whether event is ready for reading or writing
@@ -86,5 +94,6 @@ private:
     void* privData_;
     eventHandler handler_;
     struct timeval timer_;
+    std::shared_ptr<Dispatcher> dispatcher_;
 };
 #endif  //  REACTOR_EVENT_H_

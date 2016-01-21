@@ -48,11 +48,6 @@ void Epoll::poll(Dispatcher* disp, struct timeval* timeout) {
         //Event* ev = static_cast<Event*>(firedEvents[i].data.ptr);
         int fd = firedEvents[i].data.fd;
         std::shared_ptr<Event> ev;
-        if (NULL == ev) {
-            LOG(ERROR) << "when loop the fired events set, the fd: "
-                << firedEvents[i].data.fd << "related event is NULL!";
-            continue;
-        }
 
         if (revents & (EPOLLERR|EPOLLHUP)) {
             LOG(ERROR) << "epoll_wait error at fd: " << ev->getFd() << " ,ev: " << ev;
@@ -107,7 +102,8 @@ int Epoll::addEvent(std::shared_ptr<Event>& ev)
 
     ee.events = events;
     ee.data.ptr = static_cast<void*>(ev.get());
-    if (epoll_ctl(epf_, op, ev->getFd(), &ee) == -1) {
+    ee.data.fd = fd;
+    if (epoll_ctl(epf_, op, fd, &ee) == -1) {
         LOG(ERROR) << "epoll_ctl: op = " << op << " ev: " << ev << " Error";
         return -1;
     }

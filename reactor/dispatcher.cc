@@ -18,7 +18,7 @@ Dispatcher::~Dispatcher()
 {
 }
 
-bool Dispatcher::addEvent(std::shared_ptr<Event> ev)
+bool Dispatcher::addEvent(std::shared_ptr<Event>& ev)
 {
     assert(ev);
     if (0 != poller_->addEvent(ev)) {
@@ -27,7 +27,15 @@ bool Dispatcher::addEvent(std::shared_ptr<Event> ev)
     return true;
 }
 
-bool Dispatcher::delEvent(std::shared_ptr<Event> ev)
+
+bool Dispatcher::delReadEvent(std::shared_ptr<Event>& ev)
+{
+    ev->disableReadEvent();
+    return delEvent(ev);
+
+}
+
+bool Dispatcher::delEvent(std::shared_ptr<Event>& ev)
 {
     assert(ev);
     if (0 != poller_->delEvent(ev)) {
@@ -40,6 +48,7 @@ bool Dispatcher::addReadEvent(int fd, const eventHandler& readEventHandler)
 {
     std::shared_ptr<Event> ev(new Event());
     ev->setFd(fd);
+    ev->setDispatcher(shared_from_this());
     ev->setEventHandler(readEventHandler);
     if (0 != poller_->addReadEvent(ev)) {
         return false;
