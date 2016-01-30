@@ -110,6 +110,12 @@ bool Dispatcher::addWriteEvent(int fd, const eventHandler& readEventHandler, int
 void Dispatcher::loop()
 {
     poller_->poll(this, nextTimeout());
+    // get timeout event to active list
+    //
+    Timer now;
+    now.now();
+    std::shared_ptr<Event> ev;
+    while(ev = get
     processActiveEvents();
 }
 
@@ -167,6 +173,8 @@ std::shared_ptr<Event> Dispatcher::getLatestEvent()
 
 bool Dispatcher::addTimer(std::shared_ptr<Event>&, int timeout)
 {
+
+
     return true;
 }
 
