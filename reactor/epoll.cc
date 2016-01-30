@@ -27,12 +27,12 @@ bool Epoll::init() {
     return true;
 }
 
-void Epoll::poll(Dispatcher* disp, struct timeval* timeout) {
+void Epoll::poll(Dispatcher* disp, int timeout) {
     assert(disp);
-    assert(timeout == NULL);
 
     struct epoll_event firedEvents[1024] = {0, {0}};
-    int nevents = epoll_wait(epf_, firedEvents, 1024, -1);
+    timeout = (timeout == 0 ? -1 : timeout);
+    int nevents = epoll_wait(epf_, firedEvents, 1024, timeout);
     if (nevents < 0) {
         LOG(ERROR) << "epoll_wait error!";
         return;

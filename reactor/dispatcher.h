@@ -20,7 +20,9 @@ public:
         return poller_.get();
     }
     bool addReadEvent(int fd, const eventHandler& readEventHandler, int timeout = 0);
-    bool addWriteEvent(int fd, const eventHandler& writeEventHandler);
+    bool addWriteEvent(int fd, const eventHandler& writeEventHandler, int timeout = 0);
+    bool addTimer(std::shared_ptr<Event>&, int timeout);
+    bool delTimer(std::shared_ptr<Event>&);
     bool addEvent(std::shared_ptr<Event>& ev, int timeout);
     bool delEvent(std::shared_ptr<Event>& ev);
     bool delReadEvent(std::shared_ptr<Event>& ev);
@@ -32,6 +34,8 @@ public:
     bool eventDelTimer(Event* ev, struct timeval* timeout);
     void processActiveEvents();
     void addActiveEvent(std::shared_ptr<Event>& ev);
+    int nextTimeout();
+    std::shared_ptr<Event> getLatestEvent();
     void loop();
 
 private:

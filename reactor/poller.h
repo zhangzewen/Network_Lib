@@ -7,7 +7,7 @@ class Event;
 class Poller
 {
 public:
-    virtual void poll(Dispatcher* disp, struct timeval* timeout){
+    virtual void poll(Dispatcher* disp, int timeout){
     }
     virtual int addEvent(std::shared_ptr<Event>& ev){
         return 0;

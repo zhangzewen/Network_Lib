@@ -50,7 +50,9 @@ public:
     bool insertFixup(Node* node);
     void deleteFixup(Node* node);
     Node* minimum(Node* node);
+    Node* minimum();
     Node* maximum(Node* node);
+    Node* maximum();
     Node* successor(Node* node);
     Node* perdecessor(Node* node);
     void Print(void (*visit)(KEY key, VALUE value));
@@ -208,6 +210,12 @@ typename RBTree<KEY, VALUE, Compare>::Node* RBTree<KEY, VALUE, Compare>::minimum
 }
 
 template<typename KEY, typename VALUE, typename Compare>
+typename RBTree<KEY, VALUE, Compare>::Node* RBTree<KEY, VALUE, Compare>::minimum()
+{
+    return minimum(root_);
+}
+
+template<typename KEY, typename VALUE, typename Compare>
 typename RBTree<KEY, VALUE, Compare>::Node* RBTree<KEY, VALUE, Compare>::maximum(typename RBTree::Node* node)
 {
     if (NULL == node) {
@@ -218,6 +226,12 @@ typename RBTree<KEY, VALUE, Compare>::Node* RBTree<KEY, VALUE, Compare>::maximum
         node = node->right;
     }
     return node;
+}
+
+template<typename KEY, typename VALUE, typename Compare>
+typename RBTree<KEY, VALUE, Compare>::Node* RBTree<KEY, VALUE, Compare>::maximum()
+{
+    return maximum(root_);
 }
 
 template<typename KEY, typename VALUE, typename Compare>

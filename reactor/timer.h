@@ -85,6 +85,9 @@ public:
         time->tv_sec = 0;
         time->tv_usec = 0;
     }
+    int convertToMilliseconds() const {
+        return time_.tv_sec * 1000 + (time_.tv_usec + 999) / 1000;
+    }
 
 private:
     struct timeval time_;

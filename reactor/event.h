@@ -82,6 +82,10 @@ public:
         return dispatcher_;
     }
 
+    Timer getTimeout() const {
+        return timer_;
+    }
+
 private:
     int fd_;
     // whether event is ready for reading or writing
@@ -90,9 +94,12 @@ private:
     bool active_;
     // whether event for reading or writing is timeout
     bool timeout_;
+    // this event represent read, write or timeout event
     int registEvents_;
     void* privData_;
+    // when this event fired call the customize callback handle
     eventHandler handler_;
+    // the event will be timeout in seconds which timer_ represent
     Timer timer_;
     std::shared_ptr<Dispatcher> dispatcher_;
 };

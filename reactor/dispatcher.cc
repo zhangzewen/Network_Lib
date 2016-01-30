@@ -45,7 +45,6 @@ bool Dispatcher::delWriteEvent(std::shared_ptr<Event>& ev)
 {
     ev->disableWriteEvent();
     return delEvent(ev);
-
 }
 
 bool Dispatcher::delEvent(std::shared_ptr<Event>& ev)
@@ -60,17 +59,18 @@ bool Dispatcher::delEvent(std::shared_ptr<Event>& ev)
 bool Dispatcher::disableReadEvent(std::shared_ptr<Event>& ev)
 {
     ev->disableReadEvent();
-    return delEvent();
+    return delEvent(ev);
 }
 
 bool Dispatcher::disableWriteEvent(std::shared_ptr<Event>& ev)
 {
     ev->disableWriteEvent();
-    return delEvent();
+    return delEvent(ev);
 }
 
 bool Dispatcher::disableTiemoutEvent(std::shared_ptr<Event>& ev)
 {
+    return true;
 }
 
 bool Dispatcher::addReadEvent(int fd, const eventHandler& readEventHandler, int timeout)
@@ -109,7 +109,7 @@ bool Dispatcher::addWriteEvent(int fd, const eventHandler& readEventHandler, int
 
 void Dispatcher::loop()
 {
-    poller_->poll(this, NULL);
+    poller_->poll(this, nextTimeout());
     processActiveEvents();
 }
 
@@ -148,5 +148,29 @@ bool Dispatcher::eventDelTimer(Event* ev, struct timeval* timeout)
 {
     assert(NULL == timeout);
     assert(ev == NULL);
+    return true;
+}
+
+int Dispatcher::nextTimeout()
+{
+    std::shared_ptr<Event> ev = getLatestEvent();
+    Timer now;
+    Timer timeout = now - ev->getTimeout();
+    return timeout.convertToMilliseconds();
+}
+
+std::shared_ptr<Event> Dispatcher::getLatestEvent()
+{
+    RBTree<Timer, std::shared_ptr<Event> >::Node* node =  timeout_.minimum();
+    return node->value;
+}
+
+bool Dispatcher::addTimer(std::shared_ptr<Event>&, int timeout)
+{
+    return true;
+}
+
+bool Dispatcher::delTimer(std::shared_ptr<Event>&)
+{
     return true;
 }
