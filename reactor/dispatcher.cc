@@ -115,7 +115,8 @@ void Dispatcher::loop()
     Timer now;
     now.now();
     std::shared_ptr<Event> ev;
-    while(ev = get
+    while(ev = getLatestEvent()) {
+    }
     processActiveEvents();
 }
 

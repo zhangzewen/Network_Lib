@@ -70,25 +70,25 @@ bool RBTree<KEY, VALUE, Compare>::leftRotate(typename RBTree::Node* node)
     if (root_ == NULL || node == NULL) {
         return false;
     }
-    typename RBTree::Node* right_child = node->right;  // y <- right[x]
-    node->right = right_child->left;  // right[x] = left[y]
+    typename RBTree::Node* right_child = node->right;
+    node->right = right_child->left;
     if (right_child->left) {
-        right_child->left->parent = node;  //p[left[y]] = x
+        right_child->left->parent = node;
     }
-    right_child->parent = node->parent;  // p[y] = p[x]
+    right_child->parent = node->parent;
 
-    if (node->parent == NULL) {  // if p[x] == null, that means x is the root_ of RBTree
+    if (node->parent == NULL) {
         root_ = right_child;
     } else {
-        if (node->parent->left == node) {  // x == left[p[x]]
-            node->parent->left = right_child;  // left[p[x]] = y
+        if (node->parent->left == node) {
+            node->parent->left = right_child;
         } else {
-            node->parent->right = right_child;  // right[p[x]] = y
+            node->parent->right = right_child;
         }
     }
 
-    right_child->left = node;  // left[y] = x
-    node->parent = right_child;  // p[x] = y
+    right_child->left = node;
+    node->parent = right_child;
     return true;
 }
 
@@ -98,25 +98,25 @@ bool RBTree<KEY, VALUE, Compare>::rightRotate(typename RBTree::Node* node)
     if (root_ == NULL || node == NULL) {
         return false;
     }
-    typename RBTree::Node* left_child = node->left;  // y <- left[x]
-    node->left = left_child->right;  // left[x] = right[y]
+    typename RBTree::Node* left_child = node->left;
+    node->left = left_child->right;
     if (left_child->right) {
-        left_child->right->parent = node;  // p[right[y]] = x
+        left_child->right->parent = node;
     }
-    left_child->parent = node->parent;  // p[y] = p[x]
+    left_child->parent = node->parent;
 
-    if (node->parent == NULL) {  // if p[x] == null,  that means x is the root of RBTree
+    if (node->parent == NULL) {
         root_ = left_child;
     } else {
-        if (node->parent->right == node) {  // if x == right[p[x]]
-            node->parent->right = left_child;  //right[p[x]] = y
+        if (node->parent->right == node) {
+            node->parent->right = left_child;
         } else {
-            node->parent->left = left_child;  //left[p[x]] = y
+            node->parent->left = left_child;
         }
     }
 
-    left_child->right = node;  // right[y] = x
-    node->parent = left_child;  //p[x] = y
+    left_child->right = node;
+    node->parent = left_child;
 
     return true;
 }
@@ -198,7 +198,8 @@ bool RBTree<KEY, VALUE, Compare>::insertFixup(typename RBTree::Node* node)
 }
 
 template<typename KEY, typename VALUE, typename Compare>
-typename RBTree<KEY, VALUE, Compare>::Node* RBTree<KEY, VALUE, Compare>::minimum(typename RBTree::Node* node)
+typename RBTree<KEY, VALUE, Compare>::Node*
+RBTree<KEY, VALUE, Compare>::minimum(typename RBTree::Node* node)
 {
     if (NULL == node) {
         return NULL;
@@ -210,13 +211,15 @@ typename RBTree<KEY, VALUE, Compare>::Node* RBTree<KEY, VALUE, Compare>::minimum
 }
 
 template<typename KEY, typename VALUE, typename Compare>
-typename RBTree<KEY, VALUE, Compare>::Node* RBTree<KEY, VALUE, Compare>::minimum()
+typename RBTree<KEY, VALUE, Compare>::Node*
+RBTree<KEY, VALUE, Compare>::minimum()
 {
     return minimum(root_);
 }
 
 template<typename KEY, typename VALUE, typename Compare>
-typename RBTree<KEY, VALUE, Compare>::Node* RBTree<KEY, VALUE, Compare>::maximum(typename RBTree::Node* node)
+typename RBTree<KEY, VALUE, Compare>::Node*
+RBTree<KEY, VALUE, Compare>::maximum(typename RBTree::Node* node)
 {
     if (NULL == node) {
         return NULL;
@@ -229,13 +232,15 @@ typename RBTree<KEY, VALUE, Compare>::Node* RBTree<KEY, VALUE, Compare>::maximum
 }
 
 template<typename KEY, typename VALUE, typename Compare>
-typename RBTree<KEY, VALUE, Compare>::Node* RBTree<KEY, VALUE, Compare>::maximum()
+typename RBTree<KEY, VALUE, Compare>::Node*
+RBTree<KEY, VALUE, Compare>::maximum()
 {
     return maximum(root_);
 }
 
 template<typename KEY, typename VALUE, typename Compare>
-typename RBTree<KEY, VALUE, Compare>::Node* RBTree<KEY, VALUE, Compare>::successor(typename RBTree::Node* node)
+typename RBTree<KEY, VALUE, Compare>::Node*
+RBTree<KEY, VALUE, Compare>::successor(typename RBTree::Node* node)
 {
     if (NULL == node) {
         return NULL;
@@ -253,7 +258,8 @@ typename RBTree<KEY, VALUE, Compare>::Node* RBTree<KEY, VALUE, Compare>::success
 }
 
 template<typename KEY, typename VALUE, typename Compare>
-typename RBTree<KEY, VALUE, Compare>::Node* RBTree<KEY, VALUE, Compare>::perdecessor(typename RBTree::Node* node)
+typename RBTree<KEY, VALUE, Compare>::Node*
+RBTree<KEY, VALUE, Compare>::perdecessor(typename RBTree::Node* node)
 {
     if (NULL == node) {
         return NULL;
@@ -272,7 +278,8 @@ typename RBTree<KEY, VALUE, Compare>::Node* RBTree<KEY, VALUE, Compare>::perdece
 
 
 template<typename KEY, typename VALUE, typename Compare>
-typename RBTree<KEY, VALUE, Compare>::Node* RBTree<KEY, VALUE, Compare>::search(KEY key)
+typename RBTree<KEY, VALUE, Compare>::Node*
+RBTree<KEY, VALUE, Compare>::search(KEY key)
 {
     if (NULL == root_) {
         return NULL;
@@ -351,7 +358,8 @@ void RBTree<KEY, VALUE, Compare>::deleteFixup(typename RBTree::Node* node)
                 leftRotate(node->parent);
                 brother = node->parent->right;
             }
-            if (brother->left->color == RBTree::BLACK && brother->right->color == RBTree::BLACK) {
+            if (brother->left->color == RBTree::BLACK &&
+                brother->right->color == RBTree::BLACK) {
                 brother->color = RBTree::RED;
                 node = node->parent;
             } else {
@@ -375,7 +383,8 @@ void RBTree<KEY, VALUE, Compare>::deleteFixup(typename RBTree::Node* node)
                 rightRotate(node->parent);
                 brother = node->parent->left;
             }
-            if (brother->left->color == RBTree::BLACK && brother->right->color == RBTree::BLACK) {
+            if (brother->left->color == RBTree::BLACK &&
+                brother->right->color == RBTree::BLACK) {
                 brother->color = RBTree::RED;
                 node = node->parent;
             } else {
