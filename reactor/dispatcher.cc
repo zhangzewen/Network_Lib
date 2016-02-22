@@ -116,6 +116,11 @@ void Dispatcher::loop()
     now.now();
     std::shared_ptr<Event> ev;
     while(ev = getLatestEvent()) {
+        if (now <= ev->getTimeout()) {
+            ev->setTimeout(true);
+            addActiveEvent(ev);
+            timeout_.Delete(ev->getTimeout());
+        }
     }
     processActiveEvents();
 }

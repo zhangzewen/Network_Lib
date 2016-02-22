@@ -17,7 +17,7 @@ public:
         this->time_.tv_sec += timeout;
     }
 
-    Timer& operator+(const Timer& time) {
+    Timer& operator +(const Timer& time) {
         this->time_.tv_sec = this->time_.tv_sec + time.time_.tv_sec;
         this->time_.tv_usec = this->time_.tv_usec + time.time_.tv_usec;
 
@@ -62,6 +62,14 @@ public:
     bool operator ==(const Timer& time) {
         return (this->time_.tv_sec == time.time_.tv_sec
             && this->time_.tv_usec == time.time_.tv_usec);
+    }
+
+    bool operator <=(const Timer& time) {
+        return !(*this > time);
+    }
+
+    bool operator >=(const Timer& time) {
+        return !(*this < time);
     }
 
     void now() {
