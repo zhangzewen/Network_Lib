@@ -91,7 +91,8 @@ bool Dispatcher::addReadEvent(int fd, const eventHandler& readEventHandler, int 
     return true;
 }
 
-bool Dispatcher::addWriteEvent(int fd, const eventHandler& readEventHandler, int timeout)
+bool Dispatcher::addWriteEvent(int fd,
+    const eventHandler& readEventHandler, int timeout)
 {
     std::shared_ptr<Event> ev(new Event());
     ev->setFd(fd);

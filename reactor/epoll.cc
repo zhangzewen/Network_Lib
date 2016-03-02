@@ -201,6 +201,49 @@ int Epoll::delEvent(std::shared_ptr<Event>& ev)
     return 0;
 }
 
+int Epoll::delEvent(std::shared_ptr<Event>& ev, int event)
+{
+    assert(NULL != ev);
+    int op = 0;
+    struct epoll_event ee;
+    int revents = ev->getRegistEvents();
+    int fd = ev->getFd();
+    int events = 0;
+    std::shared_ptr<Event> e;
+    if (!ev->isActive()) {
+        LOG(ERROR) << "Delete ev: " << ev << "ev active: " << ev->isActive();
+        return 0;
+    }
+    if (event & REACTOR_EV_READ) {
+        e =  getReadEventByFd(fd);
+        events = EPOLLOUT;
+    }
+
+    if (event & REACTOR_EV_WRITE) {
+        e = getWriteEventByFd(fd);
+        events = EPOLLIN;
+    }
+     if (e->isActive()) {
+      op = EPOLL_CTL_MOD;
+      ee.events = events;
+      ee.data.ptr = NULL;
+    } else {
+      op = EPOLL_CTL_DEL;
+      ee.events = 0;
+      ee.data.ptr = NULL;
+    }
+
+    if (epoll_ctl(epf_, op, ev->getFd(), &ee) == -1) {
+        LOG(ERROR) << "epoll_ctl: op = " << op << " ev: " << ev << " Error: " << strerror(errno);
+        return -1;
+    }
+
+    if (op == EPOLL_CTL_MOD) {
+        ev->setActive(true);
+    }
+
+    return 0;
+}
 
 std::shared_ptr<Event> Epoll::getEventByFd(int fd, const std::map<int, std::shared_ptr<Event> >& events)
 {
