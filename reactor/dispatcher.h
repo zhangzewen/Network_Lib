@@ -23,7 +23,6 @@ public:
     bool addWriteEvent(int fd, const eventHandler& writeEventHandler, int timeout = 0);
     bool addTimer(std::shared_ptr<Event>&, int timeout);
     bool delTimer(std::shared_ptr<Event>&);
-    bool addEvent(std::shared_ptr<Event>& ev, int timeout);
     bool delEvent(std::shared_ptr<Event>& ev);
     bool delReadEvent(std::shared_ptr<Event>& ev);
     bool delWriteEvent(std::shared_ptr<Event>& ev);
@@ -34,7 +33,7 @@ public:
     bool eventDelTimer(Event* ev, struct timeval* timeout);
     void processActiveEvents();
     void addActiveEvent(std::shared_ptr<Event>& ev);
-    int nextTimeout();
+    Timer nextTimeout();
     std::shared_ptr<Event> getLatestEvent();
     void loop();
 

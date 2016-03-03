@@ -18,54 +18,38 @@ Dispatcher::~Dispatcher()
 {
 }
 
-bool Dispatcher::addEvent(std::shared_ptr<Event>& ev, int timeout)
-{
-    assert(ev);
-
-    if (timeout > 0) {
-        Timer time;
-        time.init(timeout);
-        timeout_.insert(time, ev);
-    }
-    if (0 != poller_->addWriteEvent(ev)) {
-        return false;
-    }
-    return true;
-}
-
 
 bool Dispatcher::delReadEvent(std::shared_ptr<Event>& ev)
 {
-    ev->disableReadEvent();
-    return delEvent(ev);
+    poller_->delEvent(ev, REACTOR_EV_READ);
+    poller_->clearEvent(ev, REACTOR_EV_READ);
 
+    return true;
 }
 
 bool Dispatcher::delWriteEvent(std::shared_ptr<Event>& ev)
 {
-    ev->disableWriteEvent();
-    return delEvent(ev);
+    poller_->delEvent(ev, REACTOR_EV_WRITE);
+    poller_->clearEvent(ev, REACTOR_EV_WRITE);
+    return true;
 }
 
 bool Dispatcher::delEvent(std::shared_ptr<Event>& ev)
 {
-    assert(ev);
-    if (0 != poller_->delEvent(ev)) {
-        return false;
-    }
+    poller_->delEvent(ev, REACTOR_EV_READ | REACTOR_EV_WRITE);
+    poller_->clearEvent(ev, REACTOR_EV_READ | REACTOR_EV_WRITE);
     return true;
 }
 
+
 bool Dispatcher::disableReadEvent(std::shared_ptr<Event>& ev)
 {
-    ev->disableReadEvent();
-    return delEvent(ev);
+    return poller_->delEvent(ev, REACTOR_EV_READ);
 }
 
 bool Dispatcher::disableWriteEvent(std::shared_ptr<Event>& ev)
 {
-    ev->disableWriteEvent();
-    return delEvent(ev);
+    return poller_->delEvent(ev, REACTOR_EV_WRITE);
 }
 
 bool Dispatcher::disableTiemoutEvent(std::shared_ptr<Event>& ev)
@@ -73,7 +57,8 @@ bool Dispatcher::disableTiemoutEvent(std::shared_ptr<Event>& ev)
     return true;
 }
 
-bool Dispatcher::addReadEvent(int fd, const eventHandler& readEventHandler, int timeout)
+bool Dispatcher::addReadEvent(int fd,
+    const eventHandler& readEventHandler, int timeout)
 {
     std::shared_ptr<Event> ev(new Event());
     ev->setFd(fd);
@@ -85,7 +70,7 @@ bool Dispatcher::addReadEvent(int fd, const eventHandler& readEventHandler, int 
         timeout_.insert(time, ev);
     }
 
-    if (0 != poller_->addReadEvent(ev)) {
+    if (0 != poller_->addEvent(ev, REACTOR_EV_READ)) {
         return false;
     }
     return true;
@@ -102,7 +87,7 @@ bool Dispatcher::addWriteEvent(int fd,
         time.init(timeout);
         timeout_.insert(time, ev);
     }
-    if (0 != poller_->addWriteEvent(ev)) {
+    if (0 != poller_->addEvent(ev, REACTOR_EV_WRITE)) {
         return false;
     }
     return true;
@@ -110,7 +95,13 @@ bool Dispatcher::addWriteEvent(int fd,
 
 void Dispatcher::loop()
 {
-    poller_->poll(this, nextTimeout());
+    Timer shouldwait;
+    //if there are activeEvent already, just make poller polling without wait
+    shouldwait = nextTimeout();
+    if (!activeEventList_.empty()) {
+        shouldwait.timer_reset();
+    }
+    poller_->poll(this, shouldwait);
     // get timeout event to active list
     //
     Timer now;
@@ -164,12 +155,18 @@ bool Dispatcher::eventDelTimer(Event* ev, struct timeval* timeout)
     return true;
 }
 
-int Dispatcher::nextTimeout()
+Timer Dispatcher::nextTimeout()
 {
     std::shared_ptr<Event> ev = getLatestEvent();
     Timer now;
-    Timer timeout = now - ev->getTimeout();
-    return timeout.convertToMilliseconds();
+    now.now();
+    if (ev->getTimeout() <= now) {
+        now.timer_reset();
+        return now;
+    }
+    return ev->getTimeout() - now;
+    //Timer timeout = now - ev->getTimeout();
+    //return timeout.convertToMilliseconds();
 }
 
 std::shared_ptr<Event> Dispatcher::getLatestEvent()

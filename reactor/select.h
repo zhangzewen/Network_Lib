@@ -14,8 +14,8 @@ public:
     Select();
     ~Select();
     bool init();
-    int addEvent(Event* ev);
-    int delEvent(Event* ev);
+    int addEvent(Event* ev, int event);
+    int delEvent(Event* ev, int event);
     void poll(Dispatcher* disp, struct timeval* timeout);
 
 private:

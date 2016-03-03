@@ -17,25 +17,33 @@ public:
         this->time_.tv_sec += timeout;
     }
 
-    Timer& operator +(const Timer& time) {
-        this->time_.tv_sec = this->time_.tv_sec + time.time_.tv_sec;
-        this->time_.tv_usec = this->time_.tv_usec + time.time_.tv_usec;
+    Timer operator +(const Timer& time) {
+        Timer result;
+        result.time_.tv_sec = this->time_.tv_sec + time.time_.tv_sec;
+        result.time_.tv_usec = this->time_.tv_usec + time.time_.tv_usec;
 
-        if (this->time_.tv_usec >= 1000000) {
-            this->time_.tv_usec -= 1000000;
-            this->time_.tv_sec += 1;
+        if (result.time_.tv_usec >= 1000000) {
+            result.time_.tv_usec -= 1000000;
+            result.time_.tv_sec += 1;
         }
-        return *this;
+        return result;
     }
 
-    Timer& operator -(const Timer& time) {
-        this->time_.tv_sec = this->time_.tv_sec - time.time_.tv_sec;
-        this->time_.tv_usec = this->time_.tv_usec - time.time_.tv_usec;
+    Timer operator -(const Timer& time) {
+        Timer result;
+        result.time_.tv_sec = this->time_.tv_sec - time.time_.tv_sec;
+        result.time_.tv_usec = this->time_.tv_usec - time.time_.tv_usec;
 
-        if (this->time_.tv_usec < 0) {
-            this->time_.tv_usec += 1000000;
-            this->time_.tv_sec -= 1;
+        if (result.time_.tv_usec < 0) {
+            result.time_.tv_usec += 1000000;
+            result.time_.tv_sec -= 1;
         }
+        return result;
+    }
+
+    Timer& operator =(const Timer& time) {
+        this->time_.tv_sec = time.time_.tv_sec;
+        this->time_.tv_usec = time.time_.tv_usec;
         return *this;
     }
 

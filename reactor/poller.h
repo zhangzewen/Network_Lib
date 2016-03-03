@@ -4,28 +4,19 @@
 #include <memory>
 class Dispatcher;
 class Event;
+class Timer;
 class Poller
 {
 public:
-    virtual void poll(Dispatcher* disp, int timeout){
+    virtual void poll(Dispatcher* disp, const Timer& timeout){
     }
-    virtual int addEvent(std::shared_ptr<Event>& ev){
+    virtual int addEvent(std::shared_ptr<Event>& ev, int event){
         return 0;
     }
-    virtual int delEvent(std::shared_ptr<Event>& ev) {
+    virtual int delEvent(std::shared_ptr<Event>& ev, int event) {
         return 0;
     }
-    virtual int addReadEvent(std::shared_ptr<Event>& ev) {
-        return 0;
-    }
-    virtual int addWriteEvent(std::shared_ptr<Event>& ev) {
-        return 0;
-    }
-    virtual int delReadEvent(std::shared_ptr<Event>& ev) {
-        return 0;
-    }
-    virtual int delWriteEvent(std::shared_ptr<Event>& ev) {
-        return 0;
+    virtual void clearEvent(std::shared_ptr<Event>& ev, int event) {
     }
     ~Poller(){}
 protected:
