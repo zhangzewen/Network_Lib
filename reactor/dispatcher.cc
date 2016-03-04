@@ -95,26 +95,31 @@ bool Dispatcher::addWriteEvent(int fd,
 
 void Dispatcher::loop()
 {
-    Timer shouldwait;
-    //if there are activeEvent already, just make poller polling without wait
-    shouldwait = nextTimeout();
-    if (!activeEventList_.empty()) {
-        shouldwait.timer_reset();
-    }
-    poller_->poll(this, shouldwait);
-    // get timeout event to active list
-    //
-    Timer now;
-    now.now();
-    std::shared_ptr<Event> ev;
-    while(ev = getLatestEvent()) {
-        if (now <= ev->getTimeout()) {
-            ev->setTimeout(true);
-            addActiveEvent(ev);
-            timeout_.Delete(ev->getTimeout());
+    while (true) {
+        Timer timeout;
+        int flag = POLL_TIMEOUT_WAIT_TYPE;
+        //if there are activeEvent already, just make poller polling without wait
+        if (!activeEventList_.empty()) {
+            timeout.timer_reset();
+            flag = POLL_NOT_WAIT_TYPE;
+        } else {
+            timeout = nextTimeout(flag);
         }
+        poller_->poll(this, timeout, flag);
+        // get timeout event to active list
+        //
+        Timer now;
+        now.now();
+        std::shared_ptr<Event> ev;
+        while(ev = getLatestEvent()) {
+            if (now <= ev->getTimeout()) {
+                ev->setTimeout(true);
+                addActiveEvent(ev);
+                timeout_.Delete(ev->getTimeout());
+            }
+        }
+        processActiveEvents();
     }
-    processActiveEvents();
 }
 
 /**
@@ -155,10 +160,15 @@ bool Dispatcher::eventDelTimer(Event* ev, struct timeval* timeout)
     return true;
 }
 
-Timer Dispatcher::nextTimeout()
+Timer Dispatcher::nextTimeout(int& flag)
 {
     std::shared_ptr<Event> ev = getLatestEvent();
     Timer now;
+    if (!ev) {
+        now.timer_reset();
+        flag = POLL_INDEFINITELY_WAIT_TYPE;
+        return now;
+    }
     now.now();
     if (ev->getTimeout() <= now) {
         now.timer_reset();
@@ -172,7 +182,10 @@ Timer Dispatcher::nextTimeout()
 std::shared_ptr<Event> Dispatcher::getLatestEvent()
 {
     RBTree<Timer, std::shared_ptr<Event> >::Node* node =  timeout_.minimum();
-    return node->value;
+    if (node) {
+        return node->value;
+    }
+    return NULL;
 }
 
 bool Dispatcher::addTimer(std::shared_ptr<Event>&, int timeout)

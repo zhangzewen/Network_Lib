@@ -33,7 +33,7 @@ public:
     bool eventDelTimer(Event* ev, struct timeval* timeout);
     void processActiveEvents();
     void addActiveEvent(std::shared_ptr<Event>& ev);
-    Timer nextTimeout();
+    Timer nextTimeout(int& flag);
     std::shared_ptr<Event> getLatestEvent();
     void loop();
 

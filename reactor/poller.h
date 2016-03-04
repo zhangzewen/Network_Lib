@@ -8,7 +8,7 @@ class Timer;
 class Poller
 {
 public:
-    virtual void poll(Dispatcher* disp, const Timer& timeout){
+    virtual void poll(Dispatcher* disp, const Timer& timeout, int flag){
     }
     virtual int addEvent(std::shared_ptr<Event>& ev, int event){
         return 0;

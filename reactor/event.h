@@ -5,6 +5,8 @@
 #include "reactor.h"
 #include <sys/time.h>
 
+class Event;
+
 class Event : public std::enable_shared_from_this<Event>
 {
 public:

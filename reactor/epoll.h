@@ -17,7 +17,7 @@ public:
     virtual int addEvent(std::shared_ptr<Event>& ev, int event);
     virtual int delEvent(std::shared_ptr<Event>& ev, int event);
     bool doDelEvent(std::shared_ptr<Event>& ev);
-    virtual void poll(Dispatcher* disp, const Timer& timeout);
+    virtual void poll(Dispatcher* disp, const Timer& timeout, int flag);
     void clearEvent(std::shared_ptr<Event>& ev, int event);
 private:
     std::shared_ptr<Event> getEventByFd(int fd,
