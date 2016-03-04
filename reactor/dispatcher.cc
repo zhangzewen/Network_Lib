@@ -206,3 +206,30 @@ bool Dispatcher::delTimer(std::shared_ptr<Event>&)
 {
     return true;
 }
+void Dispatcher::runAt(int time, const eventHandler& timeoutEventHandler)
+{
+    addTimeoutEvent(time, timeoutEventHandler);
+}
+
+bool Dispatcher::addTimeoutEvent(int timeout, const eventHandler& timeoutEventHandler)
+{
+    if (timeout < 0) {
+        return false;
+    }
+
+    std::shared_ptr<Event> ev(new Event());
+    ev->setDispatcher(shared_from_this());
+    ev->setEventHandler(timeoutEventHandler);
+
+    if (0 != poller_->addEvent(ev, 0)) {
+        return false;
+    }
+
+    Timer time;
+    Timer now;
+    time.init(timeout);
+    now.now();
+    timeout_.insert(time + now, ev);
+
+    return true;
+}

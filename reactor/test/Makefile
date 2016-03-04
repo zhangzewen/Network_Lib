@@ -7,15 +7,23 @@ LDFLAGS := -lglog -lgtest
 PWD=$(shell pwd)
 INCLUDE=-I../
 
+all: socket timer
+
 socket: socket.o ${OBJECTS}
 	${CC} ${CFLAGS} socket.o ${OBJECTS} ${LDFLAGS} -o $@
 
 socket.o: socket.cc
 	${CC} ${INCLUDE} ${CFLAGS} -c $< ${LDFLAGS} -o $@
 
+timer: timer.o ${OBJECTS}
+	${CC} ${CFLAGS} timer.o ${OBJECTS} ${LDFLAGS} -o $@
+
+timer.o: timer.cc
+	${CC} ${INCLUDE} ${CFLAGS} -c $< ${LDFLAGS} -o $@
 
 clean:
 	rm -fr *.o
 	rm -fr *.a
 	rm -fr socket
+	rm -fr timer 
 	rm -fr core.*
