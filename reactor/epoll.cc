@@ -149,6 +149,7 @@ int Epoll::addEvent(std::shared_ptr<Event>& ev, int event)
 
     ee.events = events;
     ee.data.ptr = NULL;
+    ee.data.fd = fd;
     if (epoll_ctl(epf_, op, fd, &ee) == -1) {
         LOG(ERROR) << "epoll_ctl: op = " << op << " ev: " << ev << " Error";
         return -1;

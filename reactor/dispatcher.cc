@@ -8,6 +8,7 @@
 
 Dispatcher::Dispatcher()
 {
+
 }
 
 Dispatcher::Dispatcher(Poller* poller) : poller_(poller)
@@ -16,6 +17,7 @@ Dispatcher::Dispatcher(Poller* poller) : poller_(poller)
 
 Dispatcher::~Dispatcher()
 {
+
 }
 
 
@@ -45,6 +47,7 @@ bool Dispatcher::delEvent(std::shared_ptr<Event>& ev)
 bool Dispatcher::disableReadEvent(std::shared_ptr<Event>& ev)
 {
     return poller_->delEvent(ev, REACTOR_EV_READ);
+
 }
 
 bool Dispatcher::disableWriteEvent(std::shared_ptr<Event>& ev)
@@ -129,7 +132,11 @@ void Dispatcher::processActiveEvents()
 {
     while (!activeEventList_.empty()) {
         std::shared_ptr<Event> ev = activeEventList_.back();
-        ev->handleEvent();
+        //当事件是已经注册，并且事件触发了，才会执行回调函数
+        //任务执行完成后，立马从队列尾部吧事件清除掉
+        if (ev->isActive() && ev->isReady()) {
+            ev->handleEvent();
+        }
         activeEventList_.pop_back();
     }
 }
