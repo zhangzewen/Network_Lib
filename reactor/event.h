@@ -13,6 +13,12 @@ public:
     Event() : fd_(-1), ready_(false), active_(false), timeout_(false),
         registEvents_(0), privData_(NULL) {
     }
+    Event(int fd, const std::string& name) : fd_(fd), name_(name), ready_(false),
+        active_(false), timeout_(false), registEvents_(0), privData_(NULL) {
+    }
+    Event(const std::string& name) : fd_(-1), name_(name), ready_(false), active_(false),
+        timeout_(false), registEvents_(0), privData_(NULL) {
+    }
     ~Event();
     // typedef boost::function<void(Event*)> handler;
     // fd
@@ -87,9 +93,13 @@ public:
     Timer getTimeout() const {
         return timer_;
     }
+    void setEventTimeout(const Timer& timeout) {
+        timer_ = timeout;
+    }
 
 private:
     int fd_;
+    std::string name_;
     // whether event is ready for reading or writing
     bool ready_;
     // whether  event is registed

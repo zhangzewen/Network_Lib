@@ -402,7 +402,9 @@ void RBTree<KEY, VALUE, Compare>::deleteFixup(typename RBTree::Node* node)
             }
         }
     }
-    node->color = RBTree::BLACK;
+    if (node) {
+        node->color = RBTree::BLACK;
+    }
 }
 
 

@@ -33,15 +33,20 @@ public:
     bool eventDelTimer(Event* ev, struct timeval* timeout);
     void processActiveEvents();
     void addActiveEvent(std::shared_ptr<Event>& ev);
-    void runAt(int time, const eventHandler& timeoutEventHandler);
+    void runAt(const std::string& name, int time, const eventHandler& timeoutEventHandler);
     Timer nextTimeout(int& flag);
     std::shared_ptr<Event> getLatestEvent();
     void loop();
 
 private:
+    struct TimerCmp {
+        bool operator() (Timer& tm1, Timer& tm2) {
+            return tm1 < tm2 ? true : false;
+        }
+    };
     std::shared_ptr<Poller> poller_;
     std::list<std::shared_ptr<Event> > activeEventList_;
-    RBTree<Timer, std::shared_ptr<Event> > timeout_;
-    bool addTimeoutEvent(int timeout, const eventHandler& timeoutEventHandler);
+    RBTree<Timer, std::shared_ptr<Event>, TimerCmp> timeout_;
+    bool addTimeoutEvent(const std::string& name, int timeout, const eventHandler& timeoutEventHandler);
 };
 #endif  //  REACTOR_DISPATCHER_H_

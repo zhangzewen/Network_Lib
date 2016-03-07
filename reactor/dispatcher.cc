@@ -68,9 +68,9 @@ bool Dispatcher::addReadEvent(int fd,
     ev->setDispatcher(shared_from_this());
     ev->setEventHandler(readEventHandler);
     if (timeout > 0) {  // now we set timeout
-        Timer time;
-        time.init(timeout);
-        timeout_.insert(time, ev);
+        Timer time(timeout);
+        Timer now;
+        timeout_.insert(time + now, ev);
     }
 
     if (0 != poller_->addEvent(ev, REACTOR_EV_READ)) {
@@ -86,9 +86,9 @@ bool Dispatcher::addWriteEvent(int fd,
     ev->setFd(fd);
     ev->setEventHandler(readEventHandler);
     if (timeout > 0) {
-        Timer time;
-        time.init(timeout);
-        timeout_.insert(time, ev);
+        Timer time(timeout);
+        Timer now;
+        timeout_.insert(time + now, ev);
     }
     if (0 != poller_->addEvent(ev, REACTOR_EV_WRITE)) {
         return false;
@@ -112,13 +112,14 @@ void Dispatcher::loop()
         // get timeout event to active list
         //
         Timer now;
-        now.now();
         std::shared_ptr<Event> ev;
         while(ev = getLatestEvent()) {
-            if (now <= ev->getTimeout()) {
+            Timer timeout = ev->getTimeout();
+            if (now >= timeout) {
                 ev->setTimeout(true);
                 addActiveEvent(ev);
-                timeout_.Delete(ev->getTimeout());
+                ev->setReady(true);
+                timeout_.Delete(timeout);
             }
         }
         processActiveEvents();
@@ -176,19 +177,19 @@ Timer Dispatcher::nextTimeout(int& flag)
         flag = POLL_INDEFINITELY_WAIT_TYPE;
         return now;
     }
-    now.now();
-    if (ev->getTimeout() <= now) {
+    Timer timeout = ev->getTimeout();
+    if (now > timeout) {
         now.timer_reset();
         return now;
     }
-    return ev->getTimeout() - now;
+    return timeout - now;
     //Timer timeout = now - ev->getTimeout();
     //return timeout.convertToMilliseconds();
 }
 
 std::shared_ptr<Event> Dispatcher::getLatestEvent()
 {
-    RBTree<Timer, std::shared_ptr<Event> >::Node* node =  timeout_.minimum();
+    RBTree<Timer, std::shared_ptr<Event>, TimerCmp>::Node* node =  timeout_.minimum();
     if (node) {
         return node->value;
     }
@@ -206,30 +207,30 @@ bool Dispatcher::delTimer(std::shared_ptr<Event>&)
 {
     return true;
 }
-void Dispatcher::runAt(int time, const eventHandler& timeoutEventHandler)
+void Dispatcher::runAt(const std::string& name, int time, const eventHandler& timeoutEventHandler)
 {
-    addTimeoutEvent(time, timeoutEventHandler);
+    addTimeoutEvent(name, time, timeoutEventHandler);
 }
 
-bool Dispatcher::addTimeoutEvent(int timeout, const eventHandler& timeoutEventHandler)
+bool Dispatcher::addTimeoutEvent(const std::string& name, int timeout, const eventHandler& timeoutEventHandler)
 {
     if (timeout < 0) {
         return false;
     }
 
-    std::shared_ptr<Event> ev(new Event());
+    std::shared_ptr<Event> ev(new Event(name));
     ev->setDispatcher(shared_from_this());
     ev->setEventHandler(timeoutEventHandler);
-
-    if (0 != poller_->addEvent(ev, 0)) {
-        return false;
-    }
-
-    Timer time;
+    Timer time(timeout);
     Timer now;
-    time.init(timeout);
-    now.now();
-    timeout_.insert(time + now, ev);
+    Timer click = (time + now);
+    ev->setEventTimeout(click);
 
+    //if (0 != poller_->addEvent(ev, 0)) {
+    //    return false;
+    //}
+
+    timeout_.insert(click, ev);
+    ev->setActive(true);
     return true;
 }

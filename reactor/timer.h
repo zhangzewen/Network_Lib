@@ -10,14 +10,18 @@
 class Timer
 {
 public:
-    Timer (){}
-    ~Timer(){}
-    void init(int timeout) {
-        now();
-        this->time_.tv_sec += timeout;
+    Timer (){
+        gettimeofday(&time_, NULL);
     }
 
-    Timer operator +(const Timer& time) {
+    Timer(int timeout) {
+        time_.tv_sec = timeout % 1000000;
+        time_.tv_usec = timeout / 1000000;
+    }
+
+    ~Timer(){}
+
+    const Timer operator +(const Timer& time) {
         Timer result;
         result.time_.tv_sec = this->time_.tv_sec + time.time_.tv_sec;
         result.time_.tv_usec = this->time_.tv_usec + time.time_.tv_usec;
@@ -48,23 +52,23 @@ public:
     }
 
     bool operator <(const Timer& time) const {
-        if (this->time_.tv_sec > time.time_.tv_sec) {
-            return true;
-        }
-        if (this->time_.tv_usec > time.time_.tv_usec) {
-            return true;
-        }
-        return true;
-    }
-
-    bool operator >(const Timer& time) {
         if (this->time_.tv_sec < time.time_.tv_sec) {
             return true;
         }
         if (this->time_.tv_usec < time.time_.tv_usec) {
             return true;
         }
-        return true;
+        return false;
+    }
+
+    bool operator >(const Timer& time) {
+        if (this->time_.tv_sec > time.time_.tv_sec) {
+            return true;
+        }
+        if (this->time_.tv_usec > time.time_.tv_usec) {
+            return true;
+        }
+        return false;
     }
 
     bool operator ==(const Timer& time) {
@@ -80,12 +84,6 @@ public:
         return !(*this < time);
     }
 
-    void now() {
-        struct timeval current_time;
-        timer_reset(&current_time);
-        gettimeofday(&current_time, NULL);
-        time_ = current_time;
-    }
 
     void timer_reset() {
         this->time_.tv_sec = 0;
