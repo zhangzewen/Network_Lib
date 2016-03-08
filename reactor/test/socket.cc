@@ -9,6 +9,7 @@
 #include <string.h>
 #include <sys/epoll.h>
 #include <sys/fcntl.h>
+#include <glog/logging.h>
 
 #define return_ok "YES, it's work\r\n\r\n"
 
@@ -67,6 +68,10 @@ public:
         std::shared_ptr<Dispatcher> disp = ev->getDispatcher();
         struct sockaddr_in addr;
         socklen_t addrlen = sizeof(addr);
+        if (ev->isTimeout()) {
+            LOG(ERROR) << "ev: ev->fd: " << ev->getFd() << "is timeout";
+            return ;
+        }
 
         cfd = accept(ev->getFd() ,(struct sockaddr *)&addr, &addrlen);
 
@@ -102,7 +107,7 @@ int main()
     std::shared_ptr<Epoll> poller (new Epoll());
     poller->init();
     dis->setPoller(poller);
-    dis->addReadEvent(listen_fd, std::bind(&Echo::ServerListening, &echoServer, _1));
+    dis->addReadEvent(listen_fd, std::bind(&Echo::ServerListening, &echoServer, _1), 20);
     dis->loop();
 	return 0;
 }

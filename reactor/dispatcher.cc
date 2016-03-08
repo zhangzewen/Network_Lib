@@ -70,7 +70,9 @@ bool Dispatcher::addReadEvent(int fd,
     if (timeout > 0) {  // now we set timeout
         Timer time(timeout);
         Timer now;
-        timeout_.insert(time + now, ev);
+        Timer tick = time + now;
+        timeout_.insert(tick, ev);
+        ev->setEventTimeout(tick);
     }
 
     if (0 != poller_->addEvent(ev, REACTOR_EV_READ)) {
@@ -116,6 +118,7 @@ void Dispatcher::loop()
         while(ev = getLatestEvent()) {
             Timer timeout = ev->getTimeout();
             if (now >= timeout) {
+                LOG(ERROR) << "now: " << now.toString() << ", timeout: " << timeout.toString();
                 ev->setTimeout(true);
                 addActiveEvent(ev);
                 ev->setReady(true);
@@ -222,14 +225,14 @@ bool Dispatcher::addTimeoutEvent(const std::string& name, int timeout, const eve
     ev->setEventHandler(timeoutEventHandler);
     Timer time(timeout);
     Timer now;
-    Timer click = (time + now);
-    ev->setEventTimeout(click);
+    Timer tick = (time + now);
+    ev->setEventTimeout(tick);
 
     //if (0 != poller_->addEvent(ev, 0)) {
     //    return false;
     //}
 
-    timeout_.insert(click, ev);
+    timeout_.insert(tick, ev);
     ev->setActive(true);
     return true;
 }
