@@ -9,3 +9,6 @@ Event::~Event()
     active_ = false;
     timeout_ = false;
 }
+std::string Event::getName() const {
+    return name_;
+}

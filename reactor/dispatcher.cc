@@ -179,12 +179,11 @@ Timer Dispatcher::nextTimeout(int& flag)
     }
     Timer timeout = ev->getTimeout();
     if (now > timeout) {
+        LOG(ERROR) << "now: " << now.toString() << ", timeout: " << timeout.toString() << "now > timeout means that there already have timeout events";
         now.timer_reset();
         return now;
     }
     return timeout - now;
-    //Timer timeout = now - ev->getTimeout();
-    //return timeout.convertToMilliseconds();
 }
 
 std::shared_ptr<Event> Dispatcher::getLatestEvent()

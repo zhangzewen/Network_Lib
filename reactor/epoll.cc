@@ -33,6 +33,7 @@ void Epoll::poll(Dispatcher* disp, const Timer& timeout, int flag) {
     struct epoll_event firedEvents[1024] = {0, {0}};
     //timeout = (timeout == 0 ? -1 : timeout);
     int wait = (flag == POLL_INDEFINITELY_WAIT_TYPE ? -1 : timeout.convertToMilliseconds());
+    LOG(ERROR) << "epoll_wait should wait for " << wait;
     int nevents = epoll_wait(epf_, firedEvents, 1024, wait);
     if (nevents < 0) {
         LOG(ERROR) << "epoll_wait error!";

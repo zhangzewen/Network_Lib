@@ -96,6 +96,10 @@ public:
     void setEventTimeout(const Timer& timeout) {
         timer_ = timeout;
     }
+    std::string getName()const;
+    std::string ToString() const {
+        return timer_.toString();
+    }
 
 private:
     int fd_;

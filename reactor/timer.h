@@ -2,6 +2,7 @@
 #define REACTOR_TIMER_H_
 
 #include <sys/time.h>
+#include <string>
 
 #ifndef NULL
 #define NULL 0
@@ -20,6 +21,11 @@ public:
     }
 
     ~Timer(){}
+
+    Timer(const Timer& time) {
+        this->time_.tv_sec = time.time_.tv_sec;
+        this->time_.tv_usec = time.time_.tv_usec;
+    }
 
     const Timer operator +(const Timer& time) {
         Timer result;
@@ -52,23 +58,11 @@ public:
     }
 
     bool operator <(const Timer& time) const {
-        if (this->time_.tv_sec < time.time_.tv_sec) {
-            return true;
-        }
-        if (this->time_.tv_usec < time.time_.tv_usec) {
-            return true;
-        }
-        return false;
+        return this->convertToMilliseconds() < time.convertToMilliseconds();
     }
 
     bool operator >(const Timer& time) {
-        if (this->time_.tv_sec > time.time_.tv_sec) {
-            return true;
-        }
-        if (this->time_.tv_usec > time.time_.tv_usec) {
-            return true;
-        }
-        return false;
+        return this->convertToMilliseconds() > time.convertToMilliseconds();
     }
 
     bool operator ==(const Timer& time) {
@@ -77,11 +71,11 @@ public:
     }
 
     bool operator <=(const Timer& time) {
-        return !(*this > time);
+        return (*this == time || *this < time);
     }
 
     bool operator >=(const Timer& time) {
-        return !(*this < time);
+        return (*this > time || *this == time);
     }
 
 
@@ -101,6 +95,11 @@ public:
     }
     int convertToMilliseconds() const {
         return time_.tv_sec * 1000 + (time_.tv_usec + 999) / 1000;
+    }
+    std::string toString() const {
+        char buf[256] = {0};
+        sprintf(buf, "{tv_sec: %ld, tv_usec: %ld}", time_.tv_sec, time_.tv_usec);
+        return buf;
     }
 
 private:

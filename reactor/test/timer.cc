@@ -10,6 +10,7 @@
 #include <string.h>
 #include <sys/epoll.h>
 #include <sys/fcntl.h>
+#include <glog/logging.h>
 
 #define return_ok "YES, it's work\r\n\r\n"
 
@@ -38,8 +39,9 @@ void visit(Timer timer, Event ev)
     std::cout << "timer: " << timer.convertToMilliseconds() << std::endl;
 }
 
-int main()
+int main(int argc, char** argv)
 {
+    google::InitGoogleLogging(argv[0]);
     std::shared_ptr<Dispatcher> dis(new Dispatcher());
     Echo echoServer;
 
