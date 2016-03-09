@@ -112,18 +112,18 @@ void Dispatcher::loop()
         }
         poller_->poll(this, timeout, flag);
         // get timeout event to active list
-        //
         Timer now;
         std::shared_ptr<Event> ev;
         while(ev = getLatestEvent()) {
             Timer timeout = ev->getTimeout();
-            if (now >= timeout) {
-                LOG(ERROR) << "now: " << now.toString() << ", timeout: " << timeout.toString();
-                ev->setTimeout(true);
-                addActiveEvent(ev);
-                ev->setReady(true);
-                timeout_.Delete(timeout);
+            if (now < timeout) {
+                LOG(INFO) << "no events are timeout";
+                break;
             }
+            LOG(INFO) << "now: " << now.toString() << ", timeout: " << timeout.toString();
+            ev->setTimeout(true);
+            addActiveEvent(ev);
+            timeout_.Delete(timeout);
         }
         processActiveEvents();
     }
@@ -153,6 +153,7 @@ void Dispatcher::processActiveEvents()
 void Dispatcher::addActiveEvent(std::shared_ptr<Event>& ev)
 {
     assert(NULL != ev);
+    ev->setReady(true);
     activeEventList_.push_front(ev);
     return;
 }

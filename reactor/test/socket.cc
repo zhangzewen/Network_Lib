@@ -70,6 +70,7 @@ public:
         socklen_t addrlen = sizeof(addr);
         if (ev->isTimeout()) {
             LOG(ERROR) << "ev: ev->fd: " << ev->getFd() << "is timeout";
+            disp->delReadEvent(ev);
             return ;
         }
 

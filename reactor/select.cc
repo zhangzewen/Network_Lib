@@ -7,7 +7,6 @@
 #include <glog/logging.h>
 
 #include "dispatcher.h"
-#include "internal-define.h"
 
 // Select::Select()
 // {
