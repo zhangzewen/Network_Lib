@@ -25,6 +25,10 @@ bool Dispatcher::delReadEvent(std::shared_ptr<Event>& ev)
 {
     poller_->delEvent(ev, REACTOR_EV_READ);
     poller_->clearEvent(ev, REACTOR_EV_READ);
+    if (ev->isTimeSet()) {
+        Timer key = ev->getTimeout();
+        timeout_.Delete(key);
+    }
 
     return true;
 }
@@ -73,6 +77,7 @@ bool Dispatcher::addReadEvent(int fd,
         Timer tick = time + now;
         timeout_.insert(tick, ev);
         ev->setEventTimeout(tick);
+        ev->timeSet(true);
     }
 
     if (0 != poller_->addEvent(ev, REACTOR_EV_READ)) {
@@ -112,6 +117,7 @@ void Dispatcher::loop()
         }
         poller_->poll(this, timeout, flag);
         // get timeout event to active list
+        processActiveEvents();
         Timer now;
         std::shared_ptr<Event> ev;
         while(ev = getLatestEvent()) {
@@ -122,10 +128,10 @@ void Dispatcher::loop()
             }
             LOG(INFO) << "now: " << now.toString() << ", timeout: " << timeout.toString();
             ev->setTimeout(true);
-            addActiveEvent(ev);
             timeout_.Delete(timeout);
+            ev->timeSet(false);
+            ev->handleEvent();
         }
-        processActiveEvents();
     }
 }
 

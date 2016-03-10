@@ -39,6 +39,10 @@ public:
 
     void setTimeout(bool timeout) { timeout_ = timeout;}
 
+    // timeSet_
+    bool isTimeSet() const { return timeSet_;}
+    void timeSet(bool timeset) {timeSet_ = timeset;}
+
     void setPrivData(void* privData) { privData_ = privData;}
 
     void* getPrivData() const { return privData_;}
@@ -110,6 +114,8 @@ private:
     bool active_;
     // whether event for reading or writing is timeout
     bool timeout_;
+    // is this event insert into rbtree
+    bool timeSet_;
     // this event represent read, write or timeout event
     int registEvents_;
     void* privData_;
