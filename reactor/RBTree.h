@@ -49,6 +49,7 @@ public:
     bool rightRotate(Node* node);
     bool insertFixup(Node* node);
     void deleteFixup(Node* node);
+    bool empty() const;
     Node* minimum(Node* node);
     Node* minimum();
     Node* maximum(Node* node);
@@ -119,6 +120,12 @@ bool RBTree<KEY, VALUE, Compare>::rightRotate(typename RBTree::Node* node)
     node->parent = left_child;
 
     return true;
+}
+
+template<typename KEY, typename VALUE, typename Compare>
+bool RBTree<KEY, VALUE, Compare>::empty( ) const
+{
+    return NULL == root_;
 }
 
 
