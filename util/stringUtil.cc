@@ -1,6 +1,6 @@
 #include "util.h"
 
-std::string lstrip(const std::string& str, std::string decollator)
+std::string lstrip(const std::string& str, const std::string& decollator)
 {
 	std::string::size_type pos = str.find_first_not_of(decollator);
 	if (std::string::npos == pos) {
@@ -10,7 +10,12 @@ std::string lstrip(const std::string& str, std::string decollator)
 	return tmp;
 }
 
-std::string rstrip(const std::string& str, std::string decollator)
+std::string lstrip(const std::string& str, const char* decollator)
+{
+    return lstrip(str, std::string(decollator));
+}
+
+std::string rstrip(const std::string& str, const std::string& decollator)
 {
 	std::string::size_type pos = str.find_last_not_of(decollator);
 	if (std::string::npos == pos) {
@@ -20,7 +25,17 @@ std::string rstrip(const std::string& str, std::string decollator)
 	return tmp;
 }
 
-std::string strip(std::string& str, std::string decollator)
+std::string rstrip(const std::string& str, const char* decollator)
+{
+    return rstrip(str, std::string(decollator));
+}
+
+std::string strip(const std::string& str, const std::string& decollator)
+{
+	return rstrip(lstrip(str, decollator), decollator);
+}
+
+std::string strip(const std::string& str, const char* decollator)
 {
 	return rstrip(lstrip(str, decollator), decollator);
 }

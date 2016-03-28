@@ -13,10 +13,19 @@ public:
     Event() : fd_(-1), ready_(false), active_(false), timeout_(false),
         registEvents_(0), privData_(NULL) {
     }
-    Event(int fd, const std::string& name) : fd_(fd), name_(name), ready_(false),
+    explicit Event(int fd, const std::string& name) : fd_(fd), name_(name), ready_(false),
         active_(false), timeout_(false), registEvents_(0), privData_(NULL) {
     }
-    Event(const std::string& name) : fd_(-1), name_(name), ready_(false), active_(false),
+
+    explicit Event(int fd, const char* name) : fd_(fd), name_(name), ready_(false),
+        active_(false), timeout_(false), registEvents_(0), privData_(NULL) {
+    }
+
+    explicit Event(const std::string& name) : fd_(-1), name_(name), ready_(false), active_(false),
+        timeout_(false), registEvents_(0), privData_(NULL) {
+    }
+
+    explicit Event(const char* name) : fd_(-1), name_(name), ready_(false), active_(false),
         timeout_(false), registEvents_(0), privData_(NULL) {
     }
     ~Event();
