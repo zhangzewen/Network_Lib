@@ -10,10 +10,10 @@ std::string lstrip(const std::string& str, const std::string& decollator)
 	return tmp;
 }
 
-std::string lstrip(const std::string& str, const char* decollator)
-{
-    return lstrip(str, std::string(decollator));
-}
+//std::string lstrip(const std::string& str, const char* decollator)
+//{
+//    return lstrip(str, std::string(decollator));
+//}
 
 std::string rstrip(const std::string& str, const std::string& decollator)
 {
@@ -25,20 +25,20 @@ std::string rstrip(const std::string& str, const std::string& decollator)
 	return tmp;
 }
 
-std::string rstrip(const std::string& str, const char* decollator)
-{
-    return rstrip(str, std::string(decollator));
-}
+//std::string rstrip(const std::string& str, const char* decollator)
+//{
+//    return rstrip(str, std::string(decollator));
+//}
 
 std::string strip(const std::string& str, const std::string& decollator)
 {
 	return rstrip(lstrip(str, decollator), decollator);
 }
 
-std::string strip(const std::string& str, const char* decollator)
-{
-	return rstrip(lstrip(str, decollator), decollator);
-}
+//std::string strip(const std::string& str, const char* decollator)
+//{
+//	return rstrip(lstrip(str, decollator), decollator);
+//}
 
 void split(const std::string& str, const std::string& decollator,
 		std::vector<std::string>& array)

@@ -6,6 +6,8 @@
 #include <assert.h>
 #include <list>
 
+using namespace std::placeholders;
+
 Dispatcher::Dispatcher()
 {
 
@@ -205,23 +207,29 @@ std::shared_ptr<Event> Dispatcher::getLatestEvent()
     return NULL;
 }
 
-bool Dispatcher::addTimer(std::shared_ptr<Event>&, int timeout)
-{
-
-
-    return true;
-}
-
-bool Dispatcher::delTimer(std::shared_ptr<Event>&)
+bool Dispatcher::addTimer(std::shared_ptr<Event>& ev, int timeout)
 {
     return true;
 }
-void Dispatcher::runAt(const std::string& name, int time, const eventHandler& timeoutEventHandler)
+
+bool Dispatcher::delTimer(std::shared_ptr<Event>& ev)
+{
+    return true;
+}
+void Dispatcher::runAt(const std::string& name,
+        int time, const eventHandler& timeoutEventHandler)
 {
     addTimeoutEvent(name, time, timeoutEventHandler);
 }
 
-bool Dispatcher::addTimeoutEvent(const std::string& name, int timeout, const eventHandler& timeoutEventHandler)
+void Dispatcher::runEvery(const std::string& name,
+        int time, const eventHandler& timeoutEventHandler)
+{
+    addTimeoutEvent(name, time, std::bind(&Dispatcher::runEveryCallBack, this, _1, timeoutEventHandler, name, time));
+}
+
+bool Dispatcher::addTimeoutEvent(const std::string& name,
+        int timeout, const eventHandler& timeoutEventHandler)
 {
     if (timeout < 0) {
         return false;
@@ -234,10 +242,6 @@ bool Dispatcher::addTimeoutEvent(const std::string& name, int timeout, const eve
     Timer now;
     Timer tick = (time + now);
     ev->setEventTimeout(tick);
-
-    //if (0 != poller_->addEvent(ev, 0)) {
-    //    return false;
-    //}
 
     timeout_.insert(tick, ev);
     ev->setActive(true);

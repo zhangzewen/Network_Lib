@@ -48,7 +48,8 @@ int main(int argc, char** argv)
     std::shared_ptr<Epoll> poller (new Epoll());
     poller->init();
     dis->setPoller(poller);
-    dis->runAt("fuck me!", 10, std::bind(&Echo::Print, &echoServer, _1));
+    //dis->runAt("fuck me!", 10, std::bind(&Echo::Print, &echoServer, _1));
+    dis->runEvery("fuck me!", 10, std::bind(&Echo::Print, &echoServer, _1));
     dis->loop();
 
 //    RBTree<Timer, Event, cmp> timeout;

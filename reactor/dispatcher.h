@@ -34,6 +34,7 @@ public:
     void processActiveEvents();
     void addActiveEvent(std::shared_ptr<Event>& ev);
     void runAt(const std::string& name, int time, const eventHandler& timeoutEventHandler);
+    void runEvery(const std::string& name, int time, const eventHandler& timeoutEventHandler);
     Timer nextTimeout(int& flag);
     std::shared_ptr<Event> getLatestEvent();
     void loop();
@@ -44,6 +45,10 @@ private:
             return tm1 < tm2 ? true : false;
         }
     };
+    void runEveryCallBack(std::shared_ptr<Event> ev, const eventHandler& timeoutEventHandler, const std::string& name, int time) {
+        timeoutEventHandler(ev);
+        runEvery(name, time, timeoutEventHandler);
+    }
     std::shared_ptr<Poller> poller_;
     std::list<std::shared_ptr<Event> > activeEventList_;
     RBTree<Timer, std::shared_ptr<Event>, TimerCmp> timeout_;
