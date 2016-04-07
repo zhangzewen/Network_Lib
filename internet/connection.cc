@@ -11,12 +11,10 @@
 #include <string.h>
 #include <strings.h>
 #include <iostream>
-#include <event.h>
 #include <glog/logging.h>
 #include "listener.h"
 #include "connection.h"
 #include "util.h"
-#include "internal-define.h"
 
 connection::connection(int fd, struct event_base* base) : connfd_(fd),
   conn_state_(CON_CONNECTING), buf_(NULL), base_(base),
@@ -250,7 +248,7 @@ void connection::handleWrite()
   //if (!EVBUFFER_LENGTH(buf_->output)) {
    // return;
   //}
-  
+
   if (customizeOnWriteCallBack_) {
     customizeOnWriteCallBack_(this);
   }
@@ -291,7 +289,7 @@ void connection::closeConnection()  // 主动关闭连接
   conn_state_ = CON_DISCONNECTING;
   shutdown(connfd_, SHUT_WR);
   setCustomizeOnMessageCallBack(
-      boost::bind(&connection::lingeringClose, this, _1, _2, _3)); 
+      boost::bind(&connection::lingeringClose, this, _1, _2, _3));
   enableRead();
 }
 
@@ -468,7 +466,7 @@ int connection::doWrite(const char* buf, int len)
 
 /**
   when accept done and create connection successful, we get the remote ip and port
-  
+
   @param remoteAddr a type of struct sockaddr_in pointer point to addr which  from the 2th parameter of accpet system call
 */
 int connection::setRemoteAddr(struct sockaddr_in* remoteAddr, socklen_t len)

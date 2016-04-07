@@ -5,12 +5,12 @@
 
 #include <assert.h>
 #include <list>
+#include <string>
 
 using namespace std::placeholders;
 
 Dispatcher::Dispatcher()
 {
-
 }
 
 Dispatcher::Dispatcher(Poller* poller) : poller_(poller)
@@ -19,7 +19,6 @@ Dispatcher::Dispatcher(Poller* poller) : poller_(poller)
 
 Dispatcher::~Dispatcher()
 {
-
 }
 
 
@@ -53,7 +52,6 @@ bool Dispatcher::delEvent(std::shared_ptr<Event>& ev)
 bool Dispatcher::disableReadEvent(std::shared_ptr<Event>& ev)
 {
     return poller_->delEvent(ev, REACTOR_EV_READ);
-
 }
 
 bool Dispatcher::disableWriteEvent(std::shared_ptr<Event>& ev)
@@ -110,7 +108,8 @@ void Dispatcher::loop()
     while (true) {
         Timer timeout;
         int flag = POLL_TIMEOUT_WAIT_TYPE;
-        //if there are activeEvent already, just make poller polling without wait
+        // if there are activeEvent already,
+        // just make poller polling without wait
         if (!activeEventList_.empty()) {
             timeout.timer_reset();
             flag = POLL_NOT_WAIT_TYPE;
@@ -122,13 +121,14 @@ void Dispatcher::loop()
         processActiveEvents();
         Timer now;
         std::shared_ptr<Event> ev;
-        while(ev = getLatestEvent()) {
+        while (ev = getLatestEvent()) {
             Timer timeout = ev->getTimeout();
             if (now < timeout) {
                 LOG(INFO) << "no events are timeout";
                 break;
             }
-            LOG(INFO) << "now: " << now.toString() << ", timeout: " << timeout.toString();
+            LOG(INFO) << "now: " << now.toString()
+                << ", timeout: " << timeout.toString();
             ev->setTimeout(true);
             timeout_.Delete(timeout);
             ev->timeSet(false);
@@ -191,7 +191,9 @@ Timer Dispatcher::nextTimeout(int& flag)
     }
     Timer timeout = ev->getTimeout();
     if (now > timeout) {
-        LOG(ERROR) << "now: " << now.toString() << ", timeout: " << timeout.toString() << "now > timeout means that there already have timeout events";
+        LOG(ERROR) << "now: " << now.toString() << ", timeout: "
+                << timeout.toString()
+                << "now > timeout means that there already have timeout events";
         now.timer_reset();
         return now;
     }
@@ -200,7 +202,7 @@ Timer Dispatcher::nextTimeout(int& flag)
 
 std::shared_ptr<Event> Dispatcher::getLatestEvent()
 {
-    RBTree<Timer, std::shared_ptr<Event>, TimerCmp>::Node* node =  timeout_.minimum();
+    RBTree<Timer, std::shared_ptr<Event>, TimerCmp>::Node* node = timeout_.minimum();
     if (node) {
         return node->value;
     }
@@ -225,7 +227,8 @@ void Dispatcher::runAt(const std::string& name,
 void Dispatcher::runEvery(const std::string& name,
         int time, const eventHandler& timeoutEventHandler)
 {
-    addTimeoutEvent(name, time, std::bind(&Dispatcher::runEveryCallBack, this, _1, timeoutEventHandler, name, time));
+    addTimeoutEvent(name, time, std::bind(&Dispatcher::runEveryCallBack,
+                this, _1, timeoutEventHandler, name, time));
 }
 
 bool Dispatcher::addTimeoutEvent(const std::string& name,

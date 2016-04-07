@@ -5,13 +5,11 @@
 
 #include <map>
 #include <string>
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
+#include <functional>
 
 struct http_parser;
 struct bufferevent;
 struct http_parser_settings;
-struct event_base;
 class listener;
 
 class connection
@@ -32,11 +30,11 @@ class connection
     CON_READING,
     CON_WRITTING,
   } CONN_STATE;
-  typedef boost::function<void (connection*, char*, int)> onMessageCallBack;
-  typedef boost::function<void (connection*)>onReadTimeoutCallBack;
-  typedef boost::function<void (connection*)>onWriteTimeoutCallBack;
-  typedef boost::function<void (connection*)>onConnectionCloseCallBack;
-  typedef boost::function<void (connection*)>onWriteCallBack;
+  typedef std::function<void (connection*, char*, int)> onMessageCallBack;
+  typedef std::function<void (connection*)>onReadTimeoutCallBack;
+  typedef std::function<void (connection*)>onWriteTimeoutCallBack;
+  typedef std::function<void (connection*)>onConnectionCloseCallBack;
+  typedef std::function<void (connection*)>onWriteCallBack;
   connection(int fd, struct event_base* base);
   ~connection();
   void init();

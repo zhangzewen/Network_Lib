@@ -4,14 +4,14 @@
 #define INTERNET_LISTENER_H_
 
 #include <string>
+#include <memory>
+#include <functional>
 #include "connection.h"
-
-struct event_base;
 
 class listener
 {
  public:
-  typedef boost::function<void (int, struct event_base*)> makeNewConnection;
+  typedef std::function<void (int, struct event_base*)> makeNewConnection;
   listener(const std::string& host, int port, struct event_base* base);
   listener(const std::string& host, int port);
   ~listener();

@@ -1,12 +1,15 @@
-FLAGS=-g3 -W -Werror -Wall -O0
-INCLUDES=-I/usr/local/libevent1414/include -I/usr/local/include/hiredis/ -I../util/
-LDFLAGS=-L/usr/local/libevent1414/lib -levent -lhiredis -lboost_atomic -lboost_chrono -lboost_context -lboost_locale -lboost_regex -lboost_serialization -lglog -lgtest
+#FLAGS=-g3 -W -Werror -Wall -O0 -std=c++11
+FLAGS=-g3  -O0 -std=c++11
+INCLUDES=-I/usr/local/include/hiredis/ -I../util/ -I../reactor/
+LDFLAGS=-lhiredis -lglog -lgtest -std=c++11
 
 OBJS := $(patsubst %.cc, %.o, $(wildcard *.cc))
 LIBNAME=Net
 LIB_NAME :=lib$(LIBNAME).a
 
 UTIL_OBJS := $(patsubst %.cc, %.o, $(wildcard ../util/*.cc))
+
+OBJECTS :=$(patsubst ../reactor/%.cc, ../reactor/%.o, $(wildcard ../reactor/*.cc))
 
 #OBJS=$(wildcard %.cc)
 
@@ -23,8 +26,8 @@ all: $(OBJS)
 %.o : %.cc
 	g++ $(FLAGS) $(INCLUDES) -c $< $(LDFLAGS) -o $@
 
-echoServer: $(OBJS) $(UTIL_OBJS)
-	g++ $(OBJS) $(UTIL_OBJS) $(LDFLAGS) -o echoServer
+echoServer: $(OBJS) $(UTIL_OBJS) $(OBJECTS)
+	g++ $(OBJS) $(UTIL_OBJS) $(OBJECTS) $(LDFLAGS) -o echoServer
 
 clean:
 	rm -fr core.*
