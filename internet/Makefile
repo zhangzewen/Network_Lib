@@ -1,7 +1,7 @@
 #FLAGS=-g3 -W -Werror -Wall -O0 -std=c++11
-FLAGS=-g3  -O0 -std=c++11
-INCLUDES=-I/usr/local/include/hiredis/ -I../util/ -I../reactor/
-LDFLAGS=-lhiredis -lglog -lgtest -std=c++11
+FLAGS=-g  -O0 -std=c++11
+INCLUDES= -I../util/ -I../reactor/
+LDFLAGS=-lglog -lgtest -std=c++11
 
 OBJS := $(patsubst %.cc, %.o, $(wildcard *.cc))
 LIBNAME=Net

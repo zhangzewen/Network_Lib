@@ -1,5 +1,4 @@
 // Copyright [2015] <Zhang Zewen>
-#include "epoll.h"
 
 #include <assert.h>
 #include <sys/epoll.h>
@@ -7,9 +6,11 @@
 #include <string.h>
 
 #include <glog/logging.h>
-
+#include "reactor.h"
+#include "epoll.h"
 #include "event.h"
 #include "dispatcher.h"
+#include "timer.h"
 
 Epoll::Epoll() : epf_(-1)
 {
@@ -60,12 +61,14 @@ void Epoll::poll(Dispatcher* disp, const Timer& timeout, int flag) {
             && (ev = readEvents_[fd])
             && ev->isActive()) {  //  readable
             ev->setReady(true);
+            ev->setReadReady(true);
             disp->addActiveEvent(ev);
         }
         if ((revents & EPOLLOUT)
             && (ev = writeEvents_[fd])
             && ev->isActive()) {  //  writeable
             ev->setReady(true);
+            ev->setWriteReady(true);
             disp->addActiveEvent(ev);
         }
     }

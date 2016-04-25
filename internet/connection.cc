@@ -16,6 +16,8 @@
 #include "connection.h"
 #include "util.h"
 
+using namespace std::placeholders;
+
 connection::connection(int fd, struct event_base* base) : connfd_(fd),
   conn_state_(CON_CONNECTING), buf_(NULL), base_(base),
   keep_alived_(false), privdata_(NULL)
@@ -289,7 +291,7 @@ void connection::closeConnection()  // 主动关闭连接
   conn_state_ = CON_DISCONNECTING;
   shutdown(connfd_, SHUT_WR);
   setCustomizeOnMessageCallBack(
-      boost::bind(&connection::lingeringClose, this, _1, _2, _3));
+      std::bind(&connection::lingeringClose, this, _1, _2, _3));
   enableRead();
 }
 
@@ -349,7 +351,7 @@ bool connection::isKeepAlived()
 /**
   @param
 */
-void connection::setListener(listener* listen)
+void connection::setListener(Listener* listen)
 {
   listener_ = listen;
 }

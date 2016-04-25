@@ -6,11 +6,13 @@
 #include <map>
 #include <string>
 #include <functional>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 struct http_parser;
 struct bufferevent;
 struct http_parser_settings;
-class listener;
+class Listener;
 
 class connection
 {
@@ -42,7 +44,7 @@ class connection
   void closeConnection();
   int doCloseConnection();
   void setKeepAlived(bool isKeepAlived);
-  void setListener(listener* listener);
+  void setListener(Listener* Listener);
   bool isKeepAlived();
   bool reuseConnection();
   void enableRead();
@@ -98,7 +100,7 @@ class connection
   bufferevent* buf_;
   event_base* base_;
   bool keep_alived_;
-  listener* listener_;
+  Listener* listener_;
   std::string remote_addr_;
   void* privdata_;
 };

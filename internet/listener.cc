@@ -6,20 +6,24 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+
 #include <iostream>
-#include <event.h>
 #include <glog/logging.h>
+
+#include "event.h"
 #include "listener.h"
-#include "connection.h"
 #include "util.h"
 
-listener::listener(const std::string& host, int port,
-  struct event_base* base) : host_(host), port_(port), base_(base)
+
+using namespace std::placeholders;
+
+Listener::Listener(const std::string& host, int port,
+  const std::shared_ptr<Dispatcher>& disp) : host_(host), port_(port), disp_(disp)
 {
 }
 
-listener::listener(const std::string& host, int port) : host_(host),
-  port_(port), base_(NULL)
+Listener::Listener(const std::string& host, int port) : host_(host),
+  port_(port), disp_(NULL)
 {
 }
 
@@ -28,19 +32,14 @@ listener::listener(const std::string& host, int port) : host_(host),
   @param event 
   @param arg an argument to be passed to the callback function
 */
-void listener::listenCallBack(int fd, short event, void* arg)
+void Listener::listenCallBack(std::shared_ptr<Event> ev)
 {
-  assert(fd > 0);
-  assert(fd & EV_READ);
-  assert(NULL != arg);
-
-  listener* listen = static_cast<listener*>(arg);
-  if (event & EV_READ) {
+  if (ev->isActive() && ev->isReadReady()) {
     do {
       struct sockaddr_in cliaddr;
       socklen_t len;
       int connfd = 0;
-      if ((connfd = accept(fd, (struct sockaddr*)&cliaddr, &len)) < 0) {
+      if ((connfd = accept(listenfd_, (struct sockaddr*)&cliaddr, &len)) < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
           LOG(ERROR) << "accept() not ready";
           return;
@@ -48,7 +47,7 @@ void listener::listenCallBack(int fd, short event, void* arg)
         LOG(ERROR) << "accept error!";
         return;
       }
-      listen->doMakeConnection(connfd);
+      doMakeConnection(connfd);
     }while(true);
   }
 }
@@ -56,7 +55,7 @@ void listener::listenCallBack(int fd, short event, void* arg)
 /**
  @param
 */
-void listener::doMakeConnection(int connfd)
+void Listener::doMakeConnection(int connfd)
 {
   if (makeNewConnectionCallBack_) {
     // can not set nonblocking just return and lost this connection!
@@ -64,7 +63,7 @@ void listener::doMakeConnection(int connfd)
       LOG(ERROR) << "set NonBlocking Error";
       close(connfd);
     }
-    makeNewConnectionCallBack_(connfd, getEventBase());
+    makeNewConnectionCallBack_();
   } else {
     close(connfd);
   }
@@ -73,7 +72,7 @@ void listener::doMakeConnection(int connfd)
 /**
  @param
 */
-int listener::createSocketAndListen()
+int Listener::createSocketAndListen()
 {
   struct sockaddr_in srvaddr;
   socklen_t len = sizeof(srvaddr);
@@ -107,14 +106,13 @@ int listener::createSocketAndListen()
 /**
  @param
 */
-void listener::start()
+void Listener::start()
 {
   if (createSocketAndListen() < 0) {
     return;
   }
-  ev_  = (struct event*)malloc(sizeof(struct event));
-  event_set(ev_, listenfd_, EV_READ |EV_PERSIST, listenCallBack, this);
-  event_base_set(base_, ev_);
-  event_add(ev_, NULL);
+  if (disp_) {
+      disp_->addReadEvent(listenfd_, std::bind(&Listener::listenCallBack, shared_from_this(), _1));
+  }
 }
 

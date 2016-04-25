@@ -2,11 +2,18 @@
 #ifndef REACTOR_DISPATCHER_H_
 #define REACTOR_DISPATCHER_H_
 
-#include "reactor.h"
+//#include "reactor.h"
 
 #include <list>
 #include <memory>
 #include <string>
+
+#include "RBTree.h"
+#include "timer.h"
+#include "callBackHandle.h"
+#include "poller.h"
+
+class Event;
 
 class Dispatcher : public std::enable_shared_from_this<Dispatcher>
 {

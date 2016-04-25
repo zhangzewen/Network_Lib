@@ -4,7 +4,6 @@
 Event::~Event()
 {
     fd_ = -1;
-    privData_ = NULL;
     ready_ = false;
     active_ = false;
     timeout_ = false;

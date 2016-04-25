@@ -1,11 +1,13 @@
 // Copyright [2015] <Zhang Zewen>
-#include "dispatcher.h"
 #include <sys/epoll.h>
 #include <glog/logging.h>
 
 #include <assert.h>
 #include <list>
 #include <string>
+#include "reactor.h"
+#include "dispatcher.h"
+#include "event.h"
 
 using namespace std::placeholders;
 
