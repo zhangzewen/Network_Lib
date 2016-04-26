@@ -2,13 +2,13 @@
 
 #include <string.h>
 #include <glog/logging.h>
-#include "internal-define.h"
 
 
 baseBuffer::baseBuffer() : pos_(NULL), start_(NULL), end_(NULL), last_(NULL),
   misAlign_(0), totalLen_(0), off_(0)
 {
 }
+
 
 /**
   free buffer
@@ -30,13 +30,13 @@ baseBuffer::~baseBuffer()
 
 
 /**
-  expand n more bytes space to store the incoming data the length of the
-  data is len
+  expand n more bytes space to store the incoming data and will save no more than len,
+  if there is remain data, will be read next time
   @param len the lenght of data
  */
-int baseBuffer::expand(size_t dataLen)
+int baseBuffer::expand(int dataLen)
 {
-  size_t need = misAlign_ + off_ + dataLen;
+  int need = misAlign_ + off_ + dataLen;
 
   if (totalLen_ >= need) {
     return 0;
@@ -46,22 +46,22 @@ int baseBuffer::expand(size_t dataLen)
     align();
   }else {
     void *newbuf;
-    size_t length = totalLen_;
+    int length = totalLen_;
 
     if (length < 256) {
       length = 256;
-    }   
+    }
     while (length < need) {
       length <<= 1;
-    }   
+    }
 
     if (start_ != pos_ && misAlign_ != 0) {
       align();
-    }   
+    }
 
     if ((newbuf = realloc(start_, length)) == NULL) {
-      return -1; 
-    }   
+      return -1;
+    }
 
     start_ = pos_ = static_cast<char*>(newbuf);
     last_ = start_ + off_;
@@ -72,9 +72,9 @@ int baseBuffer::expand(size_t dataLen)
 }
 
 /**
-  
+
 */
-void baseBuffer::drain(size_t len)
+void baseBuffer::drain(int len)
 {
   if(len >= off_) {
     pos_ = last_ = start_;
@@ -85,7 +85,7 @@ void baseBuffer::drain(size_t len)
 
   pos_ += len;
   misAlign_ += len;
-  off_ -= len; 
+  off_ -= len;
 }
 
 
@@ -94,7 +94,7 @@ void baseBuffer::drain(size_t len)
 */
 void baseBuffer::align()
 {
-  memmove(start_, pos_, off_);  
+  memmove(start_, pos_, off_);
   pos_ = start_;
   last_ = pos_ + off_;
   misAlign_ = 0;
@@ -105,13 +105,13 @@ void baseBuffer::align()
   which should set O_NONBLOCK, this function write once  when it called
 
   @param fd file or socket discriptor
-  @param len the length that will be write  
+  @param len the length that will be write
   @return -1, error happend, 1, write blocked or interrupt,
     0, EOF of file OR FIN of socket
     > 0, the lenght of readed data, maybe less than @param len
   @see read()
 */
-int baseBuffer::Write(int fd, size_t len)
+int baseBuffer::write(int fd, int len)
 {
   int nwrite;
   if (len <= 0) {
@@ -122,20 +122,20 @@ int baseBuffer::Write(int fd, size_t len)
     len = off_;
   }
 
-  nwrite = write(fd, pos_, len);
+  nwrite = ::write(fd, pos_, len);
 
   if (nwrite < 0) {
     if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
       return -2;
     }
-    return -1; 
+    return -1;
   }
 
   if (nwrite == 0) { //  noting  writed
     return 0;
   }
 
-  drain(nwrite); 
+  drain(nwrite);
   return nwrite;
 }
 
@@ -147,19 +147,19 @@ int baseBuffer::Write(int fd, size_t len)
   @param fd file or socket discriptor
   @param len that will be write
 */
-int baseBuffer::WriteN(int fd, size_t len)
+int baseBuffer::writeN(int fd, int len)
 {
-  size_t  nleft;
-  ssize_t nread;
- 
+  int  nleft;
+  int nread;
+
   nleft = len;
   while (nleft > 0) {
-    if ( (nread = Write(fd, nleft)) == -2) { //  not writeable or interrupt
+    if ( (nread = write(fd, nleft)) == -1) { //  not writeable or interrupt
       //  should not block
       break;
     } else if (nread == 0) { //  nothing writed
       break;
-    } else if (nread == -1) {
+    } else if (nread == -2) {
       //  i feel bad for this
       break;
     }
@@ -173,13 +173,13 @@ int baseBuffer::WriteN(int fd, size_t len)
   which should set O_NONBLOCK, this function read once  when it called
 
   @param fd file or socket discriptor
-  @param len the lenght that will be read 
+  @param len the lenght that will be read
   @return -1, error happend, 1, read blocked or interrupt,
     0, EOF of file OR FIN of socket
     > 0, the lenght of readed data, maybe less than @param len
   @see read()
 */
-int baseBuffer::Read(int fd, size_t len)
+int baseBuffer::read(int fd, int len)
 {
   int nread = 0;
   if (len <= 0 || len > BUFFER_MAX_READ_) {
@@ -187,16 +187,16 @@ int baseBuffer::Read(int fd, size_t len)
   }
 
   if (expand(len) == -1) {
-    return NET_ERROR;
+    return -2;
   }
 
-  nread = read(fd, last_, len);
+  nread = ::read(fd, last_, len);
 
   if (nread < 0) {
     if (errno == EWOULDBLOCK || errno == EAGAIN || errno == EINTR) {
-      return NET_AGAIN;
+      return -1;
     }
-    return NET_ERROR;
+    return -2;
   }
 
   if (nread == 0) {
@@ -217,19 +217,19 @@ int baseBuffer::Read(int fd, size_t len)
   @param fd file or socket discriptor
   @param len will be read from @param fd
 */
-int baseBuffer::ReadN(int fd, size_t len)
+int baseBuffer::readN(int fd, int len)
 {
-  size_t  nleft;
-  ssize_t nread;
- 
+  int  nleft;
+  int nread;
+
   nleft = len;
   while (nleft > 0) {
-    if ( (nread = Read(fd, nleft)) == NET_AGAIN) { //  not readable or interrupt
+    if ( (nread = read(fd, nleft)) == -1) { //  not readable or interrupt
       //  should not block
       break;
     } else if (nread == 0) { // get eof of file or FIN of socket
       break;
-    } else if (nread == NET_ERROR) {
+    } else if (nread == -2) {
       //  i feel bad for this
       break;
     }
@@ -238,16 +238,16 @@ int baseBuffer::ReadN(int fd, size_t len)
   return(len - nleft);
 }
 
-int baseBuffer::addBuffer(const char* buf, size_t len)
+int baseBuffer::addBuffer(const char* buf, int len)
 {
   if (NULL == buf || 0 == len) {
     return -1;
   }
-  
+
   if (expand(len) == -1) {
     return -1;
   }
-  
+
   memcpy(last_, buf, len);
   off_ += len;
   last_ = pos_ + off_;

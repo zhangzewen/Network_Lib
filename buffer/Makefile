@@ -1,6 +1,6 @@
 OBJECTS=$(patsubst %.cc, %.o, $(wildcard *.cc))
 CC=g++
-CFLAGS := -g3 -W -Werror -Wall -O0 -I../util/
+CFLAGS := -g3 -W -Werror -Wall -O0 -std=c++11
 LDFLAGS := -pthread
 PWD=$(shell pwd)
 INCLUDE=-I$(PWD)
