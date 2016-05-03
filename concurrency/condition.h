@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <pthread.h>
 #include <boost/noncopyable.hpp>
-#include "Mutex.h"
+#include "mutex.h"
 
 
 class Condition : public boost::noncopyable

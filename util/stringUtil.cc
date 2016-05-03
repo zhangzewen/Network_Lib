@@ -1,4 +1,5 @@
 #include "util.h"
+#include <sstream>
 
 std::string lstrip(const std::string& str, const std::string& decollator)
 {
@@ -58,4 +59,59 @@ void split(const std::string& str, const std::string& decollator,
 		std::string elem = tmp.substr(pos1);
 		array.push_back(elem);
 	}
+}
+
+std::string short2str(short int num)
+{
+    std::ostringstream oss;
+    oss << num;
+    return oss.str();
+}
+
+std::string ushort2str(unsigned short int num)
+{
+    std::ostringstream oss;
+    oss << num;
+    return oss.str();
+}
+
+std::string uint2str(unsigned int num)
+{
+    std::ostringstream oss;
+    oss << num;
+    return oss.str();
+}
+
+std::string int2str(int num)
+{
+    std::ostringstream oss;
+    oss << num;
+    return oss.str();
+}
+
+std::string ulong2str(unsigned long int num)
+{
+    std::ostringstream oss;
+    oss << num;
+    return oss.str();
+}
+
+std::string long2str(long int num)
+{
+    std::ostringstream oss;
+    oss << num;
+    return oss.str();
+}
+
+std::string llong2str(long long int num)
+{
+    std::ostringstream oss;
+    oss << num;
+    return oss.str();
+}
+std::string ullong2str(unsigned long long int num)
+{
+    std::ostringstream oss;
+    oss << num;
+    return oss.str();
 }

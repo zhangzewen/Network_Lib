@@ -57,15 +57,26 @@ void Listener::listenCallBack(std::shared_ptr<Event> ev)
   */
 void Listener::doMakeConnection(int connfd)
 {
-    if (makeNewConnectionCallBack_) {
-        // can not set nonblocking just return and lost this connection!
-        if (setNonBlock(connfd) < 0) {
-            LOG(ERROR) << "set NonBlocking Error";
-            close(connfd);
-        }
-        makeNewConnectionCallBack_();
-    } else {
-        close(connfd);
+    //if (makeNewConnectionCallBack_) {
+    //    // can not set nonblocking just return and lost this connection!
+    //    if (setNonBlock(connfd) < 0) {
+    //        LOG(ERROR) << "set NonBlocking Error";
+    //        close(connfd);
+    //    }
+    //    makeNewConnectionCallBack_();
+    //} else {
+    //    close(connfd);
+    //}
+    // step:
+    // first create connectin
+    // second init connection, if error happend ,do error work, just delete connection
+    // and release all the resource that require during in the init job and return
+    // three, if init ok, call customize callback and pass connection object
+    connection* conn = new connection(fd, base);
+    conn->init();
+    //set callback
+    if (onEstablishedCallBack_) {
+        onEstablishedCallBack_(conn);
     }
 }
 

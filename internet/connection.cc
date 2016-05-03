@@ -18,13 +18,13 @@
 
 using namespace std::placeholders;
 
-connection::connection(int fd, struct event_base* base) : connfd_(fd),
-    conn_state_(CON_CONNECTING), buf_(NULL), base_(base),
+Connection::Connection(int fd, struct event_base* base) : connfd_(fd),
+    conn_state_(CON_DISCONNECTED), buf_(NULL), base_(base),
     keep_alived_(false), privdata_(NULL)
 {
 }
 
-connection::~connection()
+Connection::~Connection()
 {
 }
 
@@ -32,26 +32,15 @@ connection::~connection()
   do some init work, such as init recv and send buffer, add read,write
   error event callback function and so on. when it done, enable read event
   */
-void connection::init()
+void Connection::init()
 {
-    if (NULL == buf_) {
-        buf_ = bufferevent_new(connfd_, NULL, NULL, NULL, this);
-        if (NULL == buf_) {
-            // close the connection
-        }
+    if (conn_state_ == CON_DISCONNECTED) {
+        conn_state_ = CON_CONNECTING;
     }
-    resetEvBuffer(buf_->input);
-    resetEvBuffer(buf_->output);
-    bufferevent_base_set(base_, buf_);
-    bufferevent_setcb(buf_,
-            eventReadCallBack,
-            eventWriteCallBack,
-            eventErrorCallBack,
-            this);
-    if (conn_state_ == CON_CONNECTING) {
-        conn_state_ = CON_CONNECTED;
-    }
-    // bufferevent_enable(buf_, EV_READ);
+    // first should init buffer
+    // second set callbacks by add read/write event
+    disp_->addReadEvent(connfd_, std::bind(&Connection::onReadEventCallback, this, _1));
+    disp_->addWriteEvent(connfd_, std::bind(&Connection::onWriteEventCallback, this, _1));
     startRead();
 }
 
@@ -59,7 +48,7 @@ void connection::init()
   wrapper function, get data from recv buffer and call customize callback
   function
   */
-void connection::onMessage()
+void Connection::onMessage()
 {
     // this is ugly now,  there must will be a recv buffer conf
     // if input size is empty, just return reading
@@ -80,7 +69,7 @@ void connection::onMessage()
 /**
   try to write and regist the write event if it's not registed
   */
-int connection::tryWrite()
+int Connection::tryWrite()
 {
     enableWrite();
     return 0;
@@ -89,10 +78,10 @@ int connection::tryWrite()
 /**
   static method that will be registed to bufferevent_setcb()
   */
-void connection::eventReadCallBack(bufferevent* buf, void* arg)
+void Connection::eventReadCallBack(bufferevent* buf, void* arg)
 {
     assert(NULL != buf);
-    connection* conn = static_cast<connection*>(arg);
+    Connection* conn = static_cast<Connection*>(arg);
     // read event fired, change conn_state to reading
     // conn->conn_state_ = CON_READING;
     conn->handleRead();  // handle read
@@ -101,7 +90,7 @@ void connection::eventReadCallBack(bufferevent* buf, void* arg)
 /**
   @param
   */
-void connection::eventEmptyCallBack(bufferevent* buf, void* arg)
+void Connection::eventEmptyCallBack(bufferevent* buf, void* arg)
 {
     // just doing nothing
     assert(NULL == buf);
@@ -111,28 +100,28 @@ void connection::eventEmptyCallBack(bufferevent* buf, void* arg)
 /**
   @param
   */
-void connection::eventWriteCallBack(bufferevent* buf, void* arg)
+void Connection::eventWriteCallBack(bufferevent* buf, void* arg)
 {
     assert(NULL != buf);
-    connection* conn = static_cast<connection*>(arg);
+    Connection* conn = static_cast<Connection*>(arg);
     conn->handleWrite();
 }
 
 /**
   @param
   */
-void connection::eventErrorCallBack(bufferevent* buf, short what, void* arg)
+void Connection::eventErrorCallBack(bufferevent* buf, short what, void* arg)
 {
     assert(NULL != buf);
     assert(0 != what);
-    connection* conn = static_cast<connection*>(arg);
+    Connection* conn = static_cast<Connection*>(arg);
     conn->handleError(conn, what);
 }
 
 /**
   @param
   */
-void connection::startRead()
+void Connection::startRead()
 {
     // assert(buf_->input);
     disableWrite();  // close write event
@@ -146,14 +135,14 @@ void connection::startRead()
 /**
   @param
   */
-void connection::readDone()
+void Connection::readDone()
 {
 }
 
 /**
   @param
   */
-void connection::startWrite()
+void Connection::startWrite()
 {
     if (!EVBUFFER_LENGTH(buf_->output)) {
         // write buff is empty
@@ -177,10 +166,10 @@ void connection::startWrite()
 /**
   @param
   */
-void connection::writeDone()
+void Connection::writeDone()
 {
     if (!isKeepAlived()) {
-        // just free connection
+        // just free Connection
         LOG(INFO) << "keepalived: " << isKeepAlived() << ", just release the connection";
         closeConnection();
         return;
@@ -197,7 +186,7 @@ void connection::writeDone()
 /**
   @param
   */
-void connection::handleRead()
+void Connection::handleRead()
 {
     switch (conn_state_) {
         case CON_CONNECTED:
@@ -224,7 +213,7 @@ void connection::handleRead()
             conn_state_ = doProcess();
             break;
         case CON_PROCESSERROR:
-            // close the connection
+            // close the Connection
             doCloseConnection();
             break;
         case CON_PROCESSDONE:
@@ -245,7 +234,7 @@ void connection::handleRead()
 /**
   @param
   */
-void connection::handleWrite()
+void Connection::handleWrite()
 {
     //if (!EVBUFFER_LENGTH(buf_->output)) {
     // return;
@@ -258,32 +247,12 @@ void connection::handleWrite()
 
 
 /**
-  @param
-  */
-void connection::handleError(connection* conn, short what)
-{
-    assert(NULL != conn);
-    assert(0 != what);
-    if (what & EVBUFFER_ERROR) {
-        // just close connection
-        closeConnection();
-    } else if (what == (EVBUFFER_READ | EVBUFFER_TIMEOUT)) {  // read timeout
-    } else if (what == (EVBUFFER_WRITE | EVBUFFER_TIMEOUT)) {  // write time out
-    } else if (what == (EVBUFFER_READ | EVBUFFER_EOF)) {  //  recv remote FIN
-        if (customizeOnConnectionCloseCallBack_) {
-            customizeOnConnectionCloseCallBack_(conn);
-        }
-        closeConnection();
-    }
-}
-
-/**
-  close connection gently
+  close Connection gently
   first, shutdown write
   second, wait for a read event fired until timeout, TODO SO_LINGER
   third, if read return 0. TCP close done, do the close work
   */
-void connection::closeConnection()  // 主动关闭连接
+void Connection::closeConnection()  // 主动关闭连接
 {
     if (conn_state_ == CON_DISCONNECTED) {
         return;
@@ -291,7 +260,7 @@ void connection::closeConnection()  // 主动关闭连接
     conn_state_ = CON_DISCONNECTING;
     shutdown(connfd_, SHUT_WR);
     setCustomizeOnMessageCallBack(
-            std::bind(&connection::lingeringClose, this, _1, _2, _3));
+            std::bind(&Connection::lingeringClose, this, _1, _2, _3));
     enableRead();
 }
 
@@ -300,14 +269,14 @@ void connection::closeConnection()  // 主动关闭连接
   do not check where remote server/client send FIN
   just release connection and call close()
   */
-void connection::forceCloseConnection()
+void Connection::forceCloseConnection()
 {
 }
 
 /**
   @param
   */
-int connection::doCloseConnection()
+int Connection::doCloseConnection()
 {
     // step 1. delete read and write event
     // bufferevent_disable(buf_, EV_READ);
@@ -323,7 +292,7 @@ int connection::doCloseConnection()
 /**
   @param
   */
-bool connection::reuseConnection()
+bool Connection::reuseConnection()
 {
     keep_alived_ = false;
     listener_ = NULL;
@@ -335,7 +304,7 @@ bool connection::reuseConnection()
 /**
   @param
   */
-void connection::setKeepAlived(bool isKeepAlived)
+void Connection::setKeepAlived(bool isKeepAlived)
 {
     keep_alived_ = isKeepAlived;
 }
@@ -343,7 +312,7 @@ void connection::setKeepAlived(bool isKeepAlived)
 /**
   @param
   */
-bool connection::isKeepAlived()
+bool Connection::isKeepAlived()
 {
     return keep_alived_;
 }
@@ -351,7 +320,7 @@ bool connection::isKeepAlived()
 /**
   @param
   */
-void connection::setListener(Listener* listen)
+void Connection::setListener(Listener* listen)
 {
     listener_ = listen;
 }
@@ -359,97 +328,18 @@ void connection::setListener(Listener* listen)
 /**
   @param
   */
-bool connection::resetEvBuffer(struct evbuffer* buf)
-{
-    if (NULL == buf) {
-        return false;
-    }
-    buf->buffer = buf->orig_buffer;
-    buf->misalign = 0;;
-    buf->off = 0;
-    buf->cb = NULL;
-    buf->cbarg = NULL;
-    return true;
-}
 
 /**
   @param
   */
-bool connection::reuseBufferEvent(struct bufferevent* bufev)
-{
-    event_del(&bufev->ev_read);
-    event_del(&bufev->ev_write);
-    resetEvBuffer(bufev->input);
-    resetEvBuffer(bufev->output);
-    return true;
-}
-
-/**
-  @param
-  */
-short connection::bufferevent_get_enabled(struct bufferevent* bufev)
-{
-    return bufev->enabled;
-}
-
-/**
-  @param
-  */
-void connection::enableRead() {
-    int event = bufferevent_get_enabled(buf_);
-    if (event & EV_READ)
-        return;
-    bufferevent_enable(buf_, EV_READ);
-}
-
-/**
-  @param
-  */
-void connection::enableWrite() {
-    int event = bufferevent_get_enabled(buf_);
-    if (event & EV_WRITE)
-        return;
-    bufferevent_enable(buf_, EV_WRITE);
-}
-
-/**
-  @param
-  */
-void connection::disableRead() {
-    int event = bufferevent_get_enabled(buf_);
-    if (event & EV_READ)
-        bufferevent_disable(buf_, EV_READ);
-}
-
-/**
-  @param
-  */
-void connection::disableWrite() {
-    int event = bufferevent_get_enabled(buf_);
-    if (event & EV_WRITE)
-        bufferevent_disable(buf_, EV_WRITE);
-}
-
-/**
-  @param
-  */
-void connection::disableReadWrite() {
-    int old = bufferevent_get_enabled(buf_);
-    if (old)
-        bufferevent_disable(buf_, old);
-}
-
-/**
-  @param
-  */
-void connection::setPrivData(void* data) {
+void Connection::setPrivData(void* data) {
     privdata_ = data;
 }
 
 /**
   @param
   */
-void* connection::getPrivData() const {
+void* Connection::getPrivData() const {
     return privdata_;
 }
 
@@ -457,7 +347,7 @@ void* connection::getPrivData() const {
 /**
   @param
   */
-int connection::doWrite(const char* buf, int len)
+int Connection::doWrite(const char* buf, int len)
 {
     assert(NULL != buf);
     int ret = 0;
@@ -471,7 +361,7 @@ int connection::doWrite(const char* buf, int len)
 
   @param remoteAddr a type of struct sockaddr_in pointer point to addr which  from the 2th parameter of accpet system call
   */
-int connection::setRemoteAddr(struct sockaddr_in* remoteAddr, socklen_t len)
+int Connection::setRemoteAddr(struct sockaddr_in* remoteAddr, socklen_t len)
 {
     assert(remoteAddr);
     assert(len);
@@ -484,14 +374,41 @@ int connection::setRemoteAddr(struct sockaddr_in* remoteAddr, socklen_t len)
     //  }
     //  remote_addr_ = remoteaddr;
     //  remote_addr_.append(to_string(remoteAddr->sin_port));
+    connection* con = new connection(fd, base);
     return 0;
 }
 
-void connection::lingeringClose(connection* conn, char* buf, int len)
+void Connection::lingeringClose(Connection* conn, char* buf, int len)
 {
     assert(conn);
     assert(buf);
     if (len == 0) {
         doCloseConnection();
     }
+}
+void Connection::onReadEventCallback(std::shared_ptr<Event> ev)
+{
+    // check if timeout fire this callback
+    // check if ev has data to read
+    if (!ev->isActive()) {
+
+    }
+
+    if (!ev->isReadReady()) {
+        //  if read event is not ready ,just return
+        return;
+    }
+
+    // do the read
+    // should be a buffer to do this work which wrap the system call read
+    if (customizeOnMessageCallBack_) {
+        customizeOnMessageCallBack_();
+    }
+}
+
+void Connection::onWriteEventCallback(std::shared_ptr<Event> ev)
+{
+    if (ev->isActive() && ev->isReadReady()) {
+    }
+
 }

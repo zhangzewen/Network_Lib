@@ -14,7 +14,7 @@ struct bufferevent;
 struct http_parser_settings;
 class Listener;
 
-class connection
+class Connection
 {
  public:
     typedef enum {
@@ -25,7 +25,7 @@ class connection
         // when do some init connection work such as requiring and init resource, set callback and so on,
         // we set the status CON_CONNECTING, it should change to CON_CONNECTED when listener call accept() sucessfully
         // should know that, the read callback must handle the accept() resutl EAGAIN, and the status still be CON_CONNECTING
-        CON_CONNECTING,
+        //CON_CONNECTING,
         // when connection buffer, events constructed and inited done,
         // state change to CON_CONNECTED, and ready to wait the data comming,
         // and zhe following state is CON_IDLE
@@ -50,7 +50,6 @@ class connection
         CON_DISCONNECTING,
         // if in the CON_DISCONNECTING time, all relase job successfully done,
         // it will be CON_DISCONNECTED, and will be reuse
-        CON_DISCONNECTED,
     } CONN_STATE;
     // this will be called at CON_CONNECTED, when the client/server recv ACK + SYN successfully, means
     // connecting is already done, now the frame work will do some work
@@ -60,17 +59,17 @@ class connection
     // by returing READ_DONE to jump into next phase,
     // or by returnig READ_AGAIN to do read loop again ,
     // or by returing READ_ERROR to do close this connection and RST connection.
-    typedef std::function<void (connection*, char*, int)> onMessageRecvCallBack;
+    typedef std::function<void (Connection*, char*, int)> onMessageRecvCallBack;
     //
-    typedef std::function<void (connection*)>onReadTimeoutCallBack;
+    typedef std::function<void (Connection*)>onReadTimeoutCallBack;
     //
-    typedef std::function<void (connection*)>onWriteTimeoutCallBack;
+    typedef std::function<void (Connection*)>onWriteTimeoutCallBack;
     //
-    typedef std::function<void (connection*)>onConnectionCloseCallBack;
+    typedef std::function<void (Connection*)>onConnectionCloseCallBack;
     //
-    typedef std::function<void (connection*)>onWriteCallBack;
-    connection(int fd, struct event_base* base);
-    ~connection();
+    typedef std::function<void (Connection*)>onWriteCallBack;
+    Connection(int fd, struct event_base* base);
+    ~Connection();
     // do some resource init, tie callbacks
     void init();
     void onMessage();
@@ -110,14 +109,14 @@ class connection
     std::string getRemoteAddr() const {
         return remote_addr_;
     }
-    void lingeringClose(connection* conn, char* buf, int len);
+    void lingeringClose(Connection* conn, char* buf, int len);
     void forceCloseConnection();
 
  private:
     int connfd_;
     CONN_STATE conn_state_;
     bufferevent* buf_;
-    event_base* base_;
+    std::shared_ptr<Dispatcher> disp_;
     bool keep_alived_;
     std::shared_ptr<Listener> listener_;
     std::string remote_addr_;
@@ -125,12 +124,16 @@ class connection
 
     void handleRead();
     void handleWrite();
-    void handleError(connection*, short);
-    static void eventEmptyCallBack(bufferevent* bufev, void* data);
-    static void eventReadCallBack(bufferevent* bufev, void* data);
-    static void eventWriteCallBack(bufferevent* bufev, void* data);
-    static void eventErrorCallBack(bufferevent* bufev, short what, void* data);
-    static void eventTimeoutCallBack(bufferevent* bufev, void* data);
+    void handleError(Connection*, short);
+    //static void eventEmptyCallBack(bufferevent* bufev, void* data);
+    //static void eventReadCallBack(bufferevent* bufev, void* data);
+    //static void eventWriteCallBack(bufferevent* bufev, void* data);
+    //static void eventErrorCallBack(bufferevent* bufev, short what, void* data);
+    //static void eventTimeoutCallBack(bufferevent* bufev, void* data);
+
+    //
+    void onReadEventCallback(std::shared_ptr<Event> ev);
+    void onWriteEventCallback(std::shared_ptr<Event> ev);
     onMessageCallBack customizeOnMessageCallBack_;
     onConnectionCloseCallBack customizeOnConnectionCloseCallBack_;
     onWriteCallBack customizeOnWriteCallBack_;
